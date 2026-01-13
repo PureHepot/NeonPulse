@@ -4,41 +4,41 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public BaseState currentState;
+
+    //---状态机用状态---
+    public MoveState moveState = new MoveState();
+    //public IdleState idleState = new IdleState();
+    public DashState dashState = new DashState();
+    public DefenceState defenceState = new DefenceState();
+
+
+    //---控制参数设置---
+    [Header("控制参数")]
+    public float moveSpeed = 3f;
+    public float dashSpeed = 5f;
+    public float defenceSpeed = 1f;
+
+
+    //基本组件
+    private Rigidbody2D rigi2d;
+    public Vector2 Velocity
+    {
+        get
+        {
+            return rigi2d.velocity;
+        }
+    }
+
+    private void Awake()
+    {
+        rigi2d = GetComponent<Rigidbody2D>();
+    }
+
+
     void Start()
     {
-        EventManager.AddListener<Vector2>(GameEvent.PlayerScaleChange, (scale) =>
-        {
-            transform.localScale = new Vector3(scale.x, scale.y, 1);
-            Debug.Log($"玩家缩放到: {scale}");
-        });
-
-        CameraManager.Instance.Follow(transform, false);
-
-        CameraManager.Instance.FocusOn(GameObject.Find("Square").transform, 1.2f);
-
-        Timer.Register(1f, () =>
-        {
-            Debug.Log("1s到达");
-            transform.position += new Vector3(0, 2, 0);
-
-            AudioManager.Instance.PlayBGM("MainTheme");
-        });
-
-
-        Timer.Register(2f,() => 
-        {
-            Debug.Log("2s到达");
-            Timer.Register(2f,
-            onComplete: () => {
-                Debug.Log("蓄力完成");
-                EventManager.Broadcast(GameEvent.PlayerScaleChange, new Vector2(2f, 2f));
-            },
-            onUpdate: (percent) => {
-                transform.position = new Vector3(0, 2, 0) * percent;
-            });
-        });
-
-        
+        ChangeState(moveState);
     }
 
     private void OnDestroy()
@@ -48,6 +48,24 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        
+        currentState.LogicUpdate();
+    }
+
+    private void FixedUpdate()
+    {
+        currentState.PhysicsUpdate();
+    }
+
+    public void ChangeState(BaseState newState)
+    {
+        if (currentState != null) currentState.Exit();
+        currentState = newState;
+        currentState.Enter();
+    }
+   
+
+    public void SetVelocity(Vector2 velocity)
+    {
+        rigi2d.velocity = velocity;
     }
 }

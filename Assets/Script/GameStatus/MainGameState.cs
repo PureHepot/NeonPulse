@@ -24,6 +24,6 @@ public class MainGameState : GameState
 
     private void StartGame()
     {
-        GameObject.Instantiate(Resources.Load<GameObject>("Prefabs/Mono/Player"));
+        
     }
 }

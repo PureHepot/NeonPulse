@@ -34,6 +34,9 @@ public class InputManager : MonoSingleton<InputManager>
     public KeyCode UpKey = KeyCode.UpArrow;
     public KeyCode DownKey = KeyCode.DownArrow;
     public KeyCode PauseKey = KeyCode.Escape;
+    public KeyCode SpaceKey = KeyCode.Space;
+    public KeyCode MouseKey0 = KeyCode.Mouse0;
+    public KeyCode MouseKey1 = KeyCode.Mouse1;
 
 
     private Dictionary<string, string> keyDisplayCache = new ();//键位映射表
@@ -139,6 +142,12 @@ public class InputManager : MonoSingleton<InputManager>
         return Input.GetKeyDown(InteractKey);
     }
 
+    public bool Dash()
+    {
+        if(LockMove) return false;
+        return Input.GetKeyDown(SpaceKey);
+    }
+
     // --- 功能类 ---
 
     public bool F()
@@ -169,6 +178,25 @@ public class InputManager : MonoSingleton<InputManager>
     {
         //通常情况下不进行ESC的锁定
         return Input.GetKeyDown(PauseKey);
+    }
+
+    //--- 鼠标类 ---
+    public bool Mouse0()
+    {
+        if (LockAll) return false;
+        return Input.GetKeyDown(MouseKey0);
+    }
+
+    public bool Mouse1Down()
+    {
+        if (LockAll) return false;
+        return Input.GetKeyDown(MouseKey1);
+    }
+
+    public bool Mouse1()
+    {
+        if (LockAll) return false;
+        return Input.GetKey(MouseKey1);
     }
 
     #endregion
