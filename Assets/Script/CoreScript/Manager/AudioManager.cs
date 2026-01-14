@@ -291,7 +291,7 @@ public class AudioManager : MonoSingleton<AudioManager>
     {
         if (bgmMixerGroup != null)
         {
-            var db = volume <= 0.0001f ? -80f : Mathf.Log10(volume) * 20;
+            float db = volume <= 0.0001f ? -80f : Mathf.Log10(volume) * 20f;
             bgmMixerGroup.audioMixer.SetFloat("BGMVolume", db);
         }
         else
@@ -300,18 +300,44 @@ public class AudioManager : MonoSingleton<AudioManager>
         }
     }
 
+    public float GetBGMVolume()
+    {
+        if (bgmMixerGroup != null &&
+            bgmMixerGroup.audioMixer.GetFloat("BGMVolume", out float db))
+        {
+            return db <= -80f ? 0f : Mathf.Pow(10f, db / 20f);
+        }
+        return bgmSource != null ? bgmSource.volume : 1f;
+    }
+
     // 设置音效音量
     public void SetEffectVolume(float volume)
     {
         if (effectMixerGroup != null)
         {
-            var db = volume <= 0.0001f ? -80f : Mathf.Log10(volume) * 20;
+            float db = volume <= 0.0001f ? -80f : Mathf.Log10(volume) * 20f;
             effectMixerGroup.audioMixer.SetFloat("EffectsVolume", db);
         }
         else
         {
             foreach (var s in effectSourcesPool) s.volume = volume;
         }
+    }
+
+    public float GetEffectVolume()
+    {
+        if (effectMixerGroup != null &&
+            effectMixerGroup.audioMixer.GetFloat("EffectsVolume", out float db))
+        {
+            return db <= -80f ? 0f : Mathf.Pow(10f, db / 20f);
+        }
+
+        if (effectSourcesPool != null && effectSourcesPool.Count > 0)
+        {
+            return effectSourcesPool[0].volume;
+        }
+
+        return 1f;
     }
 
     #endregion
