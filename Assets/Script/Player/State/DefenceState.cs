@@ -62,7 +62,7 @@ public class DefenceState : BaseState
 
         //--- 状态切换 ---
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Player.CanDash() && Input.GetKeyDown(KeyCode.Space))
         {
             Player.ChangeState(Player.dashState);
             return;

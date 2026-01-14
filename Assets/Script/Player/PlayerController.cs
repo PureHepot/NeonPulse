@@ -14,10 +14,15 @@ public class PlayerController : MonoBehaviour
 
 
     //---控制参数设置---
-    [Header("控制参数")]
+    [Header("Control Parameters")]
     public float moveSpeed = 3f;
     public float dashSpeed = 5f;
     public float defenceSpeed = 1f;
+
+    [Header("Dash Settings")]
+    public float dashCooldown = 0.3f;
+    [HideInInspector]
+    public float lastDashTime = -999f;
 
 
     //基本组件
@@ -67,5 +72,10 @@ public class PlayerController : MonoBehaviour
     public void SetVelocity(Vector2 velocity)
     {
         rigi2d.velocity = velocity;
+    }
+
+    public bool CanDash()
+    {
+        return Time.time >= lastDashTime + dashCooldown;
     }
 }
