@@ -7,12 +7,11 @@ public class DashState : BaseState
     private float dashTimer = 0.15f;
     private Vector2 dashDirection;
 
-    private float dashCD = 0.1f;
-
     public override void Enter()
     {
+         Debug.Log("Enter Dash State");
 
-        Debug.Log("Enter Dash State");
+        Player.lastDashTime = Time.time + dashTimer;
         dashDirection = new Vector2(InputManager.Instance.GetMoveX(), InputManager.Instance.GetMoveY()).normalized;
 
         if(dashDirection.magnitude < 0.1f)

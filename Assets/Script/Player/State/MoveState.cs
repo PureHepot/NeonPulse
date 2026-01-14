@@ -28,7 +28,7 @@ public class MoveState : BaseState
     public override void LogicUpdate()
     {
         //状态切换
-        if (InputManager.Instance.Dash())
+        if (Player.CanDash() && InputManager.Instance.Dash())
         {
             Player.ChangeState(Player.dashState);
             return;
