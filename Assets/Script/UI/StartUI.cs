@@ -14,8 +14,6 @@ public class StartUI : UIBase
 
     private void InitBtn()
     {
-        AudioManager.Instance.PlayBGM("MainTheme");
-
         Get<Button>("Start").onClick.SetListener(() =>
         {
            // 开始游戏逻辑
@@ -29,13 +27,6 @@ public class StartUI : UIBase
 
             UIManager.Instance.Open<LoadingUI>(action);
         });
-
-        Get<Button>("Settings").onClick.SetListener(() =>
-        {
-            Debug.Log("打开设置面板");
-            UIManager.Instance.Open<SetVolumeUI>();
-        });
-
 
         Get<Button>("Exit").onClick.SetListener(() =>
         {
