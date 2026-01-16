@@ -12,7 +12,7 @@ public class AudioManager : MonoSingleton<AudioManager>
     // 路径常量
     private const string BGM_PATH = "Audio/BGM/";
     private const string EFFECT_PATH = "Audio/Effect/";
-    private const string MIXER_PATH = "Audio/Mixer/MainMixers";
+    private const string MIXER_PATH = "Audio/Mixers/MainMixers";
 
     // 核心组件
     private AudioSource bgmSource;
@@ -24,6 +24,8 @@ public class AudioManager : MonoSingleton<AudioManager>
 
     // 资源缓存
     private readonly Dictionary<string, AudioClip> clipCache = new ();
+    private float globalBgmVolume = 1f;
+    private float globalEffectVolume = 1f;
 
     //静音变量
     public bool IsSoundMuted; // BGM静音
@@ -88,11 +90,14 @@ public class AudioManager : MonoSingleton<AudioManager>
 
     private IEnumerator FadeSwitchBGM(AudioClip newClip, float duration)
     {
+        // 目标音量：如果有Mixer，Source只需要负责淡入到1；如果没有Mixer，Source需要淡入到 globalBgmVolume
+        var targetVolume = (bgmMixerGroup != null) ? 1f : globalBgmVolume;
+
         // 淡出
         if (bgmSource.isPlaying && duration > 0)
         {
-            float startVol = bgmSource.volume;
-            for (float t = 0; t < duration; t += Time.deltaTime)
+            var startVol = bgmSource.volume;
+            for (var t = 0f; t < duration; t += Time.deltaTime)
             {
                 bgmSource.volume = Mathf.Lerp(startVol, 0, t / duration);
                 yield return null;
@@ -101,19 +106,19 @@ public class AudioManager : MonoSingleton<AudioManager>
 
         bgmSource.Stop();
         bgmSource.clip = newClip;
-        bgmSource.volume = 0; // 准备淡入
+        bgmSource.volume = 0;
         bgmSource.Play();
 
         // 淡入
         if (duration > 0)
         {
-            for (float t = 0; t < duration; t += Time.deltaTime)
+            for (var t = 0f; t < duration; t += Time.deltaTime)
             {
-                bgmSource.volume = Mathf.Lerp(0, 1, t / duration);
+                bgmSource.volume = Mathf.Lerp(0, targetVolume, t / duration);
                 yield return null;
             }
         }
-        bgmSource.volume = 1f;
+        bgmSource.volume = targetVolume;
     }
 
     public void StopBGM() => bgmSource.Stop();
@@ -139,8 +144,17 @@ public class AudioManager : MonoSingleton<AudioManager>
 
         var source = GetAvailableSource();
         source.pitch = pitch;
-        source.volume = volumeScale; // 注意：Source本身的Volume和Mixer是叠加关系
         source.clip = clip;
+
+        if (effectMixerGroup != null)
+        {
+            source.volume = volumeScale;
+        }
+        else
+        {
+            source.volume = globalEffectVolume * volumeScale;
+        }
+
         source.Play();
     }
 
@@ -237,15 +251,24 @@ public class AudioManager : MonoSingleton<AudioManager>
         if (parent != null)
         {
             audioObj.transform.SetParent(parent);
-            audioObj.transform.localPosition = Vector3.zero; // 归零，位于父物体中心
+            audioObj.transform.localPosition = Vector3.zero;
         }
 
         source.clip = clip;
-        source.volume = volume;
-        source.outputAudioMixerGroup = effectMixerGroup; // 别忘了应用Mixer
+        source.outputAudioMixerGroup = effectMixerGroup;
+
+        // 修正音量逻辑
+        if (effectMixerGroup != null)
+        {
+            source.volume = volume; // 仅应用传入的局部音量
+        }
+        else
+        {
+            source.volume = globalEffectVolume * volume; // 应用全局 * 局部
+        }
+
         source.Play();
 
-        //  (Clip时长 + 0.1秒缓冲)
         Destroy(audioObj, clip.length + 0.1f);
     }
 
@@ -289,13 +312,19 @@ public class AudioManager : MonoSingleton<AudioManager>
     // 设置 BGM 音量
     public void SetBGMVolume(float volume)
     {
+        globalBgmVolume = volume;
+
         if (bgmMixerGroup != null)
         {
+            // 转换为分贝，增加 0 的保护
             var db = volume <= 0.0001f ? -80f : Mathf.Log10(volume) * 20;
-            bgmMixerGroup.audioMixer.SetFloat("BGMVolume", db);
+            // 增加 SetFloat 的返回值检查（可选，用于Debug）
+            bool result = bgmMixerGroup.audioMixer.SetFloat("BGMVolume", db);
+            if (!result) Debug.LogWarning("请确保AudioMixer中已Expose名为'BGMVolume'的参数");
         }
         else
         {
+            // 如果没有Mixer，直接修改Source
             bgmSource.volume = volume;
         }
     }
@@ -303,6 +332,8 @@ public class AudioManager : MonoSingleton<AudioManager>
     // 设置音效音量
     public void SetEffectVolume(float volume)
     {
+        globalEffectVolume = volume; // 记录值
+
         if (effectMixerGroup != null)
         {
             var db = volume <= 0.0001f ? -80f : Mathf.Log10(volume) * 20;
@@ -310,7 +341,11 @@ public class AudioManager : MonoSingleton<AudioManager>
         }
         else
         {
-            foreach (var s in effectSourcesPool) s.volume = volume;
+            // 更新池中所有 Source (包括正在播放的和闲置的)
+            foreach (var s in effectSourcesPool)
+            {
+                s.volume = volume;
+            }
         }
     }
 
