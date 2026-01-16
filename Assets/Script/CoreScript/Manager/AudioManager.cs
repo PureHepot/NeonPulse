@@ -12,7 +12,7 @@ public class AudioManager : MonoSingleton<AudioManager>
     // 路径常量
     private const string BGM_PATH = "Audio/BGM/";
     private const string EFFECT_PATH = "Audio/Effect/";
-    private const string MIXER_PATH = "Audio/Mixers/MainMixers";
+    private const string MIXER_PATH = "Audio/Mixer/MainMixers";
 
     // 核心组件
     private AudioSource bgmSource;
@@ -25,7 +25,9 @@ public class AudioManager : MonoSingleton<AudioManager>
     // 资源缓存
     private readonly Dictionary<string, AudioClip> clipCache = new ();
     private float globalBgmVolume = 1f;
+    public float GlobalBgmVolume => globalBgmVolume;
     private float globalEffectVolume = 1f;
+    public float GlobalEffectVolume => globalEffectVolume;
 
     //静音变量
     public bool IsSoundMuted; // BGM静音
@@ -337,7 +339,7 @@ public class AudioManager : MonoSingleton<AudioManager>
         if (effectMixerGroup != null)
         {
             var db = volume <= 0.0001f ? -80f : Mathf.Log10(volume) * 20;
-            effectMixerGroup.audioMixer.SetFloat("EffectsVolume", db);
+            effectMixerGroup.audioMixer.SetFloat("EffectVolume", db);
         }
         else
         {

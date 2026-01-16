@@ -5,10 +5,10 @@ public class MenuState : GameState
     private UIBase startUI;
     public override void OnEnter()
     {
-        Time.timeScale = 0f;
-
         // UIManager.Instance.PushPanel<MainMenuPanel>(); 
         startUI = UIManager.Instance.Open<StartUI>();
+
+        AudioManager.Instance.PlayBGM("MainTheme1");
         Debug.Log("UI: 显示开始按钮");
     }
 

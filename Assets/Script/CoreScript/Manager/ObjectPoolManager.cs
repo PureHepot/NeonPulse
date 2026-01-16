@@ -2,20 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ObjectPoolManager : Singleton<ObjectPoolManager>
+public class ObjectPoolManager : MonoSingleton<ObjectPoolManager>
 {
     private Dictionary<int, Queue<GameObject>> poolDictionary = new Dictionary<int, Queue<GameObject>>();
 
     private Dictionary<int, Transform> poolParents = new Dictionary<int, Transform>();
 
-    private Transform objectPool;
 
-
-    public override void Initialize()
-    {
-        base.Initialize();
-        objectPool = GameObject.Find("ObjectPool").transform;
-    }
     /// <summary>
     /// 从池中获取对象
     /// </summary>
@@ -33,7 +26,7 @@ public class ObjectPoolManager : Singleton<ObjectPoolManager>
 
             //归类
             GameObject parentObj = new GameObject("Pool_" + prefab.name);
-            parentObj.transform.SetParent(objectPool);
+            parentObj.transform.SetParent(this.transform);
             poolParents.Add(key, parentObj.transform);
         }
 

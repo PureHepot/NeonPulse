@@ -7,7 +7,7 @@ public class EnemyChaser : EnemyBase
     [Header("Chaser Settings")]
     public float rotateSpeed = 200f; // 旋转速度
 
-    protected override void PhysicsUpdate()
+    protected override void MoveBehavior()
     {
         if (playerTransform == null) return;
 

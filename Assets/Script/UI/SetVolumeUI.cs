@@ -3,11 +3,11 @@ using UnityEngine.UI;
 
 public class SetVolumeUI : UIBase
 {
-    [Header("ÒôÁ¿»¬¿é×é¼þ")]
+    [Header("éŸ³é‡æ»‘å—ç»„ä»¶")]
     public Slider bgmSlider;
     public Slider effectSlider;
 
-    [Header("¹Ø±Õ°´Å¥")]
+    [Header("å…³é—­æŒ‰é’®")]
     public Button closeButton;
 
     public override void OnEnter(object args)
@@ -16,20 +16,20 @@ public class SetVolumeUI : UIBase
 
         if (bgmSlider == null || effectSlider == null || closeButton == null)
         {
-            Debug.LogError("ÇëÔÚInspectorÃæ°å¸øSliderºÍButton¸³Öµ");
+            Debug.LogError("è¯·åœ¨Inspectoré¢æ¿ç»™Sliderå’ŒButtonèµ‹å€¼");
             return;
         }
 
-        // ³õÊ¼»¯Slider
+        // åˆå§‹åŒ–Slider
         bgmSlider.minValue = 0f;
         bgmSlider.maxValue = 2f;
-        bgmSlider.value = AudioManager.Instance.GetBGMVolume();
+        bgmSlider.value = AudioManager.Instance.GlobalBgmVolume;
 
         effectSlider.minValue = 0f;
         effectSlider.maxValue = 2f;
-        effectSlider.value = AudioManager.Instance.GetEffectVolume();
+        effectSlider.value = AudioManager.Instance.GlobalEffectVolume;
 
-        // Slider»Øµ÷
+        // Sliderå›žè°ƒ
         bgmSlider.onValueChanged.AddListener(value =>
         {
             AudioManager.Instance.SetBGMVolume(value);
@@ -40,7 +40,7 @@ public class SetVolumeUI : UIBase
             AudioManager.Instance.SetEffectVolume(value);
         });
 
-        // ¹Ø±Õ°´Å¥
+        // å…³é—­æŒ‰é’®
         closeButton.onClick.SetListener(() =>
         {
             UIManager.Instance.CloseUI(this);

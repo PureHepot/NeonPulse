@@ -28,6 +28,13 @@ public class StartUI : UIBase
             UIManager.Instance.Open<LoadingUI>(action);
         });
 
+        Get<Button>("Setting").onClick.SetListener(() =>
+        {
+            // 打开设置界面逻辑
+            Debug.Log("打开设置界面");
+            UIManager.Instance.Open<SetVolumeUI>();
+        });
+
         Get<Button>("Exit").onClick.SetListener(() =>
         {
             // 退出游戏逻辑

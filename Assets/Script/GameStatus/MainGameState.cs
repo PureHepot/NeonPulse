@@ -20,7 +20,7 @@ public class MainGameState : GameState
 
     public override void OnUpdate()
     {
-        // 监听 ESC
+        // 鐩戝惉 ESC
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             ToggleSettingPanel();
@@ -30,21 +30,21 @@ public class MainGameState : GameState
 
     private void StartGame()
     {
-        
+        GameManager.Instance.StartCoroutine(WaveManager.Instance.GameLoopRoutine());
     }
 
     private void ToggleSettingPanel()
     {
         if (!isSettingOpen)
         {
-            // 打开设置面板
+            // 鎵撳紑璁剧疆闈㈡澘
             UIManager.Instance.Open<SetVolumeUI>();
-            Time.timeScale = 0f;   // 可选：暂停游戏
+            Time.timeScale = 0f;   // 鍙�夛細鏆傚仠娓告垙
             isSettingOpen = true;
         }
         else
         {
-            // 关闭设置面板
+            // 鍏抽棴璁剧疆闈㈡澘
             UIManager.Instance.CloseTopPanel();
             Time.timeScale = 1f;
             isSettingOpen = false;

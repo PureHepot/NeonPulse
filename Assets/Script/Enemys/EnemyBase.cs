@@ -32,7 +32,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable
     }
 
 
-    public void OnDespawn()
+    public virtual void OnSpawn()
     {
         currentHp = maxHp;
         isDead = false;
@@ -46,7 +46,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable
         rb.simulated = true;
     }
 
-    public void OnSpawn()
+    public virtual void OnDespawn()
     {
         transform.DOKill();
         if (bodyRenderer != null) bodyRenderer.DOKill();
@@ -57,10 +57,10 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable
     private void FixedUpdate()
     {
         if (isDead) return;
-        PhysicsUpdate();
+        MoveBehavior();
     }
 
-    protected abstract void PhysicsUpdate();
+    protected abstract void MoveBehavior();
 
     public void TakeDamage(float amount)
     {
