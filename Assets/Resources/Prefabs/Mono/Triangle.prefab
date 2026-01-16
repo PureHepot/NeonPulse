@@ -207,7 +207,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHp: 100
-  moveSpeed: 5
+  moveSpeed: 1
   scoreValue: 10
   contactDamage: 10
   bodyRenderer: {fileID: 0}
