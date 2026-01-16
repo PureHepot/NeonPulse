@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2477791794360302914}
   - component: {fileID: 4692788716070180996}
   - component: {fileID: 9119953752971310115}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Shield
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -254,7 +254,7 @@ GameObject:
   - component: {fileID: 3689906833566656747}
   - component: {fileID: 868648148852120286}
   - component: {fileID: 142812933114081023}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -367,7 +367,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1378605328406966768}
   - component: {fileID: 4913378958401674041}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -453,7 +453,7 @@ GameObject:
   - component: {fileID: 8620267737748286155}
   - component: {fileID: 21681385313512149}
   - component: {fileID: 1746084131540979450}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Heart
   m_TagString: Untagged
   m_Icon: {fileID: 0}
