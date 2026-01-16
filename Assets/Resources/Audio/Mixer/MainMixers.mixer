@@ -38,7 +38,7 @@ AudioMixerController:
   - guid: a9b0c9afce15dee4db98242bf95a4166
     name: BGMVolume
   - guid: 57bb09e3c64a6cf45aa14f4578d4ea33
-    name: EffectVolume
+    name: EffectsVolume
   m_AudioMixerGroupViews:
   - guids:
     - 01de314ac5b10324eb0154986691f843
@@ -91,7 +91,10 @@ AudioMixerSnapshotController:
   m_Name: Snapshot
   m_AudioMixer: {fileID: 24100000}
   m_SnapshotID: 7c26bc1f40ab53842b01a3eabb6c015c
-  m_FloatValues: {}
+  m_FloatValues:
+    57bb09e3c64a6cf45aa14f4578d4ea33: 0
+    a9b0c9afce15dee4db98242bf95a4166: 0
+    8cd13befc1e78354099850971b9d531a: 0
   m_TransitionOverrides: {}
 --- !u!244 &4399447039487302248
 AudioMixerEffectController:

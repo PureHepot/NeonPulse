@@ -18,7 +18,7 @@ public class StartUI : UIBase
         {
            // 开始游戏逻辑
             Debug.Log("开始游戏");
-            
+
             Action action = () =>
             {
                 // 在加载完成后切换游戏状态
