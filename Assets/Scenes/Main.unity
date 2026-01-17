@@ -634,18 +634,18 @@ MonoBehaviour:
   waves:
   - waveName: SLIME
     groups:
-    - enemyPrefab: {fileID: 3862104991398879297, guid: f837404300d7da240a1f98c5a0dea4e1, type: 3}
-      count: 5
-      spawnRate: 0.5
-      direction: 0
-      delayBeforeStart: 0
     - enemyPrefab: {fileID: 5687499291434305790, guid: 706a79fa4b565b747bd409464879a084, type: 3}
-      count: 5
+      count: 10
       spawnRate: 1
       direction: 0
       delayBeforeStart: 2
+    - enemyPrefab: {fileID: 3862104991398879297, guid: f837404300d7da240a1f98c5a0dea4e1, type: 3}
+      count: 10
+      spawnRate: 2
+      direction: 0
+      delayBeforeStart: 0
     - enemyPrefab: {fileID: 2226239598622922695, guid: 8fccc0e143cd3c648b9591b4e00d576c, type: 3}
-      count: 5
+      count: 10
       spawnRate: 1
       direction: 0
       delayBeforeStart: 0
@@ -663,9 +663,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a9e5c686bc12c64aba189ddc4ec8b37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxHealth: 10000
+  MaxHealth: 10
+  bulletDamage: 1
   playerPrefab: {fileID: 6236048808547626479, guid: e4eef060148b4ac42a54b7cdc2645e60, type: 3}
   spawnPoint: {fileID: 1836126019}
+  startingModules: 00000000
+  currentHp: 0
 --- !u!1 &1539998153
 GameObject:
   m_ObjectHideFlags: 0

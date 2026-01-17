@@ -9,12 +9,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6090006052253595188}
+  - component: {fileID: 2104355646697587455}
   - component: {fileID: 8234553666177884431}
   - component: {fileID: 4106554276265722918}
-  - component: {fileID: 2104355646697587455}
   m_Layer: 3
   m_Name: Square
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -35,6 +35,31 @@ Transform:
   - {fileID: 8852370039672222392}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2104355646697587455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3862104991398879297}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebb53a7228274fe4482734d5ee7a2ddb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHp: 3
+  moveSpeed: 0.5
+  scoreValue: 10
+  contactDamage: 1
+  bodyRenderer: {fileID: 0}
+  normalColor: {r: 0, g: 1, b: 0.033422947, a: 1}
+  hitColor: {r: 1, g: 1, b: 1, a: 1}
+  deathEffectPrefab: {fileID: 0}
+  orbitDistance: 5
+  distanceCorrectionSpeed: 2
+  dashInterval: 3
+  dashForce: 20
+  dashDrag: 2
 --- !u!61 &8234553666177884431
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -106,32 +131,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
---- !u!114 &2104355646697587455
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3862104991398879297}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ebb53a7228274fe4482734d5ee7a2ddb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHp: 100
-  moveSpeed: 0.5
-  scoreValue: 10
-  contactDamage: 10
-  bodyRenderer: {fileID: 0}
-  normalColor: {r: 0, g: 1, b: 0.033422947, a: 1}
-  hitColor: {r: 1, g: 1, b: 1, a: 1}
-  deathEffectPrefab: {fileID: 0}
-  orbitDistance: 5
-  distanceCorrectionSpeed: 2
-  dashInterval: 3
-  dashForce: 20
-  dashDrag: 2
+  m_Constraints: 4
 --- !u!1 &6997276993736926571
 GameObject:
   m_ObjectHideFlags: 0

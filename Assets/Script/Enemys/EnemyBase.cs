@@ -48,6 +48,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
 
     public virtual void OnDespawn()
     {
+        Debug.Log("我被OnDespawn了");
         transform.DOKill();
         if (bodyRenderer != null) bodyRenderer.DOKill();
 
@@ -62,7 +63,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
 
     protected abstract void MoveBehavior();
 
-    public void TakeDamage(float amount)
+    public void TakeDamage(int amount)
     {
         if (isDead) return;
 
@@ -107,16 +108,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            collision.gameObject.GetComponent<IDamageable>()?.TakeDamage(contactDamage);
-        }
-    }
-
-    public void TakeDamage(int amount)
-    {
-        currentHp -= amount;
-        if (currentHp <= 0)
-        {
-            Die();
+            collision.gameObject.GetComponent<PlayerController>()?.TakeDamage(contactDamage, transform);
         }
     }
 }

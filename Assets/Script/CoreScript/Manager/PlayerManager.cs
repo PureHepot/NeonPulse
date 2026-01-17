@@ -7,6 +7,9 @@ public class PlayerManager : MonoSingleton<PlayerManager>
 {
     [Header("配置")]
     public int MaxHealth;
+    [SerializeField]
+    private int bulletDamage = 1;
+
     public GameObject playerPrefab;
     public Transform spawnPoint;
 
@@ -20,14 +23,30 @@ public class PlayerManager : MonoSingleton<PlayerManager>
     public Action OnPlayerDead;
 
     //---模块---
+    [Header("Default Loadout")]
+    public List<ModuleType> startingModules;
 
     private HashSet<ModuleType> unlockedModuleTypes = new HashSet<ModuleType>();
     public PlayerModuleManager CurrentModules { get; private set; }
 
     //---玩家数据---
+    [SerializeField]
     private int currentHp;
     public int CurrentHp { get { return currentHp; } set { currentHp = value; } }
 
+    
+    public int BulletDamage { get { return bulletDamage; } set { bulletDamage = value; } }
+
+    private void Awake()
+    {
+        foreach (var type in startingModules)
+        {
+            if (!unlockedModuleTypes.Contains(type))
+            {
+                unlockedModuleTypes.Add(type);
+            }
+        }
+    }
 
     /// <summary>
     /// 生成玩家
@@ -38,19 +57,32 @@ public class PlayerManager : MonoSingleton<PlayerManager>
 
         currentHp = MaxHealth;
 
+        UnlockModuleData(ModuleType.Shooter);
+
         // 实例化
         CurrentPlayerObj = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
 
         CurrentModules = CurrentPlayerObj.GetComponent<PlayerModuleManager>();
 
-        var health = CurrentPlayerObj.GetComponent<IDamageable>();
-        if (health is PlayerController pc)
-        {
-            pc.onDeath += HandlePlayerDeath;
-        }
+        var pc = CurrentPlayerObj.GetComponent<PlayerController>();
+        
+        pc.onDeath += HandlePlayerDeath;
 
         Debug.Log("<color=green>Player Generated</color>");
+
+        SyncModulesToPlayer();
+
         OnPlayerSpawned?.Invoke(CurrentPlayerObj);
+    }
+
+    private void SyncModulesToPlayer()
+    {
+        if (CurrentModules == null) return;
+
+        foreach (var type in unlockedModuleTypes)
+        {
+            CurrentModules.UnlockModule(type);
+        }
     }
 
     /// <summary>
@@ -81,15 +113,6 @@ public class PlayerManager : MonoSingleton<PlayerManager>
             {
                 CurrentModules.UnlockModule(type);
             }
-        }
-    }
-
-    //用于复活/存档
-    private void SyncModulesToPlayer()
-    {
-        foreach (var type in unlockedModuleTypes)
-        {
-            CurrentModules.UnlockModule(type);
         }
     }
 }
