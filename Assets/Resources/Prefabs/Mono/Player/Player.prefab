@@ -431,11 +431,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 157b2bb857dd6874dbf104f36a78450b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentHp: 0
   moveSpeed: 5
   dashSpeed: 15
   defenceSpeed: 1
   dashCooldown: 0.3
   lastDashTime: -999
+  knockbackForce: 10
+  stunDuration: 0.2
+  invincibilityDuration: 1
+  isInvincible: 0
+  lastAttackerPos: {x: 0, y: 0}
   hitColor: {r: 0, g: 0, b: 0, a: 1}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!58 &868648148852120286

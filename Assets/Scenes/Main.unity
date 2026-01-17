@@ -649,6 +649,11 @@ MonoBehaviour:
       spawnRate: 1
       direction: 0
       delayBeforeStart: 0
+    - enemyPrefab: {fileID: 5652730276955115373, guid: 5ecd46dabd2d847438052308552d3cd2, type: 3}
+      count: 5
+      spawnRate: 1
+      direction: 0
+      delayBeforeStart: 0
   timeBetweenWaves: 3
   spawnPadding: 1.5
 --- !u!114 &1357557158
