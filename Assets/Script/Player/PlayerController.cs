@@ -1,14 +1,14 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, IDamageable
 {
     public BaseState currentState;
 
     //---状态机用状态---
     public MoveState moveState = new MoveState();
-    //public IdleState idleState = new IdleState();
     public DashState dashState = new DashState();
     public DefenceState defenceState = new DefenceState();
 
@@ -25,8 +25,13 @@ public class PlayerController : MonoBehaviour
     public float lastDashTime = -999f;
 
 
-    //基本组件
+    //---基本组件---
     private Rigidbody2D rigi2d;
+
+    private PlayerModuleManager modules;
+    public PlayerModuleManager Modules => modules;
+
+    //---数据---
     public Vector2 Velocity
     {
         get
@@ -35,9 +40,13 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public Action onDeath;
+
+
     private void Awake()
     {
         rigi2d = GetComponent<Rigidbody2D>();
+        modules = GetComponent<PlayerModuleManager>();
     }
 
 
@@ -77,5 +86,14 @@ public class PlayerController : MonoBehaviour
     public bool CanDash()
     {
         return Time.time >= lastDashTime + dashCooldown;
+    }
+
+    public void TakeDamage(int amount)
+    {
+        PlayerManager.Instance.CurrentHp -= amount;
+        if (PlayerManager.Instance.CurrentHp <= 0)
+        {
+            onDeath?.Invoke();
+        }
     }
 }

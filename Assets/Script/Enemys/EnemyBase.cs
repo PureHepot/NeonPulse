@@ -6,13 +6,13 @@ using DG.Tweening;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
-public abstract class EnemyBase : MonoBehaviour, IPoolable
+public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
 {
     [Header("Base Stats")]
     public float maxHp = 100f;
     public float moveSpeed = 5f;
     public int scoreValue = 10;
-    public float contactDamage = 10f;
+    public int contactDamage = 10;
 
     [Header("Visuals")]
     public SpriteRenderer bodyRenderer;
@@ -92,7 +92,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable
     protected virtual void Die()
     {
         isDead = true;
-        rb.simulated = false; // 死亡瞬间关闭物理，防止诈尸
+        rb.simulated = false;
 
         if (deathEffectPrefab != null)
         {
@@ -107,9 +107,16 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-
-            Die();
+            collision.gameObject.GetComponent<IDamageable>()?.TakeDamage(contactDamage);
         }
     }
 
+    public void TakeDamage(int amount)
+    {
+        currentHp -= amount;
+        if (currentHp <= 0)
+        {
+            Die();
+        }
+    }
 }
