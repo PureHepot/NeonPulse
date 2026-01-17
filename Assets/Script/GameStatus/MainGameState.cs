@@ -11,6 +11,14 @@ public class MainGameState : GameState
         Time.timeScale = 1f;
         AudioManager.Instance.PlayBGM("FightBGM");
         StartGame();
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.OpenFullScreen<ExpBarUI>();
+        }
+        else
+        {
+            Debug.LogError("UIManager.Instance为空，无法打开经验进度条UI");
+        }
     }
 
     public override void OnExit()
@@ -49,7 +57,7 @@ public class MainGameState : GameState
         {
             // 打开设置面板
             UIManager.Instance.Open<SetVolumeUI>();
-            Time.timeScale = 0f;   // 可选：暂停游戏
+            Time.timeScale = 0f;   // 暂停游戏
             isSettingOpen = true;
         }
         else
