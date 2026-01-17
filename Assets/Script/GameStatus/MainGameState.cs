@@ -9,7 +9,7 @@ public class MainGameState : GameState
     public override void OnEnter()
     {
         Time.timeScale = 1f;
-        AudioManager.Instance.PlayBGM("MainTheme");
+        AudioManager.Instance.PlayBGM("FightBGM");
         StartGame();
     }
 
@@ -30,6 +30,16 @@ public class MainGameState : GameState
 
     private void StartGame()
     {
+        //玩家载入
+        PlayerManager.Instance.SpawnPlayer();
+
+        //设置事件
+        WaveManager.Instance.OnWaveIncoming += (level, txt) =>
+        {
+            MessageUIArg arg = new MessageUIArg(level, txt);
+            UIManager.Instance.OpenPopup<MessageUI>(arg);
+        };
+
         GameManager.Instance.StartCoroutine(WaveManager.Instance.GameLoopRoutine());
     }
 

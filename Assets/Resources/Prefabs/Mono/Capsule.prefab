@@ -9,12 +9,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2948089420711456491}
+  - component: {fileID: 3637669937514047110}
   - component: {fileID: 4585656248327985062}
   - component: {fileID: 6711127524057544256}
-  - component: {fileID: 3637669937514047110}
   m_Layer: 3
   m_Name: Capsule
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -35,6 +35,34 @@ Transform:
   - {fileID: 1952270722019040850}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3637669937514047110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2226239598622922695}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edb2680aad851a14cb4189fb5d2e1357, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHp: 5
+  moveSpeed: 5
+  scoreValue: 10
+  contactDamage: 1
+  bodyRenderer: {fileID: 0}
+  normalColor: {r: 0, g: 0.23673391, b: 0.8415094, a: 1}
+  hitColor: {r: 1, g: 1, b: 1, a: 1}
+  deathEffectPrefab: {fileID: 0}
+  patrolPoints:
+  - {fileID: 8426025922963402707, guid: 313495492b4b431448d816f65d0ab30d, type: 3}
+  - {fileID: 5148753187261394870, guid: 24ebee2da55f1404386cd5469e2641d9, type: 3}
+  - {fileID: 6332599752869512881, guid: 6548ab804e6127146823b85a80c70152, type: 3}
+  - {fileID: 8534988089619093864, guid: 7354f89f457ad604d80358049247665b, type: 3}
+  - {fileID: 6996852137660152228, guid: 2f9099d0b833b674487029b850e2c025, type: 3}
+  patrolSpeed: 5
+  parentScale: {x: 0.4, y: 0.4, z: 1}
 --- !u!50 &4585656248327985062
 Rigidbody2D:
   serializedVersion: 4
@@ -61,7 +89,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!70 &6711127524057544256
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -97,34 +125,6 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: 0}
   m_Size: {x: 2, y: 4}
   m_Direction: 0
---- !u!114 &3637669937514047110
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2226239598622922695}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: edb2680aad851a14cb4189fb5d2e1357, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHp: 100
-  moveSpeed: 5
-  scoreValue: 10
-  contactDamage: 10
-  bodyRenderer: {fileID: 0}
-  normalColor: {r: 0, g: 0.23673391, b: 0.8415094, a: 1}
-  hitColor: {r: 1, g: 1, b: 1, a: 1}
-  deathEffectPrefab: {fileID: 0}
-  patrolPoints:
-  - {fileID: 8426025922963402707, guid: 313495492b4b431448d816f65d0ab30d, type: 3}
-  - {fileID: 5148753187261394870, guid: 24ebee2da55f1404386cd5469e2641d9, type: 3}
-  - {fileID: 6332599752869512881, guid: 6548ab804e6127146823b85a80c70152, type: 3}
-  - {fileID: 8534988089619093864, guid: 7354f89f457ad604d80358049247665b, type: 3}
-  - {fileID: 6996852137660152228, guid: 2f9099d0b833b674487029b850e2c025, type: 3}
-  patrolSpeed: 5
-  parentScale: {x: 0.4, y: 0.4, z: 1}
 --- !u!1 &4285513428557015832
 GameObject:
   m_ObjectHideFlags: 0

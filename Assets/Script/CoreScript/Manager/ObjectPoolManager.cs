@@ -30,22 +30,30 @@ public class ObjectPoolManager : MonoSingleton<ObjectPoolManager>
             poolParents.Add(key, parentObj.transform);
         }
 
-        GameObject objToSpawn;
+        GameObject objToSpawn = null;
 
         //取出对象
         Queue<GameObject> poolQueue = poolDictionary[key];
 
-        if (poolQueue.Count > 0)
+        while (poolQueue.Count > 0)
         {
-            objToSpawn = poolQueue.Dequeue();
+            GameObject candidate = poolQueue.Dequeue();
+            if (candidate != null)
+            {
+                objToSpawn = candidate;
+                break;
+            }
         }
-        else
+
+        if (objToSpawn == null)
         {
-            //队列空了，实例化一个新的
-            objToSpawn = GameObject.Instantiate(prefab);
+            objToSpawn = Instantiate(prefab);
             PoolObject poolObj = objToSpawn.AddComponent<PoolObject>();
             poolObj.poolKey = key;
         }
+
+        PoolObject pObj = objToSpawn.GetComponent<PoolObject>();
+        if (pObj != null) pObj.isInPool = false;
 
         objToSpawn.transform.SetParent(null);
         objToSpawn.transform.position = position;

@@ -5,4 +5,5 @@ using UnityEngine;
 public class PoolObject : MonoBehaviour
 {
     public int poolKey;
+    public bool isInPool = false;
 }

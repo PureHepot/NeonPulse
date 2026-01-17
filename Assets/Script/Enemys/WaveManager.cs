@@ -64,7 +64,6 @@ public class WaveManager : MonoSingleton<WaveManager>
         UpdateCameraBounds();
     }
 
-    // 更新摄像机边界 (如果游戏支持动态分辨率，可以在Update里调)
     void UpdateCameraBounds()
     {
         camHeight = 2f * mainCam.orthographicSize;

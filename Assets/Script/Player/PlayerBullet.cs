@@ -1,0 +1,52 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerBullet : MonoBehaviour, IPoolable
+{
+    [Header("Settings")]
+    public float speed = 20f;
+    public int damage = 1;
+    public float lifeTime = 2f;
+
+    private float timer;
+
+    public void OnSpawn()
+    {
+        timer = 0f;
+        GetComponent<TrailRenderer>()?.Clear();
+    }
+
+    public void OnDespawn()
+    {
+        
+    }
+
+    void Update()
+    {
+        transform.Translate(Vector3.right * speed * Time.deltaTime);
+
+        timer += Time.deltaTime;
+        if (timer >= lifeTime)
+        {
+            ObjectPoolManager.Instance.Return(this.gameObject);
+        }
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Enemy"))
+        {
+            IDamageable target = other.GetComponent<IDamageable>();
+            if (target != null)
+            {
+                target.TakeDamage(damage);
+
+                //TODO:击中特效
+                // ObjectPoolManager.Instance.Get(hitEffect, transform.position...);
+
+                ObjectPoolManager.Instance.Return(this.gameObject);
+            }
+        }
+    }
+}

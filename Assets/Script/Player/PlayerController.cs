@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class PlayerController : MonoBehaviour
 {
@@ -8,12 +10,15 @@ public class PlayerController : MonoBehaviour
 
     //---状态机用状态---
     public MoveState moveState = new MoveState();
-    //public IdleState idleState = new IdleState();
     public DashState dashState = new DashState();
     public DefenceState defenceState = new DefenceState();
+    public HitedState hitedState = new HitedState();
 
 
     //---控制参数设置---
+    [Header("Combat Stats")]
+    public int currentHp;
+
     [Header("Control Parameters")]
     public float moveSpeed = 3f;
     public float dashSpeed = 5f;
@@ -24,9 +29,29 @@ public class PlayerController : MonoBehaviour
     [HideInInspector]
     public float lastDashTime = -999f;
 
+    [Header("Hurt Settings")]
+    public float knockbackForce = 10f;
+    public float stunDuration = 0.2f;
+    public float invincibilityDuration = 1.0f;
 
-    //基本组件
+    [HideInInspector] public bool isInvincible = false;
+    [HideInInspector] public Vector2 lastAttackerPos;//攻击位置
+
+    [Header("Renderer Settings")]
+    public Color hitColor;
+    public Color normalColor;
+
+    //---基本组件---
     private Rigidbody2D rigi2d;
+    private Collider2D colli2;
+    public Rigidbody2D Rigid2d => rigi2d;
+
+    private PlayerModuleManager modules;
+
+    private SpriteRenderer body;
+    public PlayerModuleManager Modules => modules;
+
+    //---数据---
     public Vector2 Velocity
     {
         get
@@ -35,9 +60,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public Action onDeath;
+
+
     private void Awake()
     {
         rigi2d = GetComponent<Rigidbody2D>();
+        colli2 = GetComponent<Collider2D>();
+        modules = GetComponent<PlayerModuleManager>();
+        body = transform.Find("Body").GetComponent<SpriteRenderer>();
     }
 
 
@@ -77,5 +108,53 @@ public class PlayerController : MonoBehaviour
     public bool CanDash()
     {
         return Time.time >= lastDashTime + dashCooldown;
+    }
+
+    public void TakeDamage(int amount, Transform attacker)
+    {
+        if (isInvincible) return;
+
+        currentHp = PlayerManager.Instance.CurrentHp;
+
+        currentHp -= amount;
+
+        PlayerManager.Instance.CurrentHp = currentHp;
+        if (currentHp <= 0)
+        {
+            onDeath?.Invoke();
+            return;
+        }
+
+        lastAttackerPos = attacker != null ? attacker.position : transform.position;
+
+        ChangeState(hitedState);
+    }
+
+    public void PlayHurtVisuals()
+    {
+        body.DOKill(); // 清除之前的动画防止冲突
+        body.DOColor(hitColor, 0.05f).OnComplete(() =>
+        {
+            body.DOColor(Color.white, 0.2f);
+        });
+
+        transform.DOKill();
+        transform.DOPunchScale(new Vector3(-0.3f, 0.3f, 0), 0.2f, 10, 1);
+    }
+
+    //无敌时间
+    public IEnumerator InvincibilityRoutine()
+    {
+        isInvincible = true;
+        colli2.enabled = false;
+
+        Tween blinkTween = body.DOFade(0.5f, 0.1f).SetLoops(-1, LoopType.Yoyo);
+
+        yield return new WaitForSeconds(invincibilityDuration);
+
+        blinkTween.Kill();
+        body.color = normalColor;
+        isInvincible = false;
+        colli2.enabled = true;
     }
 }

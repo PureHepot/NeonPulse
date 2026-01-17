@@ -93,12 +93,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8091461355661264259}
+  - component: {fileID: 3092335444665503205}
   - component: {fileID: 4025873963413341367}
   - component: {fileID: 1042899453055156823}
-  - component: {fileID: 3092335444665503205}
   m_Layer: 3
   m_Name: Triangle
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -119,6 +119,29 @@ Transform:
   - {fileID: 5033516934251365760}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3092335444665503205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5687499291434305790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad402aaa41685a44c90648fbc2e49e80, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHp: 3
+  moveSpeed: 3
+  scoreValue: 10
+  contactDamage: 1
+  bodyRenderer: {fileID: 0}
+  normalColor: {r: 0.990566, g: 0.6368343, b: 0, a: 1}
+  hitColor: {r: 0.9433962, g: 0.9433962, b: 0.9433962, a: 1}
+  deathEffectPrefab: {fileID: 0}
+  rotateSpeed: 200
+  waveFrequency: 2
+  waveMagnitude: 1
 --- !u!60 &4025873963413341367
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -163,9 +186,9 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 0, y: 0.5773587}
-      - {x: -0.5, y: -0.28866667}
-      - {x: 0.5, y: -0.28866667}
+    - - {x: 0.0024495125, y: 0.2907356}
+      - {x: -0.2501235, y: -0.14658004}
+      - {x: 0.252573, y: -0.14658004}
   m_UseDelaunayMesh: 0
 --- !u!50 &1042899453055156823
 Rigidbody2D:
@@ -193,25 +216,4 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
---- !u!114 &3092335444665503205
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5687499291434305790}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad402aaa41685a44c90648fbc2e49e80, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHp: 100
-  moveSpeed: 1
-  scoreValue: 10
-  contactDamage: 10
-  bodyRenderer: {fileID: 0}
-  normalColor: {r: 0.990566, g: 0.6368343, b: 0, a: 1}
-  hitColor: {r: 0.9433962, g: 0.9433962, b: 0.9433962, a: 1}
-  deathEffectPrefab: {fileID: 0}
-  rotateSpeed: 10
+  m_Constraints: 4

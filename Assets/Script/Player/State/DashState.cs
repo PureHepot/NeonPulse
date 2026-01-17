@@ -28,7 +28,7 @@ public class DashState : BaseState
         Timer.Register(dashTimer,
             onComplete: () =>
             {
-                if (InputManager.Instance.Mouse1())
+                if (Player.Modules.HasAbility(ModuleType.Shield) && InputManager.Instance.Mouse1())
                 {
                     Player.ChangeState(Player.defenceState);
                 }

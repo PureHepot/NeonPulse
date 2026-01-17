@@ -34,7 +34,7 @@ public class MoveState : BaseState
             return;
         }
 
-        if (InputManager.Instance.Mouse1())
+        if (Player.Modules.HasAbility(ModuleType.Shield) && InputManager.Instance.Mouse1())
         {
             Player.ChangeState(Player.defenceState);
             return;
