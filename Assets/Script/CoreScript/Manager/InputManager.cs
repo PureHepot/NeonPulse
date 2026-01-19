@@ -142,7 +142,7 @@ public class InputManager : MonoSingleton<InputManager>
         return Input.GetKeyDown(InteractKey);
     }
 
-    public bool Dash()
+    public bool Space()
     {
         if(LockMove) return false;
         return Input.GetKeyDown(SpaceKey);

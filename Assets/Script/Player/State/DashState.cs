@@ -4,14 +4,30 @@ using UnityEngine;
 
 public class DashState : BaseState
 {
-    private float dashTimer = 0.15f;
+    DashModule dashModule;
     private Vector2 dashDirection;
+
+    public DashState(PlayerController player) : base(player)
+    {
+    }
+
+    public override bool CanBeInterrupted()
+    {
+        return false;
+    }
 
     public override void Enter()
     {
-         Debug.Log("Enter Dash State");
+        dashModule = Player.Modules.GetModule<DashModule>(ModuleType.Dash);
 
-        Player.lastDashTime = Time.time + dashTimer;
+        if (dashModule == null)
+        {
+            //Player.ChangeState(Player.moveState);
+            return;
+        }
+
+        dashModule.OnDashStart();
+
         dashDirection = new Vector2(InputManager.Instance.GetMoveX(), InputManager.Instance.GetMoveY()).normalized;
 
         if(dashDirection.magnitude < 0.1f)
@@ -20,29 +36,22 @@ public class DashState : BaseState
             dashDirection = new Vector2(dir.x, dir.y).normalized;
         }
 
-        Player.SetVelocity(dashDirection.normalized * Player.dashSpeed);
+        Player.SetVelocity(dashDirection.normalized * dashModule.dashForce);
 
         //Player.SetColor(Color.red);
         //Player.StartGhostEffect();
 
-        Timer.Register(dashTimer,
-            onComplete: () =>
-            {
-                if (Player.Modules.HasAbility(ModuleType.Shield) && InputManager.Instance.Mouse1())
-                {
-                    Player.ChangeState(Player.defenceState);
-                }
-                else
-                {
-                    Player.ChangeState(Player.moveState);
-                }  
-            },
-            onUpdate: (float t) =>
-            {
-                float currentSpeed = Mathf.Lerp(Player.dashSpeed, Player.moveSpeed, t);
+        //Timer.Register(dashTimer,
+        //    onComplete: () =>
+        //    {
+        //        Player.ChangeState(Player.moveState); 
+        //    },
+        //    onUpdate: (float t) =>
+        //    {
+        //        float currentSpeed = Mathf.Lerp(Player.dashSpeed, Player.moveSpeed, t);
 
-                Player.SetVelocity(dashDirection * currentSpeed);
-            });
+        //        Player.SetVelocity(dashDirection * currentSpeed);
+        //    });
     }
 
     public override void Exit()

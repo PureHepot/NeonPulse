@@ -106,9 +106,15 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
 
     protected virtual void OnCollisionEnter2D(Collision2D collision)
     {
+        var shield = collision.collider.gameObject.GetComponent<ShieldController>();
+        if (shield != null)
+        {
+            return;
+        }
+
         if (collision.gameObject.CompareTag("Player"))
         {
-            collision.gameObject.GetComponent<PlayerController>()?.TakeDamage(contactDamage, transform);
+            //collision.gameObject.GetComponent<PlayerController>()?.TakeDamage(contactDamage, transform);
         }
     }
 }

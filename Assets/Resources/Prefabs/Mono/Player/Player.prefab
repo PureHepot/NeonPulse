@@ -32,6 +32,37 @@ Transform:
   - {fileID: 4501821148927080952}
   m_Father: {fileID: 5559335993037766974}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4255462693244740409
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3685235989871488641}
+  m_Layer: 0
+  m_Name: SpeedBooster
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3685235989871488641
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4255462693244740409}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6811986722074343809}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5174814283663807816
 GameObject:
   m_ObjectHideFlags: 0
@@ -83,7 +114,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4180357264364536044
 Transform:
   m_ObjectHideFlags: 0
@@ -131,8 +162,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 812578a4aa052aa4b80b494d768eafd6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radius: 0.5
-  thickness: 0.1
+  radius: 1
+  thickness: 0.2
   maxArcAngle: 180
   segments: 30
   deployFactor: 0
@@ -315,6 +346,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6811986722074343809}
+  - component: {fileID: 6873994201756524193}
   - component: {fileID: 882021336278156554}
   - component: {fileID: 5932255660191987318}
   m_Layer: 0
@@ -339,8 +371,24 @@ Transform:
   m_Children:
   - {fileID: 4180357264364536044}
   - {fileID: 5559335993037766974}
+  - {fileID: 3685235989871488641}
   m_Father: {fileID: 4754426117737457041}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6873994201756524193
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6045741450448671065}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9255acf24448a24e8241591344ecf72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moduleType: 0
+  isUnlocked: 0
+  baseMoveSpeed: 5
 --- !u!114 &882021336278156554
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -353,7 +401,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d98a28f3c38c4fd4796d0d5feb57b8ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moduleType: 1
+  moduleType: 3
   isUnlocked: 0
   shieldObject: {fileID: 5832138676679245043}
   shieldScript: {fileID: 4590724806426610434}
@@ -370,7 +418,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55fce6915dd1a5347a3b273480f3d9b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moduleType: 0
+  moduleType: 2
   isUnlocked: 0
   partToRotate: {fileID: 5559335993037766974}
   muzzles:
@@ -431,13 +479,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 157b2bb857dd6874dbf104f36a78450b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 5
-  dashSpeed: 15
-  defenceSpeed: 1
-  dashCooldown: 0.3
-  lastDashTime: -999
-  hitColor: {r: 0, g: 0, b: 0, a: 1}
-  normalColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!58 &868648148852120286
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -644,7 +685,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5559335993037766974
 Transform:
   m_ObjectHideFlags: 0

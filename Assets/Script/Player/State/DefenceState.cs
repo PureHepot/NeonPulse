@@ -15,6 +15,10 @@ public class DefenceState : BaseState
     // 惯性值
     private float smoothTime = 0.15f;
 
+    public DefenceState(PlayerController player) : base(player)
+    {
+    }
+
     public override void Enter()
     {
         Debug.Log("Enter Defence State");
@@ -28,7 +32,7 @@ public class DefenceState : BaseState
 
         shieldSystem.SetDefend(true);
 
-        currentVelocity = Player.Velocity;
+        //currentVelocity = Player.Velocity;
 
         refVelocity = Vector2.zero;
 
@@ -54,25 +58,25 @@ public class DefenceState : BaseState
         float y = InputManager.Instance.GetMoveY();
         Vector2 targetInput = Vector2.ClampMagnitude(new Vector2(x, y).normalized, 1f);
 
-        Vector2 targetVelocity = targetInput * Player.defenceSpeed;
+        //Vector2 targetVelocity = targetInput * Player.defenceSpeed;
 
-        currentVelocity = Vector2.SmoothDamp(currentVelocity, targetVelocity, ref refVelocity, smoothTime);
+        //currentVelocity = Vector2.SmoothDamp(currentVelocity, targetVelocity, ref refVelocity, smoothTime);
 
         Player.SetVelocity(currentVelocity);
 
         //--- 状态切换 ---
 
-        if (Player.CanDash() && Input.GetKeyDown(KeyCode.Space))
-        {
-            Player.ChangeState(Player.dashState);
-            return;
-        }
+        //if (Player.CanDash() && Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    Player.ChangeState(Player.dashState);
+        //    return;
+        //}
 
-        if (!InputManager.Instance.Mouse1())
-        {
-            Player.ChangeState(Player.moveState);
-            return;
-        }
+        //if (!InputManager.Instance.Mouse1())
+        //{
+        //    Player.ChangeState(Player.moveState);
+        //    return;
+        //}
     }
 
     public override void PhysicsUpdate()

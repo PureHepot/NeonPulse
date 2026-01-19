@@ -4,18 +4,11 @@ using UnityEngine;
 
 public abstract class BaseState
 {
-    private PlayerController player;
-    protected PlayerController Player
-    {
-        get
-        {
-            if (player == null)
-            {
-                player = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
-            }
-            return player;
-        }
+    protected PlayerController Player;
 
+    public BaseState(PlayerController player)
+    {
+        this.Player = player;
     }
 
     public abstract void Enter();
@@ -27,4 +20,9 @@ public abstract class BaseState
     public abstract void PhysicsUpdate();
 
     public abstract void Exit();
+
+    public virtual bool CanBeInterrupted()
+    {
+        return true;
+    }
 }

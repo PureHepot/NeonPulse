@@ -4,9 +4,11 @@ using UnityEngine;
 
 public enum ModuleType
 {
+    Movement,
+    Health,
     Shooter,
     Shield,
-    SpeedBooster,
+    Dash,
 }
 
 
@@ -30,16 +32,19 @@ public abstract class PlayerModule : MonoBehaviour
         // 子类重写此方法来实现每帧逻辑
     }
 
-    // 解锁/激活时调用
     public virtual void OnActivate()
     {
         isUnlocked = true;
         this.enabled = true; // 启用组件
     }
 
-    // 禁用时调用
     public virtual void OnDeactivate()
     {
         this.enabled = false;
+    }
+
+    public virtual void UpgradeModule()
+    {
+        // 子类重写此方法来实现升级逻辑
     }
 }

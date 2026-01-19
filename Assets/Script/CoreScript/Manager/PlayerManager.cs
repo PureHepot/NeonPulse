@@ -66,7 +66,7 @@ public class PlayerManager : MonoSingleton<PlayerManager>
 
         var pc = CurrentPlayerObj.GetComponent<PlayerController>();
         
-        pc.onDeath += HandlePlayerDeath;
+        pc.OnDeath += HandlePlayerDeath;
 
         Debug.Log("<color=green>Player Generated</color>");
 

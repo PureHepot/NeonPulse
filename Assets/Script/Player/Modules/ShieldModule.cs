@@ -24,7 +24,7 @@ public class ShieldModule : PlayerModule
         // 激活时，打开护盾物体
         if (shieldObject) shieldObject.SetActive(true);
         // 重置护盾状态
-        if (shieldScript) shieldScript.SetDefend(true); // 假设你之前的脚本有这个方法
+        if (shieldScript) shieldScript.SetDefend(false); // 假设你之前的脚本有这个方法
     }
 
     public override void OnModuleUpdate()
