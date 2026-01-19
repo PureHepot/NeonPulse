@@ -13,6 +13,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     public float moveSpeed = 5f;
     public int scoreValue = 10;
     public int contactDamage = 10;
+    public int enemyExp = 10;
 
     [Header("Visuals")]
     public SpriteRenderer bodyRenderer;
@@ -98,6 +99,11 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         if (deathEffectPrefab != null)
         {
             ObjectPoolManager.Instance.Get(deathEffectPrefab, transform.position, Quaternion.identity);
+        }
+
+        if (PlayerLevelManager.Instance != null)
+        {
+            PlayerLevelManager.Instance.AddExperience(enemyExp);
         }
 
         ObjectPoolManager.Instance.Return(this.gameObject);

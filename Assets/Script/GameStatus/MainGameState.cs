@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,11 +12,15 @@ public class MainGameState : GameState
         Time.timeScale = 1f;
         AudioManager.Instance.PlayBGM("FightBGM");
         StartGame();
+        UIManager.Instance.OpenFullScreen<ExpBarUI>();
     }
 
     public override void OnExit()
     {
-        
+        if (PlayerAbilitySelectManager.Instance != null)
+        {
+            PlayerAbilitySelectManager.Instance.OnShowAbilitySelectUI -= HandleShowAbilityUI;
+        }
     }
 
     public override void OnUpdate()
@@ -40,7 +45,17 @@ public class MainGameState : GameState
             UIManager.Instance.OpenPopup<MessageUI>(arg);
         };
 
+        PlayerAbilitySelectManager.Instance.OnShowAbilitySelectUI += HandleShowAbilityUI;
+
         GameManager.Instance.StartCoroutine(WaveManager.Instance.GameLoopRoutine());
+    }
+
+    private void HandleShowAbilityUI(int level, List<ModuleType> candidates)
+    {
+        // 封装参数（等级+候选能力列表），传给UI
+        var uiArgs = Tuple.Create(level, candidates);
+        // 打开升级选能力UI
+        UIManager.Instance.OpenPopup<LevelUpAbilitySelectUI>(uiArgs);
     }
 
     private void ToggleSettingPanel()
@@ -49,7 +64,7 @@ public class MainGameState : GameState
         {
             // 打开设置面板
             UIManager.Instance.Open<SetVolumeUI>();
-            Time.timeScale = 0f;   // 可选：暂停游戏
+            Time.timeScale = 0f;   // 暂停游戏
             isSettingOpen = true;
         }
         else

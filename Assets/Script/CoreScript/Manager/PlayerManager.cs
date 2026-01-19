@@ -34,7 +34,6 @@ public class PlayerManager : MonoSingleton<PlayerManager>
     private int currentHp;
     public int CurrentHp { get { return currentHp; } set { currentHp = value; } }
 
-    
     public int BulletDamage { get { return bulletDamage; } set { bulletDamage = value; } }
 
     private void Awake()
@@ -65,7 +64,7 @@ public class PlayerManager : MonoSingleton<PlayerManager>
         CurrentModules = CurrentPlayerObj.GetComponent<PlayerModuleManager>();
 
         var pc = CurrentPlayerObj.GetComponent<PlayerController>();
-        
+
         pc.OnDeath += HandlePlayerDeath;
 
         Debug.Log("<color=green>Player Generated</color>");
@@ -97,11 +96,10 @@ public class PlayerManager : MonoSingleton<PlayerManager>
         DataManager.Instance.GameData.IsGameOver = true;
 
         CurrentPlayerObj.SetActive(false);
-
     }
 
     /// <summary>
-    /// 给玩家添加新能力
+    /// 给玩家添加新能力（供升级系统调用）
     /// </summary>
     public void UnlockModuleData(ModuleType type)
     {
@@ -109,10 +107,20 @@ public class PlayerManager : MonoSingleton<PlayerManager>
         {
             unlockedModuleTypes.Add(type);
 
+            Debug.Log($"模块{type}已加入解锁列表");
+
             if (CurrentModules != null)
             {
                 CurrentModules.UnlockModule(type);
             }
         }
+    }
+
+    /// <summary>
+    /// 检查模块是否已解锁（供升级系统调用）
+    /// </summary>
+    public bool IsModuleUnlocked(ModuleType type)
+    {
+        return unlockedModuleTypes.Contains(type);
     }
 }
