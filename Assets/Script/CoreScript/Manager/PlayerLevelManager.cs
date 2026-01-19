@@ -5,7 +5,7 @@ using UnityEngine;
 /// <summary>
 /// 玩家升级/经验系统
 /// </summary>
-public class PlayerLevelSystem : MonoSingleton<PlayerLevelSystem>
+public class PlayerLevelManager : MonoSingleton<PlayerLevelManager>
 {
     [Header("升级配置")]
     public int baseExpToLevelUp = 100;  

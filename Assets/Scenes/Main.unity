@@ -523,6 +523,8 @@ GameObject:
   - component: {fileID: 1357557156}
   - component: {fileID: 1357557158}
   - component: {fileID: 1357557157}
+  - component: {fileID: 1357557159}
+  - component: {fileID: 1357557160}
   m_Layer: 0
   m_Name: Manager
   m_TagString: Untagged
@@ -674,6 +676,55 @@ MonoBehaviour:
   spawnPoint: {fileID: 1836126019}
   startingModules: 00000000
   currentHp: 0
+--- !u!114 &1357557159
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1357557150}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1e73923e7474544d84579d8eaea469d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseExpToLevelUp: 100
+  expScale: 1.5
+  currentLevel: 1
+  currentExp: 0
+  moduleUnlockConfigs:
+  - unlockLevel: 1
+    moduleType: 0
+  - unlockLevel: 2
+    moduleType: 1
+  - unlockLevel: 3
+    moduleType: 2
+--- !u!114 &1357557160
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1357557150}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 196864cceaa100b478c47f0cd2912327, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  candidateCount: 3
+  moduleDescConfigs:
+  - moduleType: 0
+    moduleName: Shooter
+    moduleDesc: 1
+    moduleIcon: {fileID: 0}
+  - moduleType: 1
+    moduleName: Sheild
+    moduleDesc: 2
+    moduleIcon: {fileID: 0}
+  - moduleType: 2
+    moduleName: Speed
+    moduleDesc: 3
+    moduleIcon: {fileID: 0}
 --- !u!1 &1539998153
 GameObject:
   m_ObjectHideFlags: 0
