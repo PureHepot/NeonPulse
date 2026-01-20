@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-// 召唤型敌人
+// 召唤型敌人（适配WaveManager刷怪系统）
 public class EnemySummoner : EnemyBase
 {
     [Header("Summoner Settings")]
@@ -10,12 +10,19 @@ public class EnemySummoner : EnemyBase
     public int maxSummonCount = 2;
     public Vector3 enemyScale = new Vector3(0.8f, 0.8f, 1f);
 
-    public float offsetToCenter = 2f; // 向屏幕中心偏移的距离
+    [Header("移动参数")]
+    public float moveSpeedToCenter = 2f; 
+    public float reachDistance = 0.2f;  
+    public float centerStayOffset = 5f; 
 
     private List<EnemyBase> summonedEnemies = new List<EnemyBase>();
     private float summonTimer; // 召唤计时器
-    private float camHalfWidth; 
-    private float camHalfHeight; 
+    private float camHalfWidth;
+    private float camHalfHeight;
+
+    // 移动到中心相关
+    private Vector3 targetCenterPos; 
+    private bool isReachCenter = false; 
 
     public override void OnSpawn()
     {
@@ -24,11 +31,14 @@ public class EnemySummoner : EnemyBase
         rb.velocity = Vector2.zero;
         summonedEnemies.Clear();
         summonTimer = 0;
+        isReachCenter = false; 
+
+        // 初始化相机边界
         InitCameraBounds();
-        AdjustPositionToCenter();
+        CalculateTargetCenterPos();
     }
 
-    // 定时召唤，无任何移动
+    // 先向中心移动，到达后静止并召唤
     protected override void MoveBehavior()
     {
         if (isDead)
@@ -37,8 +47,13 @@ public class EnemySummoner : EnemyBase
             return;
         }
 
-        rb.velocity = Vector2.zero;
+        if (!isReachCenter)
+        {
+            MoveToCenter();
+            return; 
+        }
 
+        rb.velocity = Vector2.zero;
         summonTimer += Time.deltaTime;
         if (summonTimer >= summonCD)
         {
@@ -47,6 +62,32 @@ public class EnemySummoner : EnemyBase
         }
 
         CleanNullSummonedEnemies();
+    }
+
+    private void CalculateTargetCenterPos()
+    {
+        // 中心附近随机位置
+        float randomX = Random.Range(-centerStayOffset, centerStayOffset);
+        float randomY = Random.Range(-centerStayOffset, centerStayOffset);
+        randomX = Mathf.Clamp(randomX, -camHalfWidth + centerStayOffset, camHalfWidth - centerStayOffset);
+        randomY = Mathf.Clamp(randomY, -camHalfHeight + centerStayOffset, camHalfHeight - centerStayOffset);
+        targetCenterPos = new Vector3(randomX, randomY, 0);
+    }
+
+    // 向中心移动逻辑
+    private void MoveToCenter()
+    {
+        Vector2 direction = (targetCenterPos - transform.position).normalized;
+        rb.velocity = direction * moveSpeedToCenter;
+
+        // 检测是否到达中心
+        float distanceToCenter = Vector2.Distance(transform.position, targetCenterPos);
+        if (distanceToCenter < reachDistance)
+        {
+            isReachCenter = true;
+            rb.velocity = Vector2.zero; // 到达后立即静止
+            transform.position = targetCenterPos; 
+        }
     }
 
     // 召唤逻辑
@@ -72,6 +113,7 @@ public class EnemySummoner : EnemyBase
         }
     }
 
+    // 清理空的召唤物
     private void CleanNullSummonedEnemies()
     {
         for (int i = summonedEnemies.Count - 1; i >= 0; i--)
@@ -83,7 +125,6 @@ public class EnemySummoner : EnemyBase
         }
     }
 
-    // 初始化屏幕边界
     private void InitCameraBounds()
     {
         Camera mainCam = Camera.main;
@@ -93,29 +134,12 @@ public class EnemySummoner : EnemyBase
         camHalfHeight = camHeight / 2f;
     }
 
-    // 调整召唤者生成位置
-    private void AdjustPositionToCenter()
-    {
-        Vector3 newPos = transform.position;
-
-        if (Mathf.Abs(newPos.x) >= camHalfWidth)
-        {
-            newPos.x = Mathf.Sign(newPos.x) * (camHalfWidth - offsetToCenter);
-        }
-
-        if (Mathf.Abs(newPos.y) >= camHalfHeight)
-        {
-            newPos.y = Mathf.Sign(newPos.y) * (camHalfHeight - offsetToCenter);
-        }
-
-        transform.position = newPos;
-    }
-
     public override void OnDespawn()
     {
         base.OnDespawn();
         rb.velocity = Vector2.zero;
         summonedEnemies.Clear();
         summonTimer = 0;
+        isReachCenter = false; 
     }
 }

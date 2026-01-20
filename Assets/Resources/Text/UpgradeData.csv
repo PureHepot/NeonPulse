@@ -1,2 +1,6 @@
-﻿ID,Name,Type,LimitLevel,ModuleUpgrade,Description
-1001,HealthUp,Health,1,20,增加{0}血量
+ID,Name,Type,LimitLevel,InitialValue,ModuleUpgrade,Description,IconPath
+1001,Health,Health,1,100,20,解锁：初始血量{InitialValue}点 | 升级：每次+{ModuleUpgrade}点,
+1002,Shield,Shield,3,1,1,解锁：初始抵挡{InitialValue}次伤害 | 升级：抵挡次数+{ModuleUpgrade},
+1003,Shooter,Shooter,1,1,10,解锁：初始射速{InitialValue} | 升级：炮口+1级+射速+{ModuleUpgrade}%,
+1004,Dash,Dash,2,0.5,0.5,解锁：初始冷却{InitialValue}秒 | 升级：冷却-{ModuleUpgrade}秒,
+1005,Movement,Movement,1,5,5,解锁：初始移速{InitialValue} | 升级：每次+{ModuleUpgrade}%,

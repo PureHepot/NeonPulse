@@ -79,6 +79,7 @@ public class PlayerManager : MonoSingleton<PlayerManager>
         foreach (var type in unlockedModuleTypes)
         {
             CurrentModules.UnlockModule(type);
+            PlayerLevelManager.Instance.InitModuleBaseValue(type);
         }
     }
 
@@ -97,7 +98,7 @@ public class PlayerManager : MonoSingleton<PlayerManager>
     }
 
     /// <summary>
-    /// 给玩家添加新能力（供升级系统调用）
+    /// 给玩家添加新能力
     /// </summary>
     public void UnlockModuleData(ModuleType type)
     {
@@ -110,12 +111,13 @@ public class PlayerManager : MonoSingleton<PlayerManager>
             if (CurrentModules != null)
             {
                 CurrentModules.UnlockModule(type);
+                PlayerLevelManager.Instance.InitModuleBaseValue(type);
             }
         }
     }
 
     /// <summary>
-    /// 检查模块是否已解锁（供升级系统调用）
+    /// 检查模块是否已解锁
     /// </summary>
     public bool IsModuleUnlocked(ModuleType type)
     {
