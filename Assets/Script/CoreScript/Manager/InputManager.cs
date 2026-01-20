@@ -184,6 +184,11 @@ public class InputManager : MonoSingleton<InputManager>
     public bool Mouse0()
     {
         if (LockAll) return false;
+        return Input.GetKey(MouseKey0);
+    }
+    public bool Mouse0Down()
+    {
+        if (LockAll) return false;
         return Input.GetKeyDown(MouseKey0);
     }
 

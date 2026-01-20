@@ -18,7 +18,7 @@ public class MovementModule : PlayerModule
 
     public override void OnModuleUpdate()
     {
-        if (player.IsStunned || player.IsDead) return;
+        if (player.IsStunned || player.IsDead || player.IsDashing) return;
 
         float x = InputManager.Instance.GetMoveX();
         float y = InputManager.Instance.GetMoveY();

@@ -11,6 +11,10 @@ public class MainGameState : GameState
     {
         Time.timeScale = 1f;
         AudioManager.Instance.PlayBGM("FightBGM");
+        string Id = "1001";
+        string name = CSVManager.Instance.GetValue("UpgradeData", Id, "Name");
+        Debug.Log("Loaded Upgrade Name: " + name);
+
         StartGame();
         UIManager.Instance.OpenFullScreen<ExpBarUI>();
     }

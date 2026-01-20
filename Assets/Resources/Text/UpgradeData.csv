@@ -1,0 +1,2 @@
+﻿ID,Name,Type,LimitLevel,ModuleUpgrade,Description
+1001,HealthUp,Health,1,20,增加{0}血量

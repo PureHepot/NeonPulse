@@ -56,8 +56,6 @@ public class PlayerManager : MonoSingleton<PlayerManager>
 
         currentHp = MaxHealth;
 
-        UnlockModuleData(ModuleType.Shooter);
-
         // 实例化
         CurrentPlayerObj = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
 

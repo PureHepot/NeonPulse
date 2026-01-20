@@ -674,7 +674,7 @@ MonoBehaviour:
   bulletDamage: 1
   playerPrefab: {fileID: 6236048808547626479, guid: e4eef060148b4ac42a54b7cdc2645e60, type: 3}
   spawnPoint: {fileID: 1836126019}
-  startingModules: 000000000100000004000000
+  startingModules: 0000000001000000040000000300000002000000
   currentHp: 0
 --- !u!114 &1357557159
 MonoBehaviour:

@@ -14,12 +14,16 @@ public class DashModule : PlayerModule
 
     private float lastDashTime = -999f;
 
+    private Vector2 dashDirection;
+
+
     public override void Initialize(PlayerController _player)
     {
         base.Initialize(_player);
 
         if (dashTrail != null)
         {
+            dashTrail.gameObject.SetActive(true);
             dashTrail.emitting = false;
         }
     }
@@ -41,7 +45,7 @@ public class DashModule : PlayerModule
     }
 
 
-    public void UpgradeDashCooldown()
+    public override void UpgradeModule()
     {
         dashCooldown *= 0.8f; // 冷却缩减 20%
     }
@@ -50,9 +54,39 @@ public class DashModule : PlayerModule
     public override void OnModuleUpdate()
     {
         base.OnModuleUpdate();
-
+        if (InputManager.Instance.Space() && IsReady())
+        {
+            StartCoroutine(DashRoutine());
+        }
     }
 
+
+    IEnumerator DashRoutine()
+    {
+        OnDashStart();
+
+        bool oldStunState = player.IsDashing;
+        player.IsDashing = true;
+
+        // 施加冲刺力
+        dashDirection = new Vector2(InputManager.Instance.GetMoveX(), InputManager.Instance.GetMoveY()).normalized;
+
+        if (dashDirection.magnitude < 0.1f)
+        {
+            Vector3 dir = MUtils.GetMouseWorldPosition() - player.transform.position;
+            dashDirection = new Vector2(dir.x, dir.y).normalized;
+        }
+
+        player.SetVelocity(dashDirection.normalized * dashForce);
+
+        yield return new WaitForSeconds(dashDuration);
+
+        // 冲刺结束，恢复控制
+        player.IsDashing = oldStunState;
+        player.SetVelocity(Vector2.zero);
+
+        OnDashEnd();
+    }
     public override void OnActivate()
     {
         base.OnActivate();

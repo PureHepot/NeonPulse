@@ -8,6 +8,6 @@ public static class MUtils
     {
         Vector3 mouseScreenPos = Input.mousePosition;
         Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mouseScreenPos);
-        return mouseWorldPos;
+        return new Vector3(mouseWorldPos.x, mouseWorldPos.y, 0);
     }
 }

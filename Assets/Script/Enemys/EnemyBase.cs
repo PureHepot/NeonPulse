@@ -120,7 +120,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
 
         if (collision.gameObject.CompareTag("Player"))
         {
-            //collision.gameObject.GetComponent<PlayerController>()?.TakeDamage(contactDamage, transform);
+            collision.gameObject.GetComponentInChildren<HealthModule>()?.TakeDamage(contactDamage, transform);
         }
     }
 }

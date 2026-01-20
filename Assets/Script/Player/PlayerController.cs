@@ -199,6 +199,8 @@ public class PlayerController : MonoBehaviour
 
     //硬直状态
     public bool IsStunned { get; set; } = false;
+    //冲刺状态
+    public bool IsDashing { get; set; } = false;
     //是否死亡
     public bool IsDead { get; set; } = false;
 

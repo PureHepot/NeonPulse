@@ -10,6 +10,7 @@ public class ShieldModule : PlayerModule
 
     [Header("Settings")]
     public float rechargeRate = 1f;
+    public float rotateSpeed = 200f;
 
     public override void Initialize(PlayerController _player)
     {
@@ -29,9 +30,32 @@ public class ShieldModule : PlayerModule
 
     public override void OnModuleUpdate()
     {
-        // 这里可以写每一帧的逻辑
-        // 比如：如果护盾破了，在这里计算自动回复时间的逻辑
-        // 只要这个 Update 被调用，说明模块是激活状态
+        HandleRotation();
+
+        if (InputManager.Instance.Mouse1())
+        {
+            shieldScript.SetDefend(true);
+        }
+        else
+        {
+            shieldScript.SetDefend(false);
+        }
+    }
+
+    void HandleRotation()
+    {
+        if (shieldObject == null) return;
+
+        Vector3 mousePos = MUtils.GetMouseWorldPosition();
+
+        Vector2 direction = (mousePos - shieldObject.transform.position).normalized;
+
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+
+        //Debug.Log(angle);
+        //Quaternion targetRotation = Quaternion.AngleAxis(angle, Vector3.forward);
+
+        shieldObject.transform.rotation = Quaternion.Lerp(shieldObject.transform.rotation, Quaternion.Euler(0, 0, angle), Time.deltaTime * rotateSpeed);
     }
 
     public override void OnDeactivate()

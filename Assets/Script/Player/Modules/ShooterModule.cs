@@ -34,6 +34,7 @@ public class ShooterModule : PlayerModule
     public override void Initialize(PlayerController _player)
     {
         base.Initialize(_player);
+        partToRotate.gameObject.SetActive(true);
         muzzleVisualProgress.Clear();
         foreach (var m in muzzles)
         {
@@ -49,7 +50,7 @@ public class ShooterModule : PlayerModule
 
         if (globalCooldown > 0) globalCooldown -= Time.deltaTime;
 
-        if (Input.GetMouseButton(0) && !isFiring && globalCooldown <= 0)
+        if (InputManager.Instance.Mouse0() && !isFiring && globalCooldown <= 0)
         {
             StartCoroutine(FireSequenceRoutine());
         }
@@ -59,8 +60,7 @@ public class ShooterModule : PlayerModule
     {
         if (partToRotate == null) return;
 
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePos.z = 0;
+        Vector3 mousePos = MUtils.GetMouseWorldPosition();
 
         Vector2 direction = mousePos - partToRotate.position;
 
