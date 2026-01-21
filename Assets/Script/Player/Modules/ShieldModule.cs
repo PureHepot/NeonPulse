@@ -48,14 +48,13 @@ public class ShieldModule : PlayerModule
 
         Vector3 mousePos = MUtils.GetMouseWorldPosition();
 
-        Vector2 direction = (mousePos - shieldObject.transform.position).normalized;
+        Vector2 direction = mousePos - shieldObject.transform.position;
 
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
-        //Debug.Log(angle);
-        //Quaternion targetRotation = Quaternion.AngleAxis(angle, Vector3.forward);
+        Quaternion targetRotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
-        shieldObject.transform.rotation = Quaternion.Lerp(shieldObject.transform.rotation, Quaternion.Euler(0, 0, angle), Time.deltaTime * rotateSpeed);
+        shieldObject.transform.rotation = Quaternion.Slerp(shieldObject.transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
     }
 
     public override void OnDeactivate()

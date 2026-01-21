@@ -32,7 +32,7 @@ public class MovementModule : PlayerModule
 
     }
 
-    public override void UpgradeModule()
+    public override void UpgradeModule(ModuleType moduleType, StatType statType)
     {
         speedMultiplier += 0.1f;
         Debug.Log($"速度升级！当前倍率: {speedMultiplier}");

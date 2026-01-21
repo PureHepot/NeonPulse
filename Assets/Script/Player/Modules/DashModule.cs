@@ -45,7 +45,7 @@ public class DashModule : PlayerModule
     }
 
 
-    public override void UpgradeModule()
+    public override void UpgradeModule(ModuleType moduleType, StatType statType)
     {
         dashCooldown *= 0.8f; // 冷却缩减 20%
     }

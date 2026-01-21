@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Íæ¼ÒÉı¼¶/¾­ÑéÏµÍ³
+/// ç©å®¶å‡çº§/ç»éªŒç³»ç»Ÿ
 /// </summary>
 public class PlayerLevelManager : MonoSingleton<PlayerLevelManager>
 {
-    [Header("Éı¼¶ÅäÖÃ")]
+    [Header("å‡çº§é…ç½®")]
     public int baseExpToLevelUp = 100;  
-    public float expScale = 1.5f;       // Ã¿¼¶¾­ÑéÔö³¤±¶ÂÊ
+    public float expScale = 1.5f;       // æ¯çº§ç»éªŒå¢é•¿å€ç‡
     [SerializeField]
     private int currentLevel = 1;       
     [SerializeField]
@@ -17,9 +17,9 @@ public class PlayerLevelManager : MonoSingleton<PlayerLevelManager>
 
     public List<ModuleUnlockConfig> moduleUnlockConfigs;
 
-    // ¾­Ñé±ä»¯
+    // ç»éªŒå˜åŒ–
     public Action<int, int, int> OnExpChanged;
-    // Éı¼¶³É¹¦
+    // å‡çº§æˆåŠŸ
     public Action<int, List<ModuleType>> OnPlayerLevelUp; 
 
     private PlayerManager playerManager;
@@ -30,7 +30,7 @@ public class PlayerLevelManager : MonoSingleton<PlayerLevelManager>
     }
 
     /// <summary>
-    /// Ìí¼Ó¾­Ñé£¨¹©EnemyBaseµ÷ÓÃ£©
+    /// æ·»åŠ ç»éªŒï¼ˆä¾›EnemyBaseè°ƒç”¨ï¼‰
     /// </summary>
     public void AddExperience(int expAmount)
     {
@@ -39,20 +39,22 @@ public class PlayerLevelManager : MonoSingleton<PlayerLevelManager>
         currentExp += expAmount;
         int expToLevelUp = GetExpToLevelUp();
 
-        Debug.Log($"»ñµÃ{expAmount}¾­Ñé | µ±Ç°µÈ¼¶£º{currentLevel}");
+        Debug.Log($"è·å¾—{expAmount}ç»éªŒ | å½“å‰ç­‰çº§ï¼š{currentLevel}");
 
         OnExpChanged?.Invoke(currentExp, expToLevelUp, currentLevel);
 
         while (currentExp >= expToLevelUp)
         {
+            //---ä»è¿™é‡Œå¼€å§‹ä½¿ç”¨UpgradeManagerè¿›è¡Œä¿®æ”¹---
+
             currentExp -= expToLevelUp;
             currentLevel++;
             expToLevelUp = GetExpToLevelUp();
 
-            // »ñÈ¡µ±Ç°µÈ¼¶¿É½âËøµÄÄ£¿é
+            // è·å–å½“å‰ç­‰çº§å¯è§£é”çš„æ¨¡å—
             List<ModuleType> unlockableModules = GetUnlockableModulesByLevel(currentLevel);
 
-            Debug.Log($"µÈ¼¶ÌáÉıµ½{currentLevel}¼¶¡ú¿É½âËøÄ£¿é£º{string.Join(",", unlockableModules)}");
+            Debug.Log($"ç­‰çº§æå‡åˆ°{currentLevel}çº§â†’å¯è§£é”æ¨¡å—ï¼š{string.Join(",", unlockableModules)}");
 
             OnPlayerLevelUp?.Invoke(currentLevel, unlockableModules);
 
@@ -61,7 +63,7 @@ public class PlayerLevelManager : MonoSingleton<PlayerLevelManager>
     }
 
     /// <summary>
-    /// ¼ÆËãµ±Ç°µÈ¼¶Éı¼¶ËùĞè¾­Ñé
+    /// è®¡ç®—å½“å‰ç­‰çº§å‡çº§æ‰€éœ€ç»éªŒ
     /// </summary>
     private int GetExpToLevelUp()
     {
@@ -69,7 +71,7 @@ public class PlayerLevelManager : MonoSingleton<PlayerLevelManager>
     }
 
     /// <summary>
-    /// ¸ù¾İµÈ¼¶»ñÈ¡¿É½âËøµÄÄ£¿éÁĞ±í
+    /// æ ¹æ®ç­‰çº§è·å–å¯è§£é”çš„æ¨¡å—åˆ—è¡¨
     /// </summary>
     private List<ModuleType> GetUnlockableModulesByLevel(int level)
     {
@@ -85,19 +87,19 @@ public class PlayerLevelManager : MonoSingleton<PlayerLevelManager>
     }
 
     /// <summary>
-    /// Éı¼¶ºóÑ¡Ôñ½âËøÄ£¿é
+    /// å‡çº§åé€‰æ‹©è§£é”æ¨¡å—
     /// </summary>
     public void OnLevelUpChooseModule(ModuleType type)
     {
-        playerManager.UnlockModuleData(type); // ¸´ÓÃPlayerManagerµÄ½âËøÂß¼­
-        Debug.Log($"Éı¼¶½âËøÄÜÁ¦£º{type}");
+        playerManager.UnlockModuleData(type); // å¤ç”¨PlayerManagerçš„è§£é”é€»è¾‘
+        Debug.Log($"å‡çº§è§£é”èƒ½åŠ›ï¼š{type}");
     }
 }
 
-// ¸ù¾İµÈ¼¶½øĞĞÄ£¿é½âËøÅäÖÃ
+// æ ¹æ®ç­‰çº§è¿›è¡Œæ¨¡å—è§£é”é…ç½®
 [Serializable]
 public class ModuleUnlockConfig
 {
-    public int unlockLevel; // ½âËøµÈ¼¶
-    public ModuleType moduleType; // ¶ÔÓ¦½âËøµÄÄ£¿é
+    public int unlockLevel; // è§£é”ç­‰çº§
+    public ModuleType moduleType; // å¯¹åº”è§£é”çš„æ¨¡å—
 }

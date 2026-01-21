@@ -41,6 +41,8 @@ public class MainGameState : GameState
     {
         //玩家载入
         PlayerManager.Instance.SpawnPlayer();
+        EventManager.AddListener<ModuleType, StatType>(GameEvent.ModuleUpgrade, OnModuleUpgrade);
+
 
         //设置事件
         WaveManager.Instance.OnWaveIncoming += (level, txt) =>
@@ -48,6 +50,8 @@ public class MainGameState : GameState
             MessageUIArg arg = new MessageUIArg(level, txt);
             UIManager.Instance.OpenPopup<MessageUI>(arg);
         };
+
+        UpgradeManager.Instance.SyncWithPlayerManager();
 
         PlayerAbilitySelectManager.Instance.OnShowAbilitySelectUI += HandleShowAbilityUI;
 
@@ -78,5 +82,11 @@ public class MainGameState : GameState
             Time.timeScale = 1f;
             isSettingOpen = false;
         }
+    }
+
+    private void OnModuleUpgrade(ModuleType moduleType, StatType statType)
+    {
+        Debug.Log($"模块升级: {moduleType}, 属性: {statType}");
+        PlayerManager.Instance.CurrentModules.GetModule<PlayerModule>(moduleType).UpgradeModule(moduleType, statType);
     }
 }
