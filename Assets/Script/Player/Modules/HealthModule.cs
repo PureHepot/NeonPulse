@@ -94,7 +94,7 @@ public class HealthModule : PlayerModule
     }
 
     //升级接口
-    public override void UpgradeModule()
+    public override void UpgradeModule(ModuleType moduleType, StatType statType)
     {
         maxHp += 20;
         PlayerManager.Instance.MaxHealth = maxHp;

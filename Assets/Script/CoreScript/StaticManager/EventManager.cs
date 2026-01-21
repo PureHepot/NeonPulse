@@ -257,6 +257,7 @@ public enum GameEvent
     PlayerDead,
     PlayerHurt,   // 可以带参: int damage
     PlayerScore,  // 可以带参: int score
+    ModuleUpgrade,
 
     // UI相关
     ShowSettlementPanel,

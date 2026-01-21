@@ -9,6 +9,7 @@ public enum ModuleType
     Shooter,
     Shield,
     Dash,
+    LaserDrone,
 }
 
 
@@ -43,7 +44,8 @@ public abstract class PlayerModule : MonoBehaviour
         this.enabled = false;
     }
 
-    public virtual void UpgradeModule()
+
+    public virtual void UpgradeModule(ModuleType moduleType, StatType statType)
     {
         // 子类重写此方法来实现升级逻辑
     }
