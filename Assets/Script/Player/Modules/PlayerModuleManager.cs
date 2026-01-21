@@ -56,6 +56,27 @@ public class PlayerModuleManager : MonoBehaviour
         }
     }
 
+    // 解锁模块
+    public void UpgradeModule(ModuleType type)
+    {
+        if (moduleDict.TryGetValue(type, out PlayerModule module))
+        {
+            if (module.isUnlocked)
+            {
+                module.UpgradeModule();
+                Debug.Log($"<color=green>模块已升级: {type}</color>");
+            }
+            else
+            {
+                Debug.LogWarning($"模块{type}未解锁，无法升级");
+            }
+        }
+        else
+        {
+            Debug.LogError($"找不到模块: {type}，请检查是否挂载了对应脚本并设置了Type");
+        }
+    }
+
     /// <summary>
     /// 禁用模块
     /// </summary>

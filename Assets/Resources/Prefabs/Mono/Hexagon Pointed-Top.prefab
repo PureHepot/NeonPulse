@@ -113,15 +113,18 @@ MonoBehaviour:
   moveSpeed: 5
   scoreValue: 10
   contactDamage: 1
+  enemyExp: 10
   bodyRenderer: {fileID: 0}
   normalColor: {r: 0.8867924, g: 0, b: 0.8153662, a: 1}
   hitColor: {r: 1, g: 0, b: 0, a: 1}
   deathEffectPrefab: {fileID: 0}
   summonPrefab: {fileID: 5687499291434305790, guid: 706a79fa4b565b747bd409464879a084, type: 3}
   summonCD: 5
-  maxSummonCount: 2
+  maxSummonCount: 4
   enemyScale: {x: 0.8, y: 0.8, z: 1}
-  offsetToCenter: 2
+  moveSpeedToCenter: 2
+  reachDistance: 0.2
+  centerStayOffset: 5
 --- !u!1 &7916375791592310789
 GameObject:
   m_ObjectHideFlags: 0

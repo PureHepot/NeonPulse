@@ -674,7 +674,7 @@ MonoBehaviour:
   bulletDamage: 1
   playerPrefab: {fileID: 6236048808547626479, guid: e4eef060148b4ac42a54b7cdc2645e60, type: 3}
   spawnPoint: {fileID: 1836126019}
-  startingModules: 0000000001000000040000000300000002000000
+  startingModules: 0000000001000000020000000300000004000000
   currentHp: 0
 --- !u!114 &1357557159
 MonoBehaviour:
@@ -692,13 +692,6 @@ MonoBehaviour:
   expScale: 1.5
   currentLevel: 1
   currentExp: 0
-  moduleUnlockConfigs:
-  - unlockLevel: 1
-    moduleType: 0
-  - unlockLevel: 2
-    moduleType: 1
-  - unlockLevel: 3
-    moduleType: 2
 --- !u!114 &1357557160
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -712,19 +705,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   candidateCount: 3
-  moduleDescConfigs:
-  - moduleType: 0
-    moduleName: Shooter
-    moduleDesc: 1
-    moduleIcon: {fileID: 0}
-  - moduleType: 1
-    moduleName: Sheild
-    moduleDesc: 2
-    moduleIcon: {fileID: 0}
-  - moduleType: 2
-    moduleName: Speed
-    moduleDesc: 3
-    moduleIcon: {fileID: 0}
 --- !u!1 &1539998153
 GameObject:
   m_ObjectHideFlags: 0
@@ -805,6 +785,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1836126019}
   - component: {fileID: 1836126018}
+  - component: {fileID: 1836126020}
   m_Layer: 0
   m_Name: BattleField
   m_TagString: Untagged
@@ -879,6 +860,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1836126020
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1836126017}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb8dcb98836df37448d76cec0dfa6060, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  margin: {x: 0.5, y: 0.5}
+  deadZone: 0.01
 --- !u!1 &2004937791
 GameObject:
   m_ObjectHideFlags: 0

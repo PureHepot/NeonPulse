@@ -3,58 +3,113 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ç©å®¶å‡çº§/ç»éªŒç³»ç»Ÿ
+/// Íæ¼ÒÉı¼¶/¾­ÑéÏµÍ³
 /// </summary>
 public class PlayerLevelManager : MonoSingleton<PlayerLevelManager>
 {
-    [Header("å‡çº§é…ç½®")]
-    public int baseExpToLevelUp = 100;  
-    public float expScale = 1.5f;       // æ¯çº§ç»éªŒå¢é•¿å€ç‡
+    [Header("Éı¼¶ÅäÖÃ")]
+    public int baseExpToLevelUp = 100;
+    public float expScale = 1.5f;
     [SerializeField]
-    private int currentLevel = 1;       
+    public int currentLevel = 1;
     [SerializeField]
-    private int currentExp = 0;        
+    private int currentExp = 0;
 
-    public List<ModuleUnlockConfig> moduleUnlockConfigs;
+    public Dictionary<int, List<ModuleType>> levelUnlockCache = new Dictionary<int, List<ModuleType>>();
+    // »º´æÉı¼¶ÊıÖµ
+    public Dictionary<ModuleType, int> moduleUpgradeValueCache = new Dictionary<ModuleType, int>();
+    // »º´æ³õÊ¼ÊıÖµ
+    public Dictionary<ModuleType, float> moduleInitialValueCache = new Dictionary<ModuleType, float>();
 
-    // ç»éªŒå˜åŒ–
+    // ¾­Ñé±ä»¯
     public Action<int, int, int> OnExpChanged;
-    // å‡çº§æˆåŠŸ
-    public Action<int, List<ModuleType>> OnPlayerLevelUp; 
+    // Éı¼¶³É¹¦
+    public Action<int, List<ModuleType>> OnPlayerLevelUp;
 
     private PlayerManager playerManager;
 
     private void Awake()
     {
         playerManager = PlayerManager.Instance;
+        LoadModuleUnlockFromCSV();
     }
 
     /// <summary>
-    /// æ·»åŠ ç»éªŒï¼ˆä¾›EnemyBaseè°ƒç”¨ï¼‰
+    /// ´ÓCSV¼ÓÔØ½âËø¹æÔò+Éı¼¶ÊıÖµ
+    /// </summary>
+    private void LoadModuleUnlockFromCSV()
+    {
+        CSVManager.Instance.LoadTable("UpgradeData");
+        levelUnlockCache.Clear();
+        moduleUpgradeValueCache.Clear();
+        moduleInitialValueCache.Clear();
+
+        // ±éÀúCSVµÄĞĞID
+        for (int idNum = 1001; idNum <= 1100; idNum++)
+        {
+            string rowId = idNum.ToString();
+            // ÓÃCSVManagerµÄGetRow¶ÁÈ¡ÕûĞĞÊı¾İ
+            var row = CSVManager.Instance.GetRow("UpgradeData", rowId);
+            if (row == null) continue;
+
+            // ¶ÁÈ¡CSVµÄLimitLevelºÍType
+            int unlockLevel = CSVManager.Instance.GetInt("UpgradeData", rowId, "LimitLevel");
+            string csvType = CSVManager.Instance.GetValue("UpgradeData", rowId, "Type");
+
+            if (Enum.TryParse<ModuleType>(csvType, out ModuleType moduleType))
+            {
+                // ¼ÓÔØ½âËøµÈ¼¶»º´æ
+                if (!levelUnlockCache.ContainsKey(unlockLevel))
+                {
+                    levelUnlockCache[unlockLevel] = new List<ModuleType>();
+                }
+                if (!levelUnlockCache[unlockLevel].Contains(moduleType))
+                {
+                    levelUnlockCache[unlockLevel].Add(moduleType);
+                }
+
+                // ¶ÁÈ¡³õÊ¼Öµ
+                float initialVal = CSVManager.Instance.GetFloat("UpgradeData", rowId, "InitialValue");
+                if (!moduleInitialValueCache.ContainsKey(moduleType))
+                    moduleInitialValueCache.Add(moduleType, initialVal);
+
+                // Éı¼¶ÊıÖµ»º´æ
+                int upgradeValue = CSVManager.Instance.GetInt("UpgradeData", rowId, "ModuleUpgrade");
+                if (!moduleUpgradeValueCache.ContainsKey(moduleType))
+                {
+                    moduleUpgradeValueCache.Add(moduleType, upgradeValue);
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"CSVĞĞ{rowId}µÄType{csvType}ÎŞ·¨×ª»»ÎªModuleType");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Ìí¼Ó¾­Ñé£¨¹©EnemyBaseµ÷ÓÃ£©
     /// </summary>
     public void AddExperience(int expAmount)
     {
-        if (!playerManager.IsPlayerAlive) return; 
+        if (!playerManager.IsPlayerAlive) return;
 
         currentExp += expAmount;
         int expToLevelUp = GetExpToLevelUp();
 
-        Debug.Log($"è·å¾—{expAmount}ç»éªŒ | å½“å‰ç­‰çº§ï¼š{currentLevel}");
+        Debug.Log($"»ñµÃ{expAmount}¾­Ñé | µ±Ç°µÈ¼¶£º{currentLevel}");
 
         OnExpChanged?.Invoke(currentExp, expToLevelUp, currentLevel);
 
         while (currentExp >= expToLevelUp)
         {
-            //---ä»è¿™é‡Œå¼€å§‹ä½¿ç”¨UpgradeManagerè¿›è¡Œä¿®æ”¹---
-
             currentExp -= expToLevelUp;
             currentLevel++;
             expToLevelUp = GetExpToLevelUp();
 
-            // è·å–å½“å‰ç­‰çº§å¯è§£é”çš„æ¨¡å—
             List<ModuleType> unlockableModules = GetUnlockableModulesByLevel(currentLevel);
 
-            Debug.Log($"ç­‰çº§æå‡åˆ°{currentLevel}çº§â†’å¯è§£é”æ¨¡å—ï¼š{string.Join(",", unlockableModules)}");
+            Debug.Log($"µÈ¼¶ÌáÉıµ½{currentLevel}¼¶¡ú¿É²Ù×÷Ä£¿é£º{string.Join(",", unlockableModules)}");
 
             OnPlayerLevelUp?.Invoke(currentLevel, unlockableModules);
 
@@ -63,7 +118,7 @@ public class PlayerLevelManager : MonoSingleton<PlayerLevelManager>
     }
 
     /// <summary>
-    /// è®¡ç®—å½“å‰ç­‰çº§å‡çº§æ‰€éœ€ç»éªŒ
+    /// ¼ÆËãµ±Ç°µÈ¼¶Éı¼¶ËùĞè¾­Ñé
     /// </summary>
     private int GetExpToLevelUp()
     {
@@ -71,35 +126,114 @@ public class PlayerLevelManager : MonoSingleton<PlayerLevelManager>
     }
 
     /// <summary>
-    /// æ ¹æ®ç­‰çº§è·å–å¯è§£é”çš„æ¨¡å—åˆ—è¡¨
+    /// »ñÈ¡µ±Ç°µÈ¼¶¿É²Ù×÷µÄÄ£¿é
     /// </summary>
     private List<ModuleType> GetUnlockableModulesByLevel(int level)
     {
-        List<ModuleType> unlockableModules = new List<ModuleType>();
-        foreach (var config in moduleUnlockConfigs)
+        List<ModuleType> operableModules = new List<ModuleType>();
+
+        // ÏÈÌí¼Óµ±Ç°µÈ¼¶¿É½âËøµÄÎ´½âËøÄ£¿é
+        if (levelUnlockCache.ContainsKey(level))
         {
-            if (config.unlockLevel == level && !playerManager.IsModuleUnlocked(config.moduleType))
+            foreach (var moduleType in levelUnlockCache[level])
             {
-                unlockableModules.Add(config.moduleType);
+                if (!playerManager.IsModuleUnlocked(moduleType) && !operableModules.Contains(moduleType))
+                {
+                    operableModules.Add(moduleType);
+                }
             }
         }
-        return unlockableModules;
+
+        // ²¹³äÒÑ½âËøÄ£¿éÓÃÓÚÉı¼¶
+        if (operableModules.Count < 3) 
+        {
+            foreach (var kvp in levelUnlockCache)
+            {
+                // Ö»²¹³ä<=µ±Ç°µÈ¼¶µÄÒÑ½âËøÄ£¿é
+                if (kvp.Key <= level)
+                {
+                    foreach (var moduleType in kvp.Value)
+                    {
+                        if (playerManager.IsModuleUnlocked(moduleType) && !operableModules.Contains(moduleType))
+                        {
+                            operableModules.Add(moduleType);
+                            if (operableModules.Count >= 3) break;
+                        }
+                    }
+                }
+                if (operableModules.Count >= 3) break;
+            }
+        }
+
+        return operableModules;
     }
 
     /// <summary>
-    /// å‡çº§åé€‰æ‹©è§£é”æ¨¡å—
+    /// Éı¼¶ºóÑ¡ÔñÄ£¿é
     /// </summary>
     public void OnLevelUpChooseModule(ModuleType type)
     {
-        playerManager.UnlockModuleData(type); // å¤ç”¨PlayerManagerçš„è§£é”é€»è¾‘
-        Debug.Log($"å‡çº§è§£é”èƒ½åŠ›ï¼š{type}");
-    }
-}
+        if (!playerManager.IsModuleUnlocked(type))
+        {
+            playerManager.UnlockModuleData(type);
+            Debug.Log($"½âËøÄ£¿é£º{type}");
 
-// æ ¹æ®ç­‰çº§è¿›è¡Œæ¨¡å—è§£é”é…ç½®
-[Serializable]
-public class ModuleUnlockConfig
-{
-    public int unlockLevel; // è§£é”ç­‰çº§
-    public ModuleType moduleType; // å¯¹åº”è§£é”çš„æ¨¡å—
+            InitModuleBaseValue(type);
+        }
+        else
+        {
+            if (playerManager.CurrentModules != null)
+            {
+                playerManager.CurrentModules.UpgradeModule(type);
+                // »ñÈ¡Éı¼¶ÊıÖµ£¬´òÓ¡ÈÕÖ¾
+                int upgradeVal = moduleUpgradeValueCache.TryGetValue(type, out int val) ? val : 1;
+                Debug.Log($"Éı¼¶Ä£¿é£º{type} | Éı¼¶ÊıÖµ£º{upgradeVal}");
+            }
+            else
+            {
+                Debug.LogWarning($"µ±Ç°ÎŞÍæ¼ÒÄ£¿é¹ÜÀíÆ÷£¬ÎŞ·¨Éı¼¶{type}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// ³õÊ¼»¯Ä£¿é»ù´¡ÊôĞÔ
+    /// </summary>
+    public void InitModuleBaseValue(ModuleType type)
+    {
+        if (!moduleInitialValueCache.TryGetValue(type, out float initVal))
+        {
+            initVal = 1;
+        }
+
+        switch (type)
+        {
+            case ModuleType.Health:
+                var healthModule = playerManager.CurrentModules?.GetModule<HealthModule>(ModuleType.Health);
+                if (healthModule != null)
+                {
+                    healthModule.maxHp = (int)initVal; 
+                    PlayerManager.Instance.MaxHealth = healthModule.maxHp;
+                }
+                break;
+            case ModuleType.Shooter:
+                var shooterModule = playerManager.CurrentModules?.GetModule<ShooterModule>(ModuleType.Shooter);
+                if (shooterModule != null)
+                {
+                    shooterModule.fireRate = initVal; 
+                }
+                break;
+                // ÆäËûÄ£¿é
+        }
+    }
+
+    private void OnDestroy()
+    {
+        CSVManager.Instance.UnloadTable("UpgradeData");
+    }
+
+    public int GetModuleUpgradeValue(ModuleType type)
+    {
+        return moduleUpgradeValueCache.TryGetValue(type, out int val) ? val : 1;
+    }
 }

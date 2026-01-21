@@ -60,7 +60,7 @@ public class MainGameState : GameState
 
     private void HandleShowAbilityUI(int level, List<ModuleType> candidates)
     {
-        // 封装参数（等级+候选能力列表），传给UI
+        // 封装参数，传给UI
         var uiArgs = Tuple.Create(level, candidates);
         // 打开升级选能力UI
         UIManager.Instance.OpenPopup<LevelUpAbilitySelectUI>(uiArgs);
