@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3e51474ed9a6b447adfdd2b95c9733d, type: 3}
+  m_Name: ShieldModule
+  m_EditorClassIdentifier: 
+  moduleName: ShieldModule
+  moduleType: 3
+  baseStats:
+  - type: 4
+    value: 0
+  - type: 5
+    value: 0
+  - type: 6
+    value: 0
+  unlockLevel: 1
+  statUpgrades:
+  - statType: 4
+    valuePerUpgrade: 0
+    maxStacks: -1
+    upgradeName: "\u62A4\u76FE\u91CF"
+    description: "\u63D0\u9AD8\u62A4\u76FE\u91CF"
+  - statType: 5
+    valuePerUpgrade: 0
+    maxStacks: -1
+    upgradeName: "\u62A4\u76FE\u6062\u590D"
+    description: "\u52A0\u5FEB\u62A4\u76FE\u6062\u590D"
+  - statType: 6
+    valuePerUpgrade: 0
+    maxStacks: -1
+    upgradeName: ShieldA
+    description: b

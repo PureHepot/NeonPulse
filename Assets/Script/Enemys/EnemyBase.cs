@@ -101,9 +101,9 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
             ObjectPoolManager.Instance.Get(deathEffectPrefab, transform.position, Quaternion.identity);
         }
 
-        if (PlayerLevelManager.Instance != null)
+        if (UpgradeManager.Instance != null)
         {
-            PlayerLevelManager.Instance.AddExperience(enemyExp);
+            UpgradeManager.Instance.AddExperience(enemyExp);
         }
 
         ObjectPoolManager.Instance.Return(this.gameObject);

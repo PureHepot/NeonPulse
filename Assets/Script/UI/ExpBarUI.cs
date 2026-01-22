@@ -21,9 +21,9 @@ public class ExpBarUI : UIBase
         base.OnEnter(args);
 
         // 订阅经验事件
-        if (PlayerLevelManager.Instance != null)
+        if (UpgradeManager.Instance != null)
         {
-            PlayerLevelManager.Instance.OnExpChanged += UpdateExpUI;
+            UpgradeManager.Instance.OnExpChanged += UpdateExpUI;
         }
     }
 
@@ -32,9 +32,9 @@ public class ExpBarUI : UIBase
         base.OnClose();
 
         // 取消订阅
-        if (PlayerLevelManager.Instance != null)
+        if (UpgradeManager.Instance != null)
         {
-            PlayerLevelManager.Instance.OnExpChanged -= UpdateExpUI;
+            UpgradeManager.Instance.OnExpChanged -= UpdateExpUI;
         }
         Destroy(gameObject);
     }
@@ -56,9 +56,9 @@ public class ExpBarUI : UIBase
         expText.text = "0/100";
 
         // 同步真实数据
-        if (PlayerLevelManager.Instance != null)
+        if (UpgradeManager.Instance != null)
         {
-            int initExp = PlayerLevelManager.Instance.baseExpToLevelUp;
+            int initExp = UpgradeManager.Instance.baseExpToLevelUp;
             UpdateExpUI(0, initExp, 1);
         }
     }

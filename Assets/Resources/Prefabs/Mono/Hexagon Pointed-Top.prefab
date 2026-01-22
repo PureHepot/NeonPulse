@@ -124,7 +124,7 @@ MonoBehaviour:
   enemyScale: {x: 0.8, y: 0.8, z: 1}
   moveSpeedToCenter: 2
   reachDistance: 0.2
-  centerStayOffset: 5
+  centerStayOffset: 4
 --- !u!1 &7916375791592310789
 GameObject:
   m_ObjectHideFlags: 0

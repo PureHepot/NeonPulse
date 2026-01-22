@@ -297,9 +297,9 @@ GameObject:
   - component: {fileID: 4416288875894810019}
   - component: {fileID: 828655639903865169}
   - component: {fileID: 8239438119574006661}
-  - component: {fileID: 5638899837049126814}
+  - component: {fileID: -3599345535825500753}
   m_Layer: 5
-  m_Name: LevelUpAbilitySelectUI
+  m_Name: ModuleSelectUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -374,7 +374,7 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 127
---- !u!114 &5638899837049126814
+--- !u!114 &-3599345535825500753
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

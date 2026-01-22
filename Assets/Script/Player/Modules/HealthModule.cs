@@ -96,9 +96,14 @@ public class HealthModule : PlayerModule
     //升级接口
     public override void UpgradeModule(ModuleType moduleType, StatType statType)
     {
-        maxHp += 20;
+        maxHp = Mathf.RoundToInt(
+            UpgradeManager.Instance.GetStat(ModuleType.Health, StatType.MaxHP)
+        );
+
         PlayerManager.Instance.MaxHealth = maxHp;
         PlayerManager.Instance.CurrentHp = currentHp = maxHp;
-        Debug.Log($"血量升级！当前上限: {maxHp}");
+
+        Debug.Log($"[HealthModule] 血量升级生效！当前上限: {maxHp}");
     }
+
 }

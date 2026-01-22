@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -38,6 +37,7 @@ public class PlayerManager : MonoSingleton<PlayerManager>
 
     private void Awake()
     {
+        // 初始化初始解锁模块
         foreach (var type in startingModules)
         {
             if (!unlockedModuleTypes.Contains(type))
@@ -45,6 +45,7 @@ public class PlayerManager : MonoSingleton<PlayerManager>
                 unlockedModuleTypes.Add(type);
             }
         }
+        UpgradeManager.Instance.SyncWithPlayerManager();
     }
 
     /// <summary>
@@ -52,17 +53,15 @@ public class PlayerManager : MonoSingleton<PlayerManager>
     /// </summary>
     public void SpawnPlayer()
     {
-        if (CurrentPlayerObj != null) return; // 防止重复生成
+        if (CurrentPlayerObj != null) return; 
 
         currentHp = MaxHealth;
 
-        // 实例化
         CurrentPlayerObj = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
 
         CurrentModules = CurrentPlayerObj.GetComponent<PlayerModuleManager>();
 
         var pc = CurrentPlayerObj.GetComponent<PlayerController>();
-
         pc.OnDeath += HandlePlayerDeath;
 
         Debug.Log("<color=green>Player Generated</color>");
@@ -79,7 +78,6 @@ public class PlayerManager : MonoSingleton<PlayerManager>
         foreach (var type in unlockedModuleTypes)
         {
             CurrentModules.UnlockModule(type);
-            PlayerLevelManager.Instance.InitModuleBaseValue(type);
         }
     }
 
@@ -98,20 +96,18 @@ public class PlayerManager : MonoSingleton<PlayerManager>
     }
 
     /// <summary>
-    /// 给玩家添加新能力
+    /// 添加新能力
     /// </summary>
     public void UnlockModuleData(ModuleType type)
     {
         if (!unlockedModuleTypes.Contains(type))
         {
             unlockedModuleTypes.Add(type);
-
             Debug.Log($"模块{type}已加入解锁列表");
 
             if (CurrentModules != null)
             {
                 CurrentModules.UnlockModule(type);
-                PlayerLevelManager.Instance.InitModuleBaseValue(type);
             }
         }
     }

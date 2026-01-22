@@ -21,7 +21,7 @@ public class ModuleRuntimeData
     {
         if (!upgradeCounts.ContainsKey(type))
         {
-            upgradeCounts[type] = 0;
+            upgradeCounts[type] = 0;        
         }
 
         // 检查最大层数限制

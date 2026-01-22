@@ -56,14 +56,13 @@ public class PlayerModuleManager : MonoBehaviour
         }
     }
 
-    // 解锁模块
     public void UpgradeModule(ModuleType type)
     {
         if (moduleDict.TryGetValue(type, out PlayerModule module))
         {
             if (module.isUnlocked)
             {
-                module.UpgradeModule();
+                //module.UpgradeModule();
                 Debug.Log($"<color=green>模块已升级: {type}</color>");
             }
             else

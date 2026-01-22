@@ -6,15 +6,15 @@ using UnityEngine.UI;
 /// <summary>
 /// 升级能力选择UI
 /// </summary>
-public class LevelUpAbilitySelectUI : UIBase
+public class ModuleSelectUI : UIBase
 {
     [Header("UI控件")]
-    public Text titleText; 
-    public Button optionBtnTemplate; 
-    public Transform optionBtnGroup; 
-    public Image blackBg; 
+    public Text titleText;
+    public Button optionBtnTemplate;
+    public Transform optionBtnGroup;
+    public Image blackBg;
 
-    private List<ModuleType> _candidateModules; 
+    private List<UpgradeOption> _options;
 
     private void Awake()
     {
@@ -29,7 +29,7 @@ public class LevelUpAbilitySelectUI : UIBase
             blackBg.rectTransform.anchorMax = Vector2.one;
             blackBg.rectTransform.offsetMin = Vector2.zero;
             blackBg.rectTransform.offsetMax = Vector2.zero;
-            blackBg.color = new Color(0, 0, 0, 0.7f); // 半透明黑
+            blackBg.color = new Color(0, 0, 0, 0.7f);
         }
     }
 
@@ -37,13 +37,14 @@ public class LevelUpAbilitySelectUI : UIBase
     {
         base.OnEnter(args);
 
-        if (args is not Tuple<int, List<ModuleType>> data)
+        if (args is not Tuple<int, List<UpgradeOption>> data)
         {
+            Debug.LogError("ModuleSelectUI参数类型错误");
             return;
         }
 
         int currentLevel = data.Item1;
-        _candidateModules = data.Item2;
+        _options = data.Item2;
 
         InitAbilitySelectUI(currentLevel);
         Time.timeScale = 0f;
@@ -54,32 +55,24 @@ public class LevelUpAbilitySelectUI : UIBase
     /// </summary>
     private void InitAbilitySelectUI(int currentLevel)
     {
-        titleText.text = $"Lv.{currentLevel} 升级,选择一个能力解锁";
+        titleText.text = $"Lv.{currentLevel} 升级，选择一个强化";
         ClearAllOptionBtns();
-        foreach (var moduleType in _candidateModules)
+
+        foreach (var option in _options)
         {
-            CreateOptionBtn(moduleType);
+            CreateOptionBtn(option);
         }
     }
 
     /// <summary>
     /// 生成单个能力选项按钮
     /// </summary>
-    private void CreateOptionBtn(ModuleType type)
+    private void CreateOptionBtn(UpgradeOption option)
     {
         Button btn = Instantiate(optionBtnTemplate, optionBtnGroup);
         btn.gameObject.SetActive(true);
 
-        ModuleDescConfig desc = PlayerAbilitySelectManager.Instance.GetModuleDesc(type);
-        if (desc == null)
-        {
-            desc = new ModuleDescConfig()
-            {
-                moduleName = type.ToString(),
-                moduleDesc = $"解锁{type}能力，提升战斗能力"
-            };
-            Debug.LogWarning($"未配置{type}的显示信息");
-        }
+        ModuleDescConfig desc = ModuleSelectManager.Instance.GetUpgradeDesc(option);
 
         Text btnName = btn.transform.Find("Name")?.GetComponent<Text>();
         Text btnDesc = btn.transform.Find("Desc")?.GetComponent<Text>();
@@ -93,15 +86,15 @@ public class LevelUpAbilitySelectUI : UIBase
             btnIcon.enabled = true;
         }
 
-        btn.onClick.AddListener(() => OnClickOption(type));
+        btn.onClick.AddListener(() => OnClickOption(option));
     }
 
     /// <summary>
     /// 点击能力选项后的处理
     /// </summary>
-    private void OnClickOption(ModuleType type)
+    private void OnClickOption(UpgradeOption option)
     {
-        PlayerAbilitySelectManager.Instance.OnChooseModule(type);
+        ModuleSelectManager.Instance.OnChooseUpgrade(option);
         UIManager.Instance.CloseUI(this);
     }
 

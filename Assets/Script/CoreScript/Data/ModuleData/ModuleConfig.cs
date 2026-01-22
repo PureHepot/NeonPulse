@@ -29,6 +29,9 @@ public enum StatType
     BeamCount,
     BeamCooldown,
 
+    //Dash
+    DashCooldown    // 突进冷却
+
     //诸如此类
 }
 
@@ -61,6 +64,9 @@ public class ModuleConfig : ScriptableObject
 
     [Header("Base Stats")]
     public List<StatData> baseStats;
+
+    [Header("Unlock Settings")]
+    public int unlockLevel = 1;
 
     [Header("Upgrade Definitions")]
     public List<StatUpgradeDefinition> statUpgrades;

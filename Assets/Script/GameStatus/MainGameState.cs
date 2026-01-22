@@ -21,9 +21,9 @@ public class MainGameState : GameState
 
     public override void OnExit()
     {
-        if (PlayerAbilitySelectManager.Instance != null)
+        if (ModuleSelectManager.Instance != null)
         {
-            PlayerAbilitySelectManager.Instance.OnShowAbilitySelectUI -= HandleShowAbilityUI;
+            ModuleSelectManager.Instance.OnShowAbilitySelectUI -= HandleShowAbilityUI;
         }
     }
 
@@ -35,7 +35,6 @@ public class MainGameState : GameState
             ToggleSettingPanel();
         }
     }
-
 
     private void StartGame()
     {
@@ -53,17 +52,16 @@ public class MainGameState : GameState
 
         UpgradeManager.Instance.SyncWithPlayerManager();
 
-        PlayerAbilitySelectManager.Instance.OnShowAbilitySelectUI += HandleShowAbilityUI;
+        ModuleSelectManager.Instance.OnShowAbilitySelectUI += HandleShowAbilityUI;
 
         GameManager.Instance.StartCoroutine(WaveManager.Instance.GameLoopRoutine());
     }
 
-    private void HandleShowAbilityUI(int level, List<ModuleType> candidates)
+    private void HandleShowAbilityUI(int level, List<UpgradeOption> candidates)
     {
-        // 封装参数，传给UI
         var uiArgs = Tuple.Create(level, candidates);
         // 打开升级选能力UI
-        UIManager.Instance.OpenPopup<LevelUpAbilitySelectUI>(uiArgs);
+        UIManager.Instance.OpenPopup<ModuleSelectUI>(uiArgs);
     }
 
     private void ToggleSettingPanel()
