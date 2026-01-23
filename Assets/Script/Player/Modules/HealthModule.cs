@@ -1,13 +1,12 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 
 public class HealthModule : PlayerModule
 {
-    [Header("Health Stats")]
-    public int maxHp = 100;
-    public int currentHp;
+    public int MaxHp { get; private set; }
+    public float CurrentHp { get; private set; }
+    public float RegenPerSecond { get; private set; }
 
     [Header("Hurt Settings")]
     public float knockbackForce = 15f;
@@ -17,24 +16,64 @@ public class HealthModule : PlayerModule
     public Color normalColor = Color.white;
 
     private bool isInvincible = false;
+    private float regenTimer;
+    private float regenAccumulator = 0f;
 
     public override void Initialize(PlayerController _player)
     {
         base.Initialize(_player);
-        maxHp = PlayerManager.Instance.MaxHealth;
-        currentHp = maxHp;
+
+        RecalculateStats();
+
+        CurrentHp = MaxHp;
+
+        int displayHp = CurrentHp <= 0 ? 0 : Mathf.Max(1, Mathf.FloorToInt(CurrentHp));
+        PlayerManager.Instance.SyncHp(displayHp, MaxHp);
+
+        Debug.Log($"[HealthModule] 初始化 HP={CurrentHp}/{MaxHp} Regen={RegenPerSecond}/s");
     }
 
-    public override void OnModuleUpdate() { }
+    public override void OnModuleUpdate()
+    {
+        HandleRegen();
+    }
+
+    private void HandleRegen()
+    {
+        if (RegenPerSecond <= 0f) return;
+        if (CurrentHp >= MaxHp) return;
+
+        regenAccumulator += RegenPerSecond * Time.deltaTime;
+
+        if (regenAccumulator < 1f) return;
+
+        int heal = Mathf.FloorToInt(regenAccumulator);
+        regenAccumulator -= heal;
+
+        CurrentHp = Mathf.Min(CurrentHp + heal, MaxHp);
+
+        SyncUI();
+
+        Debug.Log($"[HealthModule] 回血 +{heal} => {CurrentHp}/{MaxHp}");
+    }
+    private void SyncUI()
+    {
+        int displayHp = CurrentHp <= 0 ? 0 : Mathf.Max(1, Mathf.FloorToInt(CurrentHp));
+        PlayerManager.Instance.SyncHp(displayHp, MaxHp);
+    }
 
     public void TakeDamage(int amount, Transform attacker)
     {
         if (isInvincible || player.IsDead) return;
 
-        currentHp -= amount;
-        PlayerManager.Instance.CurrentHp = currentHp; 
+        CurrentHp -= amount;
+        CurrentHp = Mathf.Clamp(CurrentHp, 0, MaxHp);
 
-        if (currentHp <= 0)
+        PlayerManager.Instance.SyncHp(Mathf.RoundToInt(CurrentHp), MaxHp);
+
+        Debug.Log($"[HealthModule] 受伤 -{amount} => {CurrentHp}/{MaxHp}");
+
+        if (CurrentHp <= 0)
         {
             Die();
             return;
@@ -57,9 +96,7 @@ public class HealthModule : PlayerModule
             player.Rigid2d.AddForce(knockbackDir * knockbackForce, ForceMode2D.Impulse);
         }
 
-
         yield return new WaitForSeconds(stunDuration);
-
         player.IsStunned = false;
 
         yield return new WaitForSeconds(invincibilityDuration - stunDuration);
@@ -69,7 +106,6 @@ public class HealthModule : PlayerModule
         player.BodyRenderer.color = normalColor;
     }
 
-    //受击表现
     void PlayHurtVisuals()
     {
         player.BodyRenderer.DOKill();
@@ -79,12 +115,9 @@ public class HealthModule : PlayerModule
         });
 
         player.BodyRenderer.DOFade(0.5f, 0.1f).SetLoops(5, LoopType.Yoyo);
-
-        player.transform.DOKill();
         player.transform.DOPunchScale(new Vector3(-0.2f, 0.2f, 0), 0.2f, 10, 1);
     }
 
-    //角色死亡
     void Die()
     {
         player.IsDead = true;
@@ -93,17 +126,27 @@ public class HealthModule : PlayerModule
         Debug.Log("Player Died");
     }
 
-    //升级接口
     public override void UpgradeModule(ModuleType moduleType, StatType statType)
     {
-        maxHp = Mathf.RoundToInt(
+        RecalculateStats();
+
+        CurrentHp = Mathf.Min(CurrentHp, MaxHp);
+        PlayerManager.Instance.SyncHp(Mathf.RoundToInt(CurrentHp), MaxHp);
+
+        Debug.Log($"[HealthModule] 升级刷新 HP={CurrentHp}/{MaxHp} Regen={RegenPerSecond}/s");
+    }
+
+    private void RecalculateStats()
+    {
+        MaxHp = Mathf.RoundToInt(
             UpgradeManager.Instance.GetStat(ModuleType.Health, StatType.MaxHP)
         );
 
-        PlayerManager.Instance.MaxHealth = maxHp;
-        PlayerManager.Instance.CurrentHp = currentHp = maxHp;
+        RegenPerSecond =
+            UpgradeManager.Instance.GetStat(ModuleType.Health, StatType.HealthRegen);
 
-        Debug.Log($"[HealthModule] 血量升级生效！当前上限: {maxHp}");
+        if (MaxHp <= 0) MaxHp = 10;
+
+        Debug.Log($"[HealthModule] Recalc MaxHp={MaxHp} Regen={RegenPerSecond}/s");
     }
-
 }

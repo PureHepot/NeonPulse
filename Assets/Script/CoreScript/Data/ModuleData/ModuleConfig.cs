@@ -30,7 +30,7 @@ public enum StatType
     BeamCooldown,
 
     //Dash
-    DashCooldown    // 突进冷却
+    DashCooldown,   // 突进冷却
 
     //诸如此类
 }

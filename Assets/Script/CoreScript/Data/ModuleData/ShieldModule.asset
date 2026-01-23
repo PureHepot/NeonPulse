@@ -16,25 +16,25 @@ MonoBehaviour:
   moduleType: 3
   baseStats:
   - type: 4
-    value: 0
+    value: 3
   - type: 5
-    value: 0
+    value: 8
   - type: 6
-    value: 0
-  unlockLevel: 1
+    value: 3
+  unlockLevel: 2
   statUpgrades:
   - statType: 4
-    valuePerUpgrade: 0
-    maxStacks: -1
+    valuePerUpgrade: 1
+    maxStacks: 5
     upgradeName: "\u62A4\u76FE\u91CF"
     description: "\u63D0\u9AD8\u62A4\u76FE\u91CF"
   - statType: 5
-    valuePerUpgrade: 0
-    maxStacks: -1
-    upgradeName: "\u62A4\u76FE\u6062\u590D"
+    valuePerUpgrade: -1
+    maxStacks: 5
+    upgradeName: "\u62A4\u76FE\u6062\u590D\u901F\u5EA6"
     description: "\u52A0\u5FEB\u62A4\u76FE\u6062\u590D"
   - statType: 6
-    valuePerUpgrade: 0
-    maxStacks: -1
-    upgradeName: ShieldA
-    description: b
+    valuePerUpgrade: 1
+    maxStacks: 4
+    upgradeName: "\u62A4\u76FE\u51FB\u9000\u529B\u5EA6"
+    description: "\u52A0\u5F3A\u62A4\u76FE\u51FB\u9000\u529B\u5EA6"

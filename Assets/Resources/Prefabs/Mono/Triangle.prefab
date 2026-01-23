@@ -135,7 +135,7 @@ MonoBehaviour:
   moveSpeed: 3
   scoreValue: 10
   contactDamage: 1
-  enemyExp: 50
+  enemyExp: 100
   bodyRenderer: {fileID: 0}
   normalColor: {r: 3.962264, g: 2.5473373, b: 0, a: 1}
   hitColor: {r: 0.9433962, g: 0.9433962, b: 0.9433962, a: 1}

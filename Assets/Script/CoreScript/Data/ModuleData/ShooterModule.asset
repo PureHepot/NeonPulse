@@ -18,16 +18,23 @@ MonoBehaviour:
   - type: 8
     value: 0.8
   - type: 9
-    value: 0
+    value: 1
+  - type: 7
+    value: 1.5
   unlockLevel: 1
   statUpgrades:
   - statType: 8
-    valuePerUpgrade: 0
-    maxStacks: -1
+    valuePerUpgrade: -0.1
+    maxStacks: 5
     upgradeName: "\u5C04\u901F"
     description: "\u63D0\u9AD8\u5C04\u901F"
   - statType: 9
-    valuePerUpgrade: 0
-    maxStacks: -1
-    upgradeName: ShooterA
-    description: b
+    valuePerUpgrade: 1
+    maxStacks: 1
+    upgradeName: "\u5C04\u53E3\u6570\u91CF"
+    description: "\u589E\u52A0\u5C04\u53E3\u6570\u91CF"
+  - statType: 7
+    valuePerUpgrade: 0.5
+    maxStacks: 5
+    upgradeName: "\u5C04\u51FB\u4F24\u5BB3"
+    description: "\u63D0\u9AD8\u5C04\u51FB\u4F24\u5BB3"

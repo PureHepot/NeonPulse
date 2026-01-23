@@ -12,7 +12,8 @@ public class MainGameState : GameState
         Time.timeScale = 1f;
         AudioManager.Instance.PlayBGM("FightBGM_2");
         StartGame();
-        UIManager.Instance.OpenFullScreen<ExpBarUI>();
+        UIManager.Instance.Open<ExpBarUI>();
+        UIManager.Instance.Open<HpBarUI>();
     }
 
     public override void OnExit()

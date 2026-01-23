@@ -51,6 +51,7 @@ MonoBehaviour:
   moveSpeed: 5
   scoreValue: 10
   contactDamage: 1
+  enemyExp: 100
   bodyRenderer: {fileID: 0}
   normalColor: {r: 0, g: 0.23673391, b: 0.8415094, a: 1}
   hitColor: {r: 1, g: 1, b: 1, a: 1}
@@ -62,7 +63,9 @@ MonoBehaviour:
   - {fileID: 8534988089619093864, guid: 7354f89f457ad604d80358049247665b, type: 3}
   - {fileID: 6996852137660152228, guid: 2f9099d0b833b674487029b850e2c025, type: 3}
   patrolSpeed: 5
-  parentScale: {x: 0.4, y: 0.4, z: 1}
+  curveSmoothness: 0.5
+  curveSampleCount: 20
+  enemyScale: {x: 0.4, y: 0.4, z: 1}
 --- !u!50 &4585656248327985062
 Rigidbody2D:
   serializedVersion: 4
