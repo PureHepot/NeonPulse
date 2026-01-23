@@ -20,6 +20,7 @@ public class WaveGroup
     public GameObject enemyPrefab; // 怪物的预制体
     public int count = 5;          // 数量
     public float spawnRate = 1f;   // 间隔时间(秒)
+    public bool isParallel = false;
     public SpawnDirection direction = SpawnDirection.Random;
 
     [Header("延迟")]
@@ -51,8 +52,8 @@ public class WaveManager : MonoSingleton<WaveManager>
     // --- 运行时状态 ---
     private int currentWaveIndex = 0;
     private int totalEnemiesAlive = 0;
-    private bool isSpawning = false;
-    private bool isWaveInProgress = false;
+    private int activeSpawnerCount = 0;
+    private bool isSpawning => activeSpawnerCount > 0;
 
     private Camera mainCam;
     private float camHeight;
@@ -85,11 +86,10 @@ public class WaveManager : MonoSingleton<WaveManager>
             OnWaveIncoming?.Invoke(currentWaveIndex + 1, currentWave.waveName);
             Debug.Log($"<color=cyan>--- {currentWave.waveName} 即将开始 ---</color>");
 
-            //等待 UI 动画展示时间 (比如 "Wave 1" 字样闪烁)
+            //等待 UI 动画展示时间
             yield return new WaitForSeconds(timeBetweenWaves);
 
             //开始执行这一波的刷怪逻辑
-            isWaveInProgress = true;
             yield return StartCoroutine(SpawnWaveRoutine(currentWave));
 
             //每帧检查有没有怪，还有就继续循环等下一帧
@@ -111,26 +111,44 @@ public class WaveManager : MonoSingleton<WaveManager>
     // --- 刷怪逻辑 ---
     IEnumerator SpawnWaveRoutine(WaveData wave)
     {
-        isSpawning = true;
-
-        // 遍历这一波里的每一组配置
-        foreach (var group in wave.groups)
+        for (int i = 0; i < wave.groups.Count; i++)
         {
-            // 组与组之间的延迟
-            if (group.delayBeforeStart > 0)
-                yield return new WaitForSeconds(group.delayBeforeStart);
+            var currentGroup = wave.groups[i];
 
-            for (int i = 0; i < group.count; i++)
+            // 启动当前组的刷怪协程
+            Coroutine groupRoutine = StartCoroutine(SpawnGroupRoutine(currentGroup));
+
+            // 检查下一组是否是并行
+            bool nextIsParallel = false;
+            if (i + 1 < wave.groups.Count)
             {
-                SpawnEnemy(group.enemyPrefab, group.direction);
+                nextIsParallel = wave.groups[i + 1].isParallel;
+            }
 
-                totalEnemiesAlive++;
-
-                yield return new WaitForSeconds(group.spawnRate);
+            if (!nextIsParallel)
+            {
+                yield return groupRoutine;
             }
         }
 
-        isSpawning = false;
+    }
+
+    IEnumerator SpawnGroupRoutine(WaveGroup group)
+    {
+        activeSpawnerCount++; // 标记有一个刷怪进程开始
+
+        // 处理组延迟
+        if (group.delayBeforeStart > 0)
+            yield return new WaitForSeconds(group.delayBeforeStart);
+
+        for (int i = 0; i < group.count; i++)
+        {
+            SpawnEnemy(group.enemyPrefab, group.direction);
+            totalEnemiesAlive++;
+            yield return new WaitForSeconds(group.spawnRate);
+        }
+
+        activeSpawnerCount--; // 标记这个刷怪进程结束
     }
 
     void SpawnEnemy(GameObject prefab, SpawnDirection dir)

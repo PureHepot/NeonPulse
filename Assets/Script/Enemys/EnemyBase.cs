@@ -106,6 +106,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
             UpgradeManager.Instance.AddExperience(enemyExp);
         }
 
+        WaveManager.Instance.RegisterEnemyDeath();
         ObjectPoolManager.Instance.Return(this.gameObject);
     }
 
