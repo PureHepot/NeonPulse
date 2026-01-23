@@ -186,4 +186,8 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
             }
         }
     }
+
+    public void TakeDamage(int amount)
+    {
+    }
 }
