@@ -1288,21 +1288,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab40e1850c2462f4192d067cfcabb369, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  waves:
-  - waveName: Wave 1
-    groups:
-    - enemyPrefab: {fileID: 7534717032132797725, guid: a2a130f58592ab94ca0cb2f5e571a9b4, type: 3}
-      count: 10
-      spawnRate: 1
-      isParallel: 0
-      direction: 0
-      delayBeforeStart: 0
-    - enemyPrefab: {fileID: 5687499291434305790, guid: 706a79fa4b565b747bd409464879a084, type: 3}
-      count: 10
-      spawnRate: 2
-      isParallel: 1
-      direction: 0
-      delayBeforeStart: 0
+  wavesData: {fileID: 11400000, guid: d1962fe2c3242dd4e8878382360f17c8, type: 2}
   timeBetweenWaves: 3
   spawnPadding: 1.5
 --- !u!114 &1357557158
@@ -1317,7 +1303,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a9e5c686bc12c64aba189ddc4ec8b37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxHealth: 10
+  maxHealth: 0
   bulletDamage: 1
   playerPrefab: {fileID: 6236048808547626479, guid: e4eef060148b4ac42a54b7cdc2645e60, type: 3}
   spawnPoint: {fileID: 1122123913}
@@ -1367,61 +1353,7 @@ MonoBehaviour:
   bgMaterial: {fileID: 2100000, guid: 52e802eea0dab184e959328a7c1fd1e6, type: 2}
   wallMaterial: {fileID: 2100000, guid: 838f95f1fe3f2644fb8a3ba1d397b180, type: 2}
   punchDuration: 1
-  presets:
-  - themeName: Normal1
-    themeTransitionDuration: 1
-    colorTop: {r: 0.33967376, g: 2, b: 0, a: 1}
-    colorBottom: {r: 2, g: 1.434169, b: 0, a: 1}
-    bgBrightness: 0.03
-    waveSpeed: 0.5
-    peakFocus: 3
-    waveFrequency: 1
-    punchStrength: 100
-  - themeName: Normal2
-    themeTransitionDuration: 1.5
-    colorTop: {r: 2, g: 1.3302627, b: 0, a: 1}
-    colorBottom: {r: 2, g: 0.21240409, b: 0, a: 1}
-    bgBrightness: 0.03
-    waveSpeed: 1
-    peakFocus: 3
-    waveFrequency: 1.5
-    punchStrength: 1
-  - themeName: Normal3
-    themeTransitionDuration: 3
-    colorTop: {r: 1.7281322, g: 0, b: 2, a: 1}
-    colorBottom: {r: 0.0324049, g: 0, b: 2, a: 1}
-    bgBrightness: 0.03
-    waveSpeed: 2
-    peakFocus: 3
-    waveFrequency: 2
-    punchStrength: 1
-  - themeName: Normal4
-    themeTransitionDuration: 4
-    colorTop: {r: 0, g: 0.11703396, b: 2, a: 1}
-    colorBottom: {r: 0, g: 2, b: 0.59980917, a: 1}
-    bgBrightness: 0.03
-    waveSpeed: 3
-    peakFocus: 3
-    waveFrequency: 2.5
-    punchStrength: 1
-  - themeName: Normal5
-    themeTransitionDuration: 5
-    colorTop: {r: 0, g: 1, b: 0.22237325, a: 1}
-    colorBottom: {r: 0.25314426, g: 1, b: 0, a: 1}
-    bgBrightness: 0.03
-    waveSpeed: 4
-    peakFocus: 3
-    waveFrequency: 3
-    punchStrength: 1
-  - themeName: Boss
-    themeTransitionDuration: 6
-    colorTop: {r: 2, g: 0.087147444, b: 0, a: 1}
-    colorBottom: {r: 1.5013504, g: 0, b: 2, a: 1}
-    bgBrightness: 0.1
-    waveSpeed: 5
-    peakFocus: 3
-    waveFrequency: 3.5
-    punchStrength: 10
+  presets: {fileID: 11400000, guid: ba4fee4812645184c961a6fd3dab8971, type: 2}
 --- !u!1 &1539998153
 GameObject:
   m_ObjectHideFlags: 0

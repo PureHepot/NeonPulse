@@ -24,6 +24,11 @@ public class VisualThemePreset
     public float punchStrength = 2.0f; // 这个主题下的受击扭曲强度
 }
 
+[CreateAssetMenu(fileName = "NewThemeConfig", menuName = "Game/Theme Config")]
+public class SOVisualThemePresets : ScriptableObject
+{
+    public List<VisualThemePreset> allPresets;
+}
 
 public class BackgroundFXController : MonoSingleton<BackgroundFXController>
 {
@@ -35,7 +40,7 @@ public class BackgroundFXController : MonoSingleton<BackgroundFXController>
     public float punchDuration = 0.5f;
 
     [Header("主题预设列表")]
-    public List<VisualThemePreset> presets;
+    public SOVisualThemePresets presets;
      // 切换主题的渐变时间
 
     // --- 运行时状态 ---
@@ -66,9 +71,9 @@ public class BackgroundFXController : MonoSingleton<BackgroundFXController>
 
     private void Start()
     {
-        if (presets.Count > 0)
+        if (presets.allPresets.Count > 0)
         {
-            ApplyPresetImmediate(presets[0]);
+            ApplyPresetImmediate(presets.allPresets[0]);
         }
     }
 
@@ -78,11 +83,11 @@ public class BackgroundFXController : MonoSingleton<BackgroundFXController>
     /// <param name="index"></param>
     public void SwitchToTheme(int index)
     {
-        if (index < 0 || index >= presets.Count) return;
+        if (index < 0 || index >= presets.allPresets.Count) return;
         if (index == currentPresetIndex) return;
 
         // 获取目标和起始
-        VisualThemePreset target = presets[index];
+        VisualThemePreset target = presets.allPresets[index];
         VisualThemePreset start = ClonePreset(currentValues); // 记录当前状态作为起点
 
         currentPresetIndex = index;
@@ -107,7 +112,7 @@ public class BackgroundFXController : MonoSingleton<BackgroundFXController>
 
     public void SwitchToNextTheme()
     {
-        int nextIndex = (currentPresetIndex + 1) % presets.Count;
+        int nextIndex = (currentPresetIndex + 1) % presets.allPresets.Count;
         SwitchToTheme(nextIndex);
     }
 

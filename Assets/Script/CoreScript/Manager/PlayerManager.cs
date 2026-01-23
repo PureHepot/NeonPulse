@@ -68,6 +68,13 @@ public class PlayerManager : MonoSingleton<PlayerManager>
             }
         }
         UpgradeManager.Instance.SyncWithPlayerManager();
+
+        if (spawnPoint == null)
+        {
+            spawnPoint = GameObject.Find("BattleField").transform;
+            spawnPoint.gameObject.SetActive(false);
+        }
+
     }
 
     /// <summary>
@@ -78,6 +85,8 @@ public class PlayerManager : MonoSingleton<PlayerManager>
         if (CurrentPlayerObj != null) return; 
 
         currentHp = MaxHealth;
+
+        spawnPoint.gameObject.SetActive(true);
 
         CurrentPlayerObj = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
 

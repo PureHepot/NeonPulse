@@ -28,17 +28,23 @@ public class WaveGroup
 }
 
 [System.Serializable]
+
 public class WaveData
 {
     public string waveName = "Wave 1";
     public List<WaveGroup> groups; // 这一波包含的所有怪组
 }
 
+[CreateAssetMenu(fileName = "NewWaveConfig", menuName = "Game/Wave Config")]
+public class WavesData : ScriptableObject
+{
+    public List<WaveData> allWaves;
+}
 
 public class WaveManager : MonoSingleton<WaveManager>
 {
     [Header("关卡配置")]
-    public List<WaveData> waves; // 所有波次的数据
+    public WavesData wavesData; // 所有波次的数据
 
     [Header("设置")]
     public float timeBetweenWaves = 3f; // 波次之间的休息时间
@@ -78,9 +84,9 @@ public class WaveManager : MonoSingleton<WaveManager>
         // 稍微等待一下游戏初始化
         yield return new WaitForSeconds(1f);
 
-        while (currentWaveIndex < waves.Count)
+        while (currentWaveIndex < wavesData.allWaves.Count)
         {
-            WaveData currentWave = waves[currentWaveIndex];
+            WaveData currentWave = wavesData.allWaves[currentWaveIndex];
 
             //触发 UI 弹窗事件
             OnWaveIncoming?.Invoke(currentWaveIndex + 1, currentWave.waveName);
