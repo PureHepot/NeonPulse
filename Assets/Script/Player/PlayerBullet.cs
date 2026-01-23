@@ -6,7 +6,7 @@ public class PlayerBullet : MonoBehaviour, IPoolable
 {
     [Header("Settings")]
     public float speed = 20f;
-    public float damage = 1.5f;
+    public int damage = 2;
     public float lifeTime = 2f;
 
     private float timer;

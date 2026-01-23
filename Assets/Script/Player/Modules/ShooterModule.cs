@@ -22,7 +22,7 @@ public class ShooterModule : PlayerModule
     private float baseFireRate;
     private float fireRateMultiplier = 1f;
 
-    private float baseDamage;
+    private int baseDamage;
     private float damageMultiplier = 1f;
 
     [Header("State")]
@@ -65,7 +65,7 @@ public class ShooterModule : PlayerModule
         if (statType == StatType.FireRate || statType == StatType.Damage)
         {
             float oldRate = GetFinalFireRate();
-            float oldDamage = GetFinalDamage();
+            int oldDamage = (int)GetFinalDamage();
 
             RecalculateStats();
 
@@ -88,8 +88,8 @@ public class ShooterModule : PlayerModule
         if (baseFireRate <= 0) baseFireRate = 0.8f;
 
         baseDamage =
-            UpgradeManager.Instance.GetStat(ModuleType.Shooter, StatType.Damage);
-        if (baseDamage <= 0) baseDamage = 1.5f;
+            (int)UpgradeManager.Instance.GetStat(ModuleType.Shooter, StatType.Damage);
+        if (baseDamage <= 0) baseDamage = 2;
 
         fireRateMultiplier = 1f;
         damageMultiplier = 1f;
@@ -203,6 +203,6 @@ public class ShooterModule : PlayerModule
 
         PlayerBullet bulletScript = bullet.GetComponent<PlayerBullet>();
         if (bulletScript)
-            bulletScript.damage = GetFinalDamage();
+            bulletScript.damage = (int)GetFinalDamage();
     }
 }
