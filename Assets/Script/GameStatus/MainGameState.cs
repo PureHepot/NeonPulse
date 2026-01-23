@@ -10,11 +10,7 @@ public class MainGameState : GameState
     public override void OnEnter()
     {
         Time.timeScale = 1f;
-        AudioManager.Instance.PlayBGM("FightBGM");
-        string Id = "1001";
-        string name = CSVManager.Instance.GetValue("UpgradeData", Id, "Name");
-        Debug.Log("Loaded Upgrade Name: " + name);
-
+        AudioManager.Instance.PlayBGM("FightBGM_2");
         StartGame();
         UIManager.Instance.Open<ExpBarUI>();
         UIManager.Instance.Open<HpBarUI>();
@@ -56,6 +52,27 @@ public class MainGameState : GameState
         ModuleSelectManager.Instance.OnShowAbilitySelectUI += HandleShowAbilityUI;
 
         GameManager.Instance.StartCoroutine(WaveManager.Instance.GameLoopRoutine());
+
+        Timer.Register(5f, onComplete: () =>
+        {
+            BackgroundFXController.Instance.SwitchToNextTheme();
+        });
+        Timer.Register(10f, onComplete: () =>
+        {
+            BackgroundFXController.Instance.SwitchToNextTheme();
+        });
+        Timer.Register(15f, onComplete: () =>
+        {
+            BackgroundFXController.Instance.SwitchToNextTheme();
+        });
+        Timer.Register(20f, onComplete: () =>
+        {
+            BackgroundFXController.Instance.SwitchToNextTheme();
+        });
+        Timer.Register(25f, onComplete: () =>
+        {
+            BackgroundFXController.Instance.SwitchToNextTheme();
+        });
     }
 
     private void HandleShowAbilityUI(int level, List<UpgradeOption> candidates)

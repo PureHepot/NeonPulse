@@ -9,10 +9,10 @@ using DG.Tweening;
 public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
 {
     [Header("Base Stats")]
-    public float maxHp = 100f;
+    public float maxHp = 10f;
     public float moveSpeed = 5f;
     public int scoreValue = 10;
-    public int contactDamage = 10;
+    public int contactDamage = 1;
     public int enemyExp = 10;
 
     [Header("Visuals")]
@@ -20,6 +20,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     public Color normalColor = Color.white;
     public Color hitColor = Color.red;
     public GameObject deathEffectPrefab;
+    public GameObject hitParticlePrefab;
 
     protected float currentHp;
     protected Rigidbody2D rb;
@@ -98,8 +99,23 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
 
         if (deathEffectPrefab != null)
         {
-            ObjectPoolManager.Instance.Get(deathEffectPrefab, transform.position, Quaternion.identity);
+            GameObject particleObj = ObjectPoolManager.Instance.Get(deathEffectPrefab, transform.position, Quaternion.identity);
+            Timer.Register(1f, onComplete: () =>
+            {
+                ObjectPoolManager.Instance.Return(particleObj);
+            });
+            ParticleSystem ps = particleObj.GetComponent<ParticleSystem>();
+            if (ps != null)
+            {
+                var main = ps.main;
+
+                main.startColor = normalColor;
+
+                ps.Play();
+            }
         }
+
+        BackgroundFXController.Instance.TriggerDistortion(transform.position);
 
         if (UpgradeManager.Instance != null)
         {
@@ -122,6 +138,52 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         if (collision.gameObject.CompareTag("Player"))
         {
             collision.gameObject.GetComponentInChildren<HealthModule>()?.TakeDamage(contactDamage, transform);
+        }
+    }
+
+    public void TakeDamage(int amount, Vector3 hitPoint, Vector3 hitNormal)
+    {
+        if (isDead) return;
+
+        currentHp -= amount;
+
+        PlayHitEffect(hitPoint, hitNormal);
+
+        if (currentHp <= 0) Die();
+    }
+
+    protected virtual void PlayHitEffect(Vector3 pos, Vector3 normal)
+    {
+        if (bodyRenderer != null)
+        {
+            // 假设我们在Shader里定义了 "_HitFlashStrength"
+            bodyRenderer.material.DOKill();
+            bodyRenderer.material.SetFloat("_HitFlashStrength", 2f);
+            bodyRenderer.material.DOFloat(0.1f, "_HitFlashStrength", 0.8f);
+
+            transform.DOKill();
+            transform.localScale = Vector3.one;
+            transform.DOPunchScale(new Vector3(0.15f, 0.15f, 0), 0.1f);
+        }
+
+        if (hitParticlePrefab != null)
+        {
+            GameObject particleObj = ObjectPoolManager.Instance.Get(hitParticlePrefab, pos, Quaternion.LookRotation(normal));
+
+            Timer.Register(1f, onComplete: () =>
+            {
+               ObjectPoolManager.Instance.Return(particleObj);
+            });
+
+            ParticleSystem ps = particleObj.GetComponent<ParticleSystem>();
+            if (ps != null)
+            {
+                var main = ps.main;
+
+                main.startColor = normalColor;
+
+                ps.Play();
+            }
         }
     }
 }
