@@ -52,19 +52,19 @@ Material:
     m_Floats:
     - _FocusArea: 25.2
     - _FocusPower: 0
-    - _LineBrightness: 0.1
+    - _LineBrightness: 0.03
     - _LineThickness: 30
     - _LineTiling: 15
     - _PeakFocus: 3
     - _QueueControl: 0
     - _QueueOffset: 0
     - _WaveAmplitude: 0.1
-    - _WaveFrequency: 3.5
-    - _WaveSpeed: 5
+    - _WaveFrequency: 1
+    - _WaveSpeed: 0.5
     m_Colors:
     - _BaseColor: {r: 0, g: 0, b: 0.101960786, a: 1}
-    - _ColorBottom: {r: 1.5013504, g: 0, b: 2, a: 1}
-    - _ColorTop: {r: 2, g: 0.087147444, b: 0, a: 1}
+    - _ColorBottom: {r: 2, g: 1.434169, b: 0, a: 1}
+    - _ColorTop: {r: 0.33967376, g: 2, b: 0, a: 1}
     - _FocusPos: {r: 0.60963255, g: 0.17606881, b: 0, a: 0}
     - _Position: {r: 0.5, g: 0.5, b: 0, a: 1}
   m_BuildTextureStacks: []

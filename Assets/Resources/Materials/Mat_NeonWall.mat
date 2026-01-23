@@ -57,5 +57,5 @@ Material:
     - _QueueControl: 0
     - _QueueOffset: 0
     m_Colors:
-    - _NeonColor: {r: 2, g: 0.087147444, b: 0, a: 1}
+    - _NeonColor: {r: 0.33967376, g: 2, b: 0, a: 1}
   m_BuildTextureStacks: []
