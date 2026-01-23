@@ -16,9 +16,14 @@ public class ShooterModule : PlayerModule
     public float rotationSpeed = 15f;
 
     [Header("Combat Settings")]
-    public float fireRate = 0.8f;
     public float sequenceDelay = 0.1f;
-    public int damage => PlayerManager.Instance.BulletDamage;
+
+    //---属性---
+    private float baseFireRate;
+    private float fireRateMultiplier = 1f;
+
+    private float baseDamage;
+    private float damageMultiplier = 1f;
 
     [Header("State")]
     public int currentLevel = 1;
@@ -26,20 +31,19 @@ public class ShooterModule : PlayerModule
     private float globalCooldown = 0f;
     private bool isFiring = false;
 
-    private List<float> muzzleVisualProgress = new List<float>();
-
-    //鼠标位置
-    private Vector3 targetPos;
+    private List<float> muzzleVisualProgress = new();
 
     public override void Initialize(PlayerController _player)
     {
         base.Initialize(_player);
+
         partToRotate.gameObject.SetActive(true);
+
         muzzleVisualProgress.Clear();
         foreach (var m in muzzles)
-        {
             muzzleVisualProgress.Add(1f);
-        }
+
+        RecalculateStats();
     }
 
     public override void OnModuleUpdate()
@@ -56,6 +60,51 @@ public class ShooterModule : PlayerModule
         }
     }
 
+    public override void UpgradeModule(ModuleType moduleType, StatType statType)
+    {
+        if (statType == StatType.FireRate || statType == StatType.Damage)
+        {
+            float oldRate = GetFinalFireRate();
+            float oldDamage = GetFinalDamage();
+
+            RecalculateStats();
+
+            Debug.Log($"[ShooterModule] FireRate: {oldRate:F2} → {GetFinalFireRate():F2}");
+            Debug.Log($"[ShooterModule] Damage: {oldDamage} → {GetFinalDamage()}");
+        }
+        else if (statType == StatType.ShooterCount)
+        {
+            int old = currentLevel;
+            currentLevel++;
+
+            Debug.Log($"[ShooterModule] ShooterCount: {old} → {currentLevel}");
+        }
+    }
+
+    private void RecalculateStats()
+    {
+        baseFireRate =
+            UpgradeManager.Instance.GetStat(ModuleType.Shooter, StatType.FireRate);
+        if (baseFireRate <= 0) baseFireRate = 0.8f;
+
+        baseDamage =
+            UpgradeManager.Instance.GetStat(ModuleType.Shooter, StatType.Damage);
+        if (baseDamage <= 0) baseDamage = 1.5f;
+
+        fireRateMultiplier = 1f;
+        damageMultiplier = 1f;
+    }
+
+    private float GetFinalFireRate()
+    {
+        return baseFireRate * fireRateMultiplier;
+    }
+
+    private float GetFinalDamage()
+    {
+        return baseDamage * damageMultiplier;
+    }
+
     void HandleRotation()
     {
         if (partToRotate == null) return;
@@ -68,12 +117,13 @@ public class ShooterModule : PlayerModule
 
         Quaternion targetRotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
-        partToRotate.rotation = Quaternion.Slerp(partToRotate.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+        partToRotate.rotation =
+            Quaternion.Slerp(partToRotate.rotation, targetRotation, rotationSpeed * Time.deltaTime);
     }
 
     void HandleReloadVisuals()
     {
-        float recoverSpeed = 1f / fireRate;
+        float recoverSpeed = 1f / GetFinalFireRate();
 
         for (int i = 0; i < muzzles.Count; i++)
         {
@@ -89,17 +139,18 @@ public class ShooterModule : PlayerModule
 
             if (isActive)
             {
-                //如果没激活就激活
-                if (!muzzles[i].gameObject.activeSelf) muzzles[i].gameObject.SetActive(true);
+                if (!muzzles[i].gameObject.activeSelf)
+                    muzzles[i].gameObject.SetActive(true);
 
-                //改scale
-                float finalScale = DOVirtual.EasedValue(0, 1, muzzleVisualProgress[i], Ease.OutBack); ;
+                float finalScale =
+                    DOVirtual.EasedValue(0, 1, muzzleVisualProgress[i], Ease.OutBack);
 
                 muzzles[i].localScale = Vector3.one * finalScale;
             }
             else
             {
-                if (muzzles[i].gameObject.activeSelf) muzzles[i].gameObject.SetActive(false);
+                if (muzzles[i].gameObject.activeSelf)
+                    muzzles[i].gameObject.SetActive(false);
             }
         }
     }
@@ -108,13 +159,13 @@ public class ShooterModule : PlayerModule
     {
         isFiring = true;
 
-        globalCooldown = fireRate;
+        globalCooldown = GetFinalFireRate();
 
-        List<int> activeIndices = new List<int>();
+        List<int> activeIndices = new();
 
         if (currentLevel == 1)
         {
-            if (muzzles.Count > 0) activeIndices.Add(0); // Center
+            if (muzzles.Count > 0) activeIndices.Add(0);
         }
         else
         {
@@ -129,14 +180,14 @@ public class ShooterModule : PlayerModule
 
             muzzleVisualProgress[index] = 0f;
 
-            muzzleT.localScale = Vector3.one * 1.5f; // 瞬间变大
-               yield return new WaitForSeconds(0.05f);  // 停顿
-               SpawnBullet(muzzleT);
-               muzzleVisualProgress[index] = 0f; // 然后变没
+            muzzleT.localScale = Vector3.one * 1.5f;
+
+            yield return new WaitForSeconds(0.05f);
 
             SpawnBullet(muzzleT);
 
-            if (activeIndices.Count > 1) yield return new WaitForSeconds(sequenceDelay);
+            if (activeIndices.Count > 1)
+                yield return new WaitForSeconds(sequenceDelay);
         }
 
         isFiring = false;
@@ -151,12 +202,7 @@ public class ShooterModule : PlayerModule
         );
 
         PlayerBullet bulletScript = bullet.GetComponent<PlayerBullet>();
-        if (bulletScript) bulletScript.damage = this.damage;
+        if (bulletScript)
+            bulletScript.damage = GetFinalDamage();
     }
-
-    public void UpgradeShot()
-    {
-        currentLevel++;
-    }
-
 }

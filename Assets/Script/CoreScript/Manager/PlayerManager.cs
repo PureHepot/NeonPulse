@@ -5,9 +5,23 @@ using UnityEngine;
 public class PlayerManager : MonoSingleton<PlayerManager>
 {
     [Header("配置")]
-    public int MaxHealth;
+    [SerializeField]
+    private int maxHealth;
+
+    public int MaxHealth
+    {
+        get => maxHealth;
+        set
+        {
+            maxHealth = value;
+            OnHpChanged?.Invoke(CurrentHp, maxHealth);
+        }
+    }
+
     [SerializeField]
     private int bulletDamage = 1;
+
+    public Action<int, int> OnHpChanged; 
 
     public GameObject playerPrefab;
     public Transform spawnPoint;
@@ -31,7 +45,15 @@ public class PlayerManager : MonoSingleton<PlayerManager>
     //---玩家数据---
     [SerializeField]
     private int currentHp;
-    public int CurrentHp { get { return currentHp; } set { currentHp = value; } }
+    public int CurrentHp
+    {
+        get => currentHp;
+        set
+        {
+            currentHp = Mathf.Clamp(value, 0, MaxHealth);
+            OnHpChanged?.Invoke(currentHp, MaxHealth);
+        }
+    }
 
     public int BulletDamage { get { return bulletDamage; } set { bulletDamage = value; } }
 
@@ -119,4 +141,12 @@ public class PlayerManager : MonoSingleton<PlayerManager>
     {
         return unlockedModuleTypes.Contains(type);
     }
+ 
+    public void SyncHp(int current, int max)
+    {
+        currentHp = current;
+        maxHealth = max;
+        OnHpChanged?.Invoke(current, max);
+    }
+
 }

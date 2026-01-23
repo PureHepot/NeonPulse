@@ -715,11 +715,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a9e5c686bc12c64aba189ddc4ec8b37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxHealth: 10
+  maxHealth: 0
   bulletDamage: 1
   playerPrefab: {fileID: 6236048808547626479, guid: e4eef060148b4ac42a54b7cdc2645e60, type: 3}
   spawnPoint: {fileID: 1836126019}
-  startingModules: 0000000001000000020000000300000004000000
+  startingModules: 000000000100000002000000
   currentHp: 0
 --- !u!114 &1357557160
 MonoBehaviour:

@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class DashModule : PlayerModule
@@ -7,25 +6,55 @@ public class DashModule : PlayerModule
     [Header("Visuals")]
     public TrailRenderer dashTrail;
 
-    [Header("Dash Stats")]
+    [Header("Dash Settings")]
     public float dashForce = 20f;
     public float dashDuration = 0.2f;
-    public float dashCooldown = 1.0f;
 
+    private float dashCooldown;
     private float lastDashTime = -999f;
 
     private Vector2 dashDirection;
 
-
     public override void Initialize(PlayerController _player)
     {
         base.Initialize(_player);
+        RecalculateStats();
 
         if (dashTrail != null)
         {
             dashTrail.gameObject.SetActive(true);
             dashTrail.emitting = false;
         }
+
+        Debug.Log($"[DashModule] 初始化 CD={dashCooldown:F2}s");
+    }
+
+    public override void OnModuleUpdate()
+    {
+        if (player.IsDead || player.IsStunned || player.IsDashing) return;
+
+        if (InputManager.Instance.Space() && IsReady())
+        {
+            StartCoroutine(DashRoutine());
+        }
+    }
+
+    public override void UpgradeModule(ModuleType moduleType, StatType statType)
+    {
+        if (statType == StatType.DashCooldown)
+        {
+            RecalculateStats();
+            Debug.Log($"[DashModule] 冷却升级 → {dashCooldown:F2}s");
+        }
+    }
+
+    private void RecalculateStats()
+    {
+        dashCooldown =
+            UpgradeManager.Instance.GetStat(ModuleType.Dash, StatType.DashCooldown);
+
+        if (dashCooldown <= 1f)
+            dashCooldown = 1f;
     }
 
     public bool IsReady()
@@ -39,61 +68,36 @@ public class DashModule : PlayerModule
         if (dashTrail != null) dashTrail.emitting = true;
     }
 
-    public void OnDashEnd()
+    private void OnDashEnd()
     {
         if (dashTrail != null) dashTrail.emitting = false;
     }
-
-
-    public override void UpgradeModule(ModuleType moduleType, StatType statType)
-    {
-        dashCooldown *= 0.8f; // 冷却缩减 20%
-    }
-
-
-    public override void OnModuleUpdate()
-    {
-        base.OnModuleUpdate();
-        if (InputManager.Instance.Space() && IsReady())
-        {
-            StartCoroutine(DashRoutine());
-        }
-    }
-
 
     IEnumerator DashRoutine()
     {
         OnDashStart();
 
-        bool oldStunState = player.IsDashing;
+        bool oldState = player.IsDashing;
         player.IsDashing = true;
 
-        // 施加冲刺力
-        dashDirection = new Vector2(InputManager.Instance.GetMoveX(), InputManager.Instance.GetMoveY()).normalized;
+        dashDirection = new Vector2(
+            InputManager.Instance.GetMoveX(),
+            InputManager.Instance.GetMoveY()
+        ).normalized;
 
-        if (dashDirection.magnitude < 0.1f)
+        if (dashDirection.sqrMagnitude < 0.01f)
         {
             Vector3 dir = MUtils.GetMouseWorldPosition() - player.transform.position;
             dashDirection = new Vector2(dir.x, dir.y).normalized;
         }
 
-        player.SetVelocity(dashDirection.normalized * dashForce);
+        player.SetVelocity(dashDirection * dashForce);
 
         yield return new WaitForSeconds(dashDuration);
 
-        // 冲刺结束，恢复控制
-        player.IsDashing = oldStunState;
+        player.IsDashing = oldState;
         player.SetVelocity(Vector2.zero);
 
         OnDashEnd();
-    }
-    public override void OnActivate()
-    {
-        base.OnActivate();
-    }
-
-    public override void OnDeactivate()
-    {
-        base.OnDeactivate();
     }
 }

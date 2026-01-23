@@ -1,20 +1,21 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class MovementModule : PlayerModule
 {
     [Header("Move Settings")]
-    public float baseMoveSpeed = 5f;
+    public float smoothTime = 0.15f;
 
-    private float speedMultiplier = 1.0f;
+    private float baseMoveSpeed;
+    private float speedMultiplier = 1f;
 
     private Vector2 currentVelocity;
-
     private Vector2 refVelocity;
 
-    // 惯性值
-    private float smoothTime = 0.15f;
+    public override void Initialize(PlayerController _player)
+    {
+        base.Initialize(_player);
+        RecalculateStats();
+    }
 
     public override void OnModuleUpdate()
     {
@@ -22,19 +23,41 @@ public class MovementModule : PlayerModule
 
         float x = InputManager.Instance.GetMoveX();
         float y = InputManager.Instance.GetMoveY();
-        Vector2 targetInput = Vector2.ClampMagnitude(new Vector2(x, y).normalized, 1f);
+        Vector2 input = new Vector2(x, y);
 
-        Vector2 targetVelocity = targetInput * baseMoveSpeed;
+        Vector2 targetVelocity = input.normalized * GetFinalSpeed();
 
-        currentVelocity = Vector2.SmoothDamp(currentVelocity, targetVelocity, ref refVelocity, smoothTime);
+        currentVelocity = Vector2.SmoothDamp(
+            currentVelocity,
+            targetVelocity,
+            ref refVelocity,
+            smoothTime
+        );
 
         player.SetVelocity(currentVelocity);
-
     }
 
     public override void UpgradeModule(ModuleType moduleType, StatType statType)
     {
-        speedMultiplier += 0.1f;
-        Debug.Log($"速度升级！当前倍率: {speedMultiplier}");
+        if (statType == StatType.MoveSpeed)
+        {
+            RecalculateStats();
+            Debug.Log($"[MovementModule] 移速升级: {GetFinalSpeed():F2}");
+        }
+    }
+
+    private void RecalculateStats()
+    {
+        baseMoveSpeed =
+            UpgradeManager.Instance.GetStat(ModuleType.Movement, StatType.MoveSpeed);
+
+        if (baseMoveSpeed <= 0) baseMoveSpeed = 5f;
+
+        speedMultiplier = 1f;
+    }
+
+    private float GetFinalSpeed()
+    {
+        return baseMoveSpeed * speedMultiplier;
     }
 }

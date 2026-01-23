@@ -17,7 +17,7 @@ MonoBehaviour:
   baseStats:
   - type: 0
     value: 0
-  unlockLevel: 4
+  unlockLevel: 3
   statUpgrades:
   - statType: 0
     valuePerUpgrade: 0

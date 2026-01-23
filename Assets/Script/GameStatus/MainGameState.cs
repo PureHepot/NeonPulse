@@ -16,7 +16,8 @@ public class MainGameState : GameState
         Debug.Log("Loaded Upgrade Name: " + name);
 
         StartGame();
-        UIManager.Instance.OpenFullScreen<ExpBarUI>();
+        UIManager.Instance.Open<ExpBarUI>();
+        UIManager.Instance.Open<HpBarUI>();
     }
 
     public override void OnExit()

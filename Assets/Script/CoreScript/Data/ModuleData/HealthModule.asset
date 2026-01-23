@@ -18,7 +18,8 @@ MonoBehaviour:
   - type: 1
     value: 10
   - type: 2
-    value: 0
+    value: 0.2
+  unlockLevel: 1
   statUpgrades:
   - statType: 1
     valuePerUpgrade: 5
@@ -26,7 +27,7 @@ MonoBehaviour:
     upgradeName: "\u6700\u5927\u751F\u547D\u503C"
     description: "\u63D0\u9AD8\u6700\u5927\u751F\u547D\u503C"
   - statType: 2
-    valuePerUpgrade: 1
+    valuePerUpgrade: 0.1
     maxStacks: 5
     upgradeName: "\u751F\u547D\u6062\u590D"
     description: "\u52A0\u5FEB\u751F\u547D\u503C\u6062\u590D"

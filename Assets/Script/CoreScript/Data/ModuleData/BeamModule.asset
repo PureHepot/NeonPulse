@@ -21,7 +21,7 @@ MonoBehaviour:
     value: 0
   - type: 12
     value: 0
-  unlockLevel: 3
+  unlockLevel: 4
   statUpgrades:
   - statType: 10
     valuePerUpgrade: 0

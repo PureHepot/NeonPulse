@@ -64,7 +64,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
 
     protected abstract void MoveBehavior();
 
-    public void TakeDamage(int amount)
+    public void TakeDamage(float amount)
     {
         if (isDead) return;
 

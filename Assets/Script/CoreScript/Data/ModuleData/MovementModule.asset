@@ -17,9 +17,10 @@ MonoBehaviour:
   baseStats:
   - type: 3
     value: 5
+  unlockLevel: 1
   statUpgrades:
   - statType: 3
-    valuePerUpgrade: 0.1
+    valuePerUpgrade: 1
     maxStacks: -1
     upgradeName: "\u79FB\u901F"
     description: "\u63D0\u9AD8\u79FB\u901F"
