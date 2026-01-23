@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 3862104991398879297}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.4816566, y: -0.12368581, z: -0.06967342}
+  m_LocalPosition: {x: -5.4816566, y: -0.12368581, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -53,9 +53,10 @@ MonoBehaviour:
   contactDamage: 1
   enemyExp: 50
   bodyRenderer: {fileID: 0}
-  normalColor: {r: 0, g: 1, b: 0.033422947, a: 1}
+  normalColor: {r: 0, g: 0.7490197, b: 0, a: 1}
   hitColor: {r: 1, g: 1, b: 1, a: 1}
-  deathEffectPrefab: {fileID: 0}
+  deathEffectPrefab: {fileID: 6689202797806509915, guid: 0548b8c18e5bbbd48ae41f049526005c, type: 3}
+  hitParticlePrefab: {fileID: 6689202797806509915, guid: b0c3f731dec188749b6a1117eea1c8b5, type: 3}
   orbitDistance: 5
   distanceCorrectionSpeed: 2
   dashInterval: 3
@@ -93,7 +94,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.0013730526, y: -0.000000029802322}
+  m_Offset: {x: 0.0020303726, y: -0.000000029802322}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -104,7 +105,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.5029206, y: 0.50566715}
+  m_Size: {x: 0.47005558, y: 0.47148693}
   m_EdgeRadius: 0
 --- !u!50 &4106554276265722918
 Rigidbody2D:
@@ -159,7 +160,7 @@ Transform:
   m_GameObject: {fileID: 6997276993736926571}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.06967342}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -185,7 +186,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 194b2466634b9674997304e8ee1e48d8, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -206,7 +207,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a9cc08067fc4fd34585de66d3a1def59, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

@@ -188,7 +188,6 @@ public class WaveManager : MonoSingleton<WaveManager>
         return pos;
     }
 
-    // --- 外部调用接口：怪物死亡时调用 ---
     public void RegisterEnemyDeath()
     {
         totalEnemiesAlive--;

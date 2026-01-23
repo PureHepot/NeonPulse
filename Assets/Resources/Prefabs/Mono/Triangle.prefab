@@ -27,7 +27,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 8091461355661264259}
@@ -52,7 +52,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 194b2466634b9674997304e8ee1e48d8, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -73,7 +73,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 739e85b25145b7b4bb71c739aeddfa64, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -137,9 +137,10 @@ MonoBehaviour:
   contactDamage: 1
   enemyExp: 50
   bodyRenderer: {fileID: 0}
-  normalColor: {r: 0.990566, g: 0.6368343, b: 0, a: 1}
+  normalColor: {r: 3.962264, g: 2.5473373, b: 0, a: 1}
   hitColor: {r: 0.9433962, g: 0.9433962, b: 0.9433962, a: 1}
-  deathEffectPrefab: {fileID: 0}
+  deathEffectPrefab: {fileID: 6689202797806509915, guid: 0548b8c18e5bbbd48ae41f049526005c, type: 3}
+  hitParticlePrefab: {fileID: 6689202797806509915, guid: b0c3f731dec188749b6a1117eea1c8b5, type: 3}
   rotateSpeed: 200
   waveFrequency: 2
   waveMagnitude: 1
@@ -187,9 +188,9 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 0.0024495125, y: 0.2907356}
-      - {x: -0.2501235, y: -0.14658004}
-      - {x: 0.252573, y: -0.14658004}
+    - - {x: -0.19932556, y: 0.2339865}
+      - {x: -0.19967985, y: -0.23107332}
+      - {x: 0.1996069, y: 0.0009678006}
   m_UseDelaunayMesh: 0
 --- !u!50 &1042899453055156823
 Rigidbody2D:

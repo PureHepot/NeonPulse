@@ -40,10 +40,11 @@ public class PlayerBullet : MonoBehaviour, IPoolable
             IDamageable target = other.GetComponent<IDamageable>();
             if (target != null)
             {
-                target.TakeDamage(damage);
+                Vector3 hitPoint = other.ClosestPoint(transform.position);
 
-                //TODO:击中特效
-                // ObjectPoolManager.Instance.Get(hitEffect, transform.position...);
+                Vector3 hitNormal = (PlayerManager.Instance.PlayerPosition - hitPoint).normalized;
+
+                target.TakeDamage(damage, hitPoint, hitNormal);
 
                 ObjectPoolManager.Instance.Return(this.gameObject);
             }

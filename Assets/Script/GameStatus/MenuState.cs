@@ -8,7 +8,7 @@ public class MenuState : GameState
         // UIManager.Instance.PushPanel<MainMenuPanel>(); 
         startUI = UIManager.Instance.Open<StartUI>();
 
-        AudioManager.Instance.PlayBGM("MainTheme1");
+        AudioManager.Instance.PlayBGM("MainTheme");
         Debug.Log("UI: 显示开始按钮");
     }
 
