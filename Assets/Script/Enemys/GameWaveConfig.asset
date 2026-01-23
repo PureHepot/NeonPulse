@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 0}
   m_Name: GameWaveConfig
   m_EditorClassIdentifier: Assembly-CSharp::WavesData
-  waves:
+  allWaves:
   - waveName: Wave 1
     groups:
     - enemyPrefab: {fileID: 5687499291434305790, guid: 706a79fa4b565b747bd409464879a084, type: 3}
@@ -27,35 +27,41 @@ MonoBehaviour:
       isParallel: 1
       direction: 0
       delayBeforeStart: 3
-    - enemyPrefab: {fileID: 7534717032132797725, guid: a2a130f58592ab94ca0cb2f5e571a9b4, type: 3}
-      count: 5
+    - enemyPrefab: {fileID: 2226239598622922695, guid: 8fccc0e143cd3c648b9591b4e00d576c, type: 3}
+      count: 2
       spawnRate: 5
-      isParallel: 0
-      direction: 3
-      delayBeforeStart: 0
-    - enemyPrefab: {fileID: 7534717032132797725, guid: a2a130f58592ab94ca0cb2f5e571a9b4, type: 3}
-      count: 5
-      spawnRate: 5
-      isParallel: 1
-      direction: 4
-      delayBeforeStart: 0
-  - waveName: Wave 2
-    groups:
-    - enemyPrefab: {fileID: 5687499291434305790, guid: 706a79fa4b565b747bd409464879a084, type: 3}
-      count: 10
-      spawnRate: 2
       isParallel: 0
       direction: 0
       delayBeforeStart: 0
+  - waveName: Wave 2
+    groups:
     - enemyPrefab: {fileID: 3862104991398879297, guid: f837404300d7da240a1f98c5a0dea4e1, type: 3}
       count: 10
       spawnRate: 2
       isParallel: 0
       direction: 0
       delayBeforeStart: 0
-    - enemyPrefab: {fileID: 2226239598622922695, guid: 8fccc0e143cd3c648b9591b4e00d576c, type: 3}
+    - enemyPrefab: {fileID: 5687499291434305790, guid: 706a79fa4b565b747bd409464879a084, type: 3}
+      count: 10
+      spawnRate: 2
+      isParallel: 1
+      direction: 0
+      delayBeforeStart: 0
+    - enemyPrefab: {fileID: 7534717032132797725, guid: a2a130f58592ab94ca0cb2f5e571a9b4, type: 3}
       count: 5
-      spawnRate: 5
-      isParallel: 0
+      spawnRate: 2
+      isParallel: 1
+      direction: 3
+      delayBeforeStart: 5
+    - enemyPrefab: {fileID: 7534717032132797725, guid: a2a130f58592ab94ca0cb2f5e571a9b4, type: 3}
+      count: 5
+      spawnRate: 2
+      isParallel: 1
+      direction: 4
+      delayBeforeStart: 5
+    - enemyPrefab: {fileID: 2226239598622922695, guid: 8fccc0e143cd3c648b9591b4e00d576c, type: 3}
+      count: 10
+      spawnRate: 2
+      isParallel: 1
       direction: 0
       delayBeforeStart: 0

@@ -34,7 +34,7 @@ MonoBehaviour:
     upgradeName: "\u5C04\u53E3\u6570\u91CF"
     description: "\u589E\u52A0\u5C04\u53E3\u6570\u91CF"
   - statType: 7
-    valuePerUpgrade: 0.5
+    valuePerUpgrade: 1
     maxStacks: 5
     upgradeName: "\u5C04\u51FB\u4F24\u5BB3"
     description: "\u63D0\u9AD8\u5C04\u51FB\u4F24\u5BB3"
