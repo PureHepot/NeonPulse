@@ -1167,7 +1167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab40e1850c2462f4192d067cfcabb369, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wavesData: {fileID: 11400000, guid: d1962fe2c3242dd4e8878382360f17c8, type: 2}
+  wavesData: {fileID: 11400000, guid: 5bb0a214849d7db4182c93bfd697d7b9, type: 2}
   timeBetweenWaves: 3
   spawnPadding: 1.5
 --- !u!114 &1357557158

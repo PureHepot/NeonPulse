@@ -21,37 +21,39 @@ public class ModuleRuntimeData
     {
         if (!upgradeCounts.ContainsKey(type))
         {
-            upgradeCounts[type] = 0;        
+            upgradeCounts[type] = 0;
         }
 
-        // 检查最大层数限制
         var def = config.GetUpgradeDefinition(type);
-        if (def != null)
+        if (def == null)
         {
-            if (def.maxStacks == -1 || upgradeCounts[type] < def.maxStacks)
-            {
-                upgradeCounts[type]++;
-                Debug.Log($"[{config.moduleName}] 属性 {type} 升级! 当前层数: {upgradeCounts[type]}");
-            }
-            else
-            {
-                Debug.LogWarning("该属性已达最大等级");
-            }
+            Debug.LogWarning($"[{config.moduleName}] 找不到升级定义: {type}");
+            return;
         }
+
+        if (def.maxStacks != -1 && upgradeCounts[type] >= def.maxStacks)
+        {
+            Debug.LogWarning($"[{config.moduleName}] 属性 {type} 已达最大等级");
+            return;
+        }
+
+        upgradeCounts[type]++;
+        Debug.Log($"[{config.moduleName}] 属性 {type} 升级! 当前层数: {upgradeCounts[type]}");
     }
 
-    //获取当前最终值
+    /// <summary>
+    /// 获取当前最终值
+    /// </summary>
     public float GetCurrentStat(StatType type)
     {
         float finalValue = config.GetBaseStat(type);
 
-        //升级增量
         if (upgradeCounts.TryGetValue(type, out int count) && count > 0)
         {
             var def = config.GetUpgradeDefinition(type);
             if (def != null)
             {
-                finalValue += (count * def.valuePerUpgrade);
+                finalValue += count * def.valuePerUpgrade;
             }
         }
 
@@ -63,6 +65,18 @@ public class ModuleRuntimeData
     /// </summary>
     public int GetStatLevel(StatType type)
     {
-        return upgradeCounts.ContainsKey(type) ? upgradeCounts[type] : 0;
+        return upgradeCounts.TryGetValue(type, out int count) ? count : 0;
+    }
+
+    /// <summary>
+    /// 是否已达到最大升级层数
+    /// </summary>
+    public bool IsStatMaxed(StatType type)
+    {
+        var def = config.GetUpgradeDefinition(type);
+        if (def == null) return true;
+        if (def.maxStacks < 0) return false;
+
+        return GetStatLevel(type) >= def.maxStacks;
     }
 }
