@@ -38,6 +38,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     {
         currentHp = maxHp;
         isDead = false;
+        this.gameObject.layer = LayerMask.NameToLayer("EnemySpawning");
 
         if (bodyRenderer != null) bodyRenderer.color = normalColor;
         transform.localScale = Vector3.one;
@@ -96,6 +97,12 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     {
         isDead = true;
         rb.simulated = false;
+        AudioManager.Instance.PlayEffect("EnemyDie");
+
+        if (deathEffectPrefab == null)
+        {
+            deathEffectPrefab = Resources.Load<GameObject>("ParticleSystem/PS_DeathSparks");
+        }
 
         if (deathEffectPrefab != null)
         {
@@ -146,10 +153,11 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         if (isDead) return;
 
         currentHp -= amount;
-
+        
         PlayHitEffect(hitPoint, hitNormal);
 
         if (currentHp <= 0) Die();
+        else AudioManager.Instance.PlayEffect("EnemyHit");
     }
 
     protected virtual void PlayHitEffect(Vector3 pos, Vector3 normal)
@@ -164,6 +172,11 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
             transform.DOKill();
             transform.localScale = Vector3.one;
             transform.DOPunchScale(new Vector3(0.15f, 0.15f, 0), 0.1f);
+        }
+
+        if (hitParticlePrefab == null)
+        {
+            hitParticlePrefab = Resources.Load<GameObject>("ParticleSystem/PS_HitSparks");
         }
 
         if (hitParticlePrefab != null)

@@ -10,4 +10,9 @@ public static class MUtils
         Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mouseScreenPos);
         return new Vector3(mouseWorldPos.x, mouseWorldPos.y, 0);
     }
+
+    public static int RandomPulseFunc()
+    {
+        return Random.Range(0, 2) <= 0 ? -1 : 1;
+    }
 }

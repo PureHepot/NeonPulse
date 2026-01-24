@@ -97,7 +97,7 @@ GameObject:
   - component: {fileID: 5072550230078654586}
   - component: {fileID: 615536797395443727}
   m_Layer: 3
-  m_Name: Crasher
+  m_Name: EnemyCrasher
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -132,7 +132,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c5dc7a5c82e7b341af0bc8c607ac28c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHp: 10
+  maxHp: 1
   moveSpeed: 5
   scoreValue: 10
   contactDamage: 1
@@ -142,9 +142,13 @@ MonoBehaviour:
   hitColor: {r: 1, g: 1, b: 1, a: 1}
   deathEffectPrefab: {fileID: 6689202797806509915, guid: 0548b8c18e5bbbd48ae41f049526005c, type: 3}
   hitParticlePrefab: {fileID: 6689202797806509915, guid: b0c3f731dec188749b6a1117eea1c8b5, type: 3}
+  enterSpeed: 2
+  safeAreaSize: {x: 16, y: 9}
   aimDuration: 1
   dashSpeed: 40
   dashDistance: 30
+  dashDuration: 2
+  homingStrength: 2
   warningLine: {fileID: 2939079180622390587}
 --- !u!60 &5072550230078654586
 PolygonCollider2D:

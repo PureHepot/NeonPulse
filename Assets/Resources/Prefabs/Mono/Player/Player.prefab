@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4921772317708394521}
   - component: {fileID: 5346661258041484373}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: LaserDrone2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -93,7 +93,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 399817124534317291}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: muzzle3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -126,7 +126,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6070942501130648111}
   - component: {fileID: 8707002102979618067}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: LaserDrone1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -210,7 +210,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8387503168923518076}
   - component: {fileID: 1441640976183614478}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: LaserDrone3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -294,7 +294,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3685235989871488641}
   - component: {fileID: 5563649334771793631}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SpeedBooster
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -438,7 +438,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7720353606840874526}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: muzzle1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -474,7 +474,7 @@ GameObject:
   - component: {fileID: 2477791794360302914}
   - component: {fileID: 4692788716070180996}
   - component: {fileID: 9119953752971310115}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Shield
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -717,7 +717,7 @@ GameObject:
   - component: {fileID: 681128143439940267}
   - component: {fileID: 882021336278156554}
   - component: {fileID: 5932255660191987318}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Modules
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -757,11 +757,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moduleType: 1
   isUnlocked: 0
-  maxHp: 100
-  currentHp: 0
-  knockbackForce: 15
-  stunDuration: 0.2
-  invincibilityDuration: 1
+  knockbackForce: 5
+  stunDuration: 0.1
+  invincibilityDuration: 0.5
   hurtColor: {r: 1, g: 0, b: 0, a: 1}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &6873994201756524193
@@ -778,7 +776,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moduleType: 0
   isUnlocked: 0
-  baseMoveSpeed: 5
+  smoothTime: 0.15
 --- !u!114 &681128143439940267
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -796,7 +794,33 @@ MonoBehaviour:
   dashTrail: {fileID: 5563649334771793631}
   dashForce: 20
   dashDuration: 0.2
-  dashCooldown: 1
+  speedCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  playerLayerName: Player
+  enemyLayerName: Enemy
+  enemyBulletLayerName: EnemyBullet
 --- !u!114 &882021336278156554
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -836,7 +860,6 @@ MonoBehaviour:
   - {fileID: 399817124534317291}
   bulletPrefab: {fileID: 3724406646315978653, guid: e46474cd89e3fbd47bc55205db5dc006, type: 3}
   rotationSpeed: 15
-  fireRate: 0.5
   sequenceDelay: 0.2
   currentLevel: 1
 --- !u!1 &6236048808547626479
@@ -852,7 +875,7 @@ GameObject:
   - component: {fileID: 868648148852120286}
   - component: {fileID: 142812933114081023}
   - component: {fileID: 6514830293039517942}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -972,7 +995,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1378605328406966768}
   - component: {fileID: 4913378958401674041}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1056,7 +1079,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3770622881727656851}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: muzzle2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1088,7 +1111,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5559335993037766974}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Shooter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1123,13 +1146,13 @@ GameObject:
   m_Component:
   - component: {fileID: 3218088321755269212}
   - component: {fileID: 73798939518881541}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: LaserDrones
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3218088321755269212
 Transform:
   m_ObjectHideFlags: 0
@@ -1166,7 +1189,9 @@ MonoBehaviour:
   - {fileID: 6070942501130648111}
   - {fileID: 4921772317708394521}
   - {fileID: 8387503168923518076}
-  laserPrefab: {fileID: 6828186649595060820, guid: e96526f1469ac494f97c8accb992a944, type: 3}
+  laserLinePrefab: {fileID: 7190893062169272689, guid: ccc476ee35c3d204bab00768307f1bd6, type: 3}
+  muzzleVFXPrefab: {fileID: 2222235006804172273, guid: 0bd5ba2a997dfac4db82d9121f931367, type: 3}
+  hitVFXPrefab: {fileID: 6321916889492637054, guid: df16c1a6f3c41784abda5e4503ae0175, type: 3}
   followSmoothTime: 0.3
   rotateSpeed: 10
   minIdleRadius: 0.3
@@ -1175,11 +1200,13 @@ MonoBehaviour:
   maxDistanceBeforeFollow: 1
   attackForwardDist: 1
   attackSpreadRadius: 0.5
+  droneCount: 0
   damagePerTick: 1
   damageInterval: 0.2
   laserRange: 5
   chargeTime: 0.8
   maxFireDuration: 2
+  laserCD: 5
   enemyLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -1197,7 +1224,7 @@ GameObject:
   - component: {fileID: 8620267737748286155}
   - component: {fileID: 21681385313512149}
   - component: {fileID: 1746084131540979450}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Heart
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1312,6 +1339,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlayerBullet
       objectReference: {fileID: 0}
+    - target: {fileID: 3724406646315978653, guid: e46474cd89e3fbd47bc55205db5dc006, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 6523726963308551432, guid: e46474cd89e3fbd47bc55205db5dc006, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1386,6 +1417,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlayerBullet
       objectReference: {fileID: 0}
+    - target: {fileID: 3724406646315978653, guid: e46474cd89e3fbd47bc55205db5dc006, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 6523726963308551432, guid: e46474cd89e3fbd47bc55205db5dc006, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1459,6 +1494,10 @@ PrefabInstance:
     - target: {fileID: 3724406646315978653, guid: e46474cd89e3fbd47bc55205db5dc006, type: 3}
       propertyPath: m_Name
       value: PlayerBullet
+      objectReference: {fileID: 0}
+    - target: {fileID: 3724406646315978653, guid: e46474cd89e3fbd47bc55205db5dc006, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 6523726963308551432, guid: e46474cd89e3fbd47bc55205db5dc006, type: 3}
       propertyPath: m_LocalPosition.x

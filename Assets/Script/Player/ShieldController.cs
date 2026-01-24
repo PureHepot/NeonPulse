@@ -65,7 +65,7 @@ public class ShieldController : MonoBehaviour
     {
         if (!isDefending) return;
 
-        if (collision.gameObject.CompareTag("Enemy") || collision.gameObject.CompareTag("Bullet"))
+        if (collision.gameObject.CompareTag("Enemy") || collision.gameObject.layer == LayerMask.NameToLayer("EnemyBullet"))
         {
             float damage = 20f;
             currentIntegrity = Mathf.Max(0, currentIntegrity - damage);
