@@ -50,7 +50,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _FocusArea: 25.2
+    - _FocusArea: 5
     - _FocusPower: 0
     - _LineBrightness: 0.03
     - _LineThickness: 30
@@ -65,6 +65,6 @@ Material:
     - _BaseColor: {r: 0, g: 0, b: 0.101960786, a: 1}
     - _ColorBottom: {r: 2, g: 1.434169, b: 0, a: 1}
     - _ColorTop: {r: 0.33967376, g: 2, b: 0, a: 1}
-    - _FocusPos: {r: 0.60963255, g: 0.17606881, b: 0, a: 0}
+    - _FocusPos: {r: 0.916949, g: 0.87084436, b: 0, a: 0}
     - _Position: {r: 0.5, g: 0.5, b: 0, a: 1}
   m_BuildTextureStacks: []

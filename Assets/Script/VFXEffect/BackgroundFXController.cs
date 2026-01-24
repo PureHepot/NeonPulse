@@ -110,6 +110,18 @@ public class BackgroundFXController : MonoSingleton<BackgroundFXController>
         });
     }
 
+    public void SwitchToTheme(string name)
+    {
+        for (int i = 0; i < presets.allPresets.Count; i++)
+        {
+            if (presets.allPresets[i].themeName == name)
+            {
+                SwitchToTheme(i);
+                break;
+            }
+        }
+    }
+
     public void SwitchToNextTheme()
     {
         int nextIndex = (currentPresetIndex + 1) % presets.allPresets.Count;

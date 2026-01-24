@@ -1,20 +1,26 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using DG.Tweening; // 需要 DoTween
+using UnityEngine;
 
 public class EnemyCrasher : EnemyBase
 {
+    [Header("Movement Settings")]
+    public float enterSpeed = 5f;    // 入场速度
+    public Vector2 safeAreaSize = new Vector2(8, 5);
+
     [Header("Dasher Settings")]
     public float aimDuration = 1.0f; // 瞄准/预警时间
     public float dashSpeed = 20f;    // 冲刺速度
     public float dashDistance = 30f; // 冲刺多远
+    public float dashDuration = 2.0f;
+
+    [Header("Homing Settings")]
+    public float homingStrength = 2.0f;
 
     [Header("References")]
     public LineRenderer warningLine;
 
     // 状态
-    private enum State { Spawning, Aiming, Dashing, Idle }
+    private enum State { Entering, Spawning, Aiming, Dashing, Idle }
     private State currentState;
     private Vector2 dashDirection;
     private float stateTimer;
@@ -29,9 +35,7 @@ public class EnemyCrasher : EnemyBase
         if (warningLine) warningLine.enabled = false;
 
         transform.localScale = Vector3.zero;
-        transform.DOScale(1f, 0.5f).OnComplete(() => {
-            StartAiming();
-        });
+        transform.DOScale(1f, 0.5f).OnComplete(StartEntering);
     }
 
     public override void OnDespawn()
@@ -43,9 +47,11 @@ public class EnemyCrasher : EnemyBase
 
     protected override void MoveBehavior()
     {
-        // 状态机
         switch (currentState)
         {
+            case State.Entering:
+                break;
+
             case State.Aiming:
                 UpdateAiming();
                 break;
@@ -68,6 +74,33 @@ public class EnemyCrasher : EnemyBase
         }
 
         // 可以在这里播放一个蓄力音效
+    }
+
+    void StartEntering()
+    {
+        currentState = State.Entering;
+
+        if (playerTransform != null)
+        {
+            Vector2 lookdir = (playerTransform.position - transform.position).normalized;
+
+            float angle = Mathf.Atan2(lookdir.y, lookdir.x) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+        }
+
+        float halfW = safeAreaSize.x / 2f;
+        float halfH = safeAreaSize.y / 2f;
+
+        float targetX = Mathf.Clamp(transform.position.x, -halfW, halfW);
+        float targetY = Mathf.Clamp(transform.position.y, -halfH, halfH);
+        Vector3 targetPos = new Vector3(targetX, targetY, 0);
+
+        float distance = Vector3.Distance(transform.position, targetPos);
+        float duration = distance / enterSpeed;
+
+        transform.DOMove(targetPos, duration)
+            .SetEase(Ease.OutQuad)
+            .OnComplete(StartAiming);
     }
 
     void UpdateAiming()
@@ -109,26 +142,58 @@ public class EnemyCrasher : EnemyBase
     void StartDash()
     {
         currentState = State.Dashing;
+        stateTimer = dashDuration;
 
         if (warningLine) warningLine.enabled = false;
 
-        // 播放冲刺动画/特效 (Squash and Stretch)
-        transform.DOPunchScale(new Vector3(0.5f, -0.2f, 0), 0.2f, 10, 1);
+        // 播放冲刺动画
+        transform.DOPunchScale(new Vector3(0.5f, -0.2f, 0), 0.2f, 10, 1); 
+    }
 
-        rb.velocity = dashDirection * dashSpeed;
-        //冲两秒爆炸
-        stateTimer = 2.0f;
+    protected override void OnCollisionEnter2D(Collision2D collision)
+    {
+        base.OnCollisionEnter2D(collision);
+
+        int hitLayer = collision.gameObject.layer;
+        int wallLayer = LayerMask.NameToLayer("ArenaWall");
+
+        if (currentState == State.Dashing)
+        {
+            if (hitLayer == wallLayer)
+            {
+                Die();
+            }
+        }
     }
 
     void UpdateDashing()
     {
-        // 保持速度 (防止阻力减速)
+        stateTimer -= Time.deltaTime;
+
+        // 修正方向
+        if (playerTransform != null && homingStrength > 0)
+        {
+            // 计算理想的目标方向
+            Vector2 targetDir = (playerTransform.position - transform.position).normalized;
+
+            float maxRadiansDelta = homingStrength * Time.deltaTime;
+            Vector3 newDir = Vector3.RotateTowards(dashDirection, targetDir, homingStrength * Time.deltaTime, maxRadiansDelta);
+
+            dashDirection = newDir.normalized;
+        }
+
         rb.velocity = dashDirection * dashSpeed;
 
-        stateTimer -= Time.deltaTime;
+        RotateTowards(dashDirection);
+
         if (stateTimer <= 0)
         {
             Die();
         }
+    }
+    void RotateTowards(Vector2 dir)
+    {
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
     }
 }

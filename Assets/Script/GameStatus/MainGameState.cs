@@ -52,27 +52,6 @@ public class MainGameState : GameState
         ModuleSelectManager.Instance.OnShowAbilitySelectUI += HandleShowAbilityUI;
 
         GameManager.Instance.StartCoroutine(WaveManager.Instance.GameLoopRoutine());
-
-        Timer.Register(5f, onComplete: () =>
-        {
-            BackgroundFXController.Instance.SwitchToNextTheme();
-        });
-        Timer.Register(10f, onComplete: () =>
-        {
-            BackgroundFXController.Instance.SwitchToNextTheme();
-        });
-        Timer.Register(15f, onComplete: () =>
-        {
-            BackgroundFXController.Instance.SwitchToNextTheme();
-        });
-        Timer.Register(20f, onComplete: () =>
-        {
-            BackgroundFXController.Instance.SwitchToNextTheme();
-        });
-        Timer.Register(25f, onComplete: () =>
-        {
-            BackgroundFXController.Instance.SwitchToNextTheme();
-        });
     }
 
     private void HandleShowAbilityUI(int level, List<UpgradeOption> candidates)

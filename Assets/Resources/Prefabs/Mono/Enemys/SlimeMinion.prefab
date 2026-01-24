@@ -516,7 +516,7 @@ GameObject:
   - component: {fileID: 4854227595650258920}
   - component: {fileID: 8377909467476911787}
   - component: {fileID: 7446216344939254725}
-  - component: {fileID: 1136961007644990029}
+  - component: {fileID: 8429230611028385660}
   m_Layer: 0
   m_Name: SlimeMinion
   m_TagString: Untagged
@@ -595,6 +595,7 @@ MonoBehaviour:
   normalColor: {r: 0.31243825, g: 1, b: 0, a: 1}
   hitColor: {r: 1, g: 1, b: 1, a: 1}
   deathEffectPrefab: {fileID: 0}
+  hitParticlePrefab: {fileID: 0}
   chaseForce: 5
 --- !u!58 &4854227595650258920
 CircleCollider2D:
@@ -647,20 +648,13 @@ MonoBehaviour:
   pointCount: 7
   radius: 0.5
   pointMass: 0.5
-  linearDrag: 0
-  angularDrag: 0.05
-  centerFrequency: 10
-  centerDamping: 0.5
-  edgeFrequency: 20
-  edgeDamping: 0.3
-  generatedPoints:
-  - {fileID: 7495237774063482946}
-  - {fileID: 6940183328731512798}
-  - {fileID: 7857056492650577344}
-  - {fileID: 501908062897677095}
-  - {fileID: 9114575403496242168}
-  - {fileID: 7887462025467470078}
-  - {fileID: 490382890946851279}
+  baseDrag: 1
+  frequency: 3
+  dampingRatio: 0.5
+  hardCoreRadius: 1
+  softCoreRadius: 2
+  hardAngleRatio: 0.3
+  softAngleRatio: 0.7
 --- !u!114 &7446216344939254725
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -682,9 +676,7 @@ MonoBehaviour:
   - {fileID: 9114575403496242168}
   - {fileID: 7887462025467470078}
   - {fileID: 490382890946851279}
-  minUpdateScale: 0.1
-  minPointDistance: 0.1
---- !u!114 &1136961007644990029
+--- !u!114 &8429230611028385660
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -693,13 +685,29 @@ MonoBehaviour:
   m_GameObject: {fileID: 2926788728728893175}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4d56dd172475a0a41931558561f3b21f, type: 3}
+  m_Script: {fileID: 11500000, guid: 7592710dad7fa954abe7b6e1f71ac4f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minRadius: 1.5
-  repulsionForce: 50
-  emergencyForce: 200
-  edgePoints: []
+  points: []
+  centerRB: {fileID: 0}
+  baseDrag: 0
+  idealDeltaAngle: 0
+  gravityDirection: {x: 0, y: -1}
+  gravityMagnitude: 30
+  enablePhysicsSimulation: 0
+  enableGravity: 1
+  hardLimitRadius: 0
+  cushionRadius: 0
+  maxRadialDrag: 20
+  radialPushForce: 50
+  minAngleLimit: 0
+  cushionAngleLimit: 0
+  wobbleSpeed: 3
+  wobbleScale: 0.5
+  maxAngularRepulsion: 40
+  maxAngularBraking: 5
+  bendingStiffness: 60
+  surfaceSmoothness: 0.5
 --- !u!1 &6226725384790467892
 GameObject:
   m_ObjectHideFlags: 0

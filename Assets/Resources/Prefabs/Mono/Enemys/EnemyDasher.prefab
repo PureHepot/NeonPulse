@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8234553666177884431}
   - component: {fileID: 4106554276265722918}
   m_Layer: 3
-  m_Name: Square
+  m_Name: EnemyDasher
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

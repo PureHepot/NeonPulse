@@ -31,7 +31,7 @@ public class WaveGroup
 
 public class WaveData
 {
-    public string waveName = "Wave 1";
+    public string waveName = "Wave ";
     public List<WaveGroup> groups; // 这一波包含的所有怪组
 }
 
@@ -107,6 +107,8 @@ public class WaveManager : MonoSingleton<WaveManager>
             Debug.Log($"<color=green>--- {currentWave.waveName} 完成 ---</color>");
 
             currentWaveIndex++;
+
+            BackgroundFXController.Instance.SwitchToTheme($"Normal_{currentWaveIndex % 5}");
         }
 
         // 所有波次结束
