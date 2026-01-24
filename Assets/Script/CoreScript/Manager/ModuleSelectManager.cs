@@ -1,58 +1,59 @@
-using System;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
-/// <summary>
-/// 玩家能力选择
-/// </summary>
 public class ModuleSelectManager : MonoSingleton<ModuleSelectManager>
 {
-    [Header("能力选择配置")]
     public int candidateCount = 3;
 
     public Action<int, List<UpgradeOption>> OnShowAbilitySelectUI;
 
-    private void Awake()
-    {
-        UpgradeManager.Instance.OnLevelUp += HandleLevelUp;
-    }
+    private List<UpgradeOption> cachedOptions = new();
 
-    private void OnDestroy()
+    public List<UpgradeOption> GetOrCreateOptions()
     {
-        if (UpgradeManager.Instance != null)
+        if (cachedOptions == null || cachedOptions.Count == 0)
         {
-            UpgradeManager.Instance.OnLevelUp -= HandleLevelUp;
+            cachedOptions = UpgradeManager.Instance.GetUpgradeOptions(candidateCount);
         }
+
+        return cachedOptions;
     }
 
-    /// <summary>
-    /// 等级提升,弹出升级UI
-    /// </summary>
-    private void HandleLevelUp(int level, List<UpgradeOption> options)
+    public UpgradeOption GetSingleRandomOption()
     {
-        OnShowAbilitySelectUI?.Invoke(level, options);
+        return UpgradeManager.Instance.GetUpgradeOptions(1)[0];
     }
 
-    /// <summary>
-    /// 玩家点击某个模块
-    /// </summary>
-    public void OnChooseUpgrade(UpgradeOption option)
+    public void ReplaceOption(int index, UpgradeOption option)
     {
+        if (index < 0 || index >= cachedOptions.Count) return;
+        cachedOptions[index] = option;
+    }
+
+    public void OnChooseUpgrade(UpgradeOption option, int index)
+    {
+        if (!UpgradeManager.Instance.ConsumeUpgradePoint())
+        {
+            Debug.LogWarning("升级点数不足，无法升级！");
+            return;
+        }
+
         if (option.statType == StatType.None)
         {
             UpgradeManager.Instance.UnlockModule(option.moduleType);
-            Debug.Log($"解锁模块: {option.moduleType}");
         }
         else
         {
             UpgradeManager.Instance.UpgradeModuleStat(option.moduleType, option.statType);
-            Debug.Log($"升级属性: {option.moduleType} -> {option.statType}");
+        }
+
+        if (UpgradeManager.Instance.UpgradePoints > 0)
+        {
+            ReplaceOption(index, GetSingleRandomOption());
         }
     }
 
-    /// <summary>
-    /// 获取模块显示信息
-    /// </summary>
     public ModuleDescConfig GetUpgradeDesc(UpgradeOption option)
     {
         ModuleConfig config = UpgradeManager.Instance.GetConfig(option.moduleType);
@@ -63,21 +64,21 @@ public class ModuleSelectManager : MonoSingleton<ModuleSelectManager>
             {
                 moduleType = option.moduleType,
                 moduleName = config.moduleName,
-                moduleDesc = $"解锁新模块：{config.moduleName}"
+                moduleDesc = $"解锁新模块：{config.moduleName}\n当前升级点数：{UpgradeManager.Instance.UpgradePoints}"
             };
         }
-        else
+
+        var def = config.GetUpgradeDefinition(option.statType);
+
+        return new ModuleDescConfig
         {
-            var def = config.GetUpgradeDefinition(option.statType);
-            return new ModuleDescConfig
-            {
-                moduleType = option.moduleType,
-                moduleName = def.upgradeName,
-                moduleDesc = def.description
-            };
-        }
+            moduleType = option.moduleType,
+            moduleName = def.upgradeName,
+            moduleDesc = $"{def.description}\n当前升级点数：{UpgradeManager.Instance.UpgradePoints}"
+        };
     }
 }
+
 
 [Serializable]
 public class ModuleDescConfig

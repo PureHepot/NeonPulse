@@ -1,11 +1,12 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MainGameState : GameState
 {
     private bool isSettingOpen = false;
+    private bool isModuleSelectOpen = false;
 
     public override void OnEnter()
     {
@@ -18,29 +19,33 @@ public class MainGameState : GameState
 
     public override void OnExit()
     {
+        // 清理事件
         if (ModuleSelectManager.Instance != null)
         {
             ModuleSelectManager.Instance.OnShowAbilitySelectUI -= HandleShowAbilityUI;
         }
+        EventManager.RemoveListener<ModuleType, StatType>(GameEvent.ModuleUpgrade, OnModuleUpgrade);
+        Time.timeScale = 1f;
     }
 
     public override void OnUpdate()
     {
-        // 监听 ESC
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             ToggleSettingPanel();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            ToggleModuleSelectPanel();
         }
     }
 
     private void StartGame()
     {
-        //玩家载入
         PlayerManager.Instance.SpawnPlayer();
         EventManager.AddListener<ModuleType, StatType>(GameEvent.ModuleUpgrade, OnModuleUpgrade);
 
-
-        //设置事件
         WaveManager.Instance.OnWaveIncoming += (level, txt) =>
         {
             MessageUIArg arg = new MessageUIArg(level, txt);
@@ -48,52 +53,91 @@ public class MainGameState : GameState
         };
 
         UpgradeManager.Instance.SyncWithPlayerManager();
-
         ModuleSelectManager.Instance.OnShowAbilitySelectUI += HandleShowAbilityUI;
-
         GameManager.Instance.StartCoroutine(WaveManager.Instance.GameLoopRoutine());
 
-        Timer.Register(5f, onComplete: () =>
-        {
-            BackgroundFXController.Instance.SwitchToNextTheme();
-        });
-        Timer.Register(10f, onComplete: () =>
-        {
-            BackgroundFXController.Instance.SwitchToNextTheme();
-        });
-        Timer.Register(15f, onComplete: () =>
-        {
-            BackgroundFXController.Instance.SwitchToNextTheme();
-        });
-        Timer.Register(20f, onComplete: () =>
-        {
-            BackgroundFXController.Instance.SwitchToNextTheme();
-        });
-        Timer.Register(25f, onComplete: () =>
-        {
-            BackgroundFXController.Instance.SwitchToNextTheme();
-        });
+        Timer.Register(5f, onComplete: () => BackgroundFXController.Instance.SwitchToNextTheme());
+        Timer.Register(10f, onComplete: () => BackgroundFXController.Instance.SwitchToNextTheme());
+        Timer.Register(15f, onComplete: () => BackgroundFXController.Instance.SwitchToNextTheme());
+        Timer.Register(20f, onComplete: () => BackgroundFXController.Instance.SwitchToNextTheme());
+        Timer.Register(25f, onComplete: () => BackgroundFXController.Instance.SwitchToNextTheme());
     }
 
     private void HandleShowAbilityUI(int level, List<UpgradeOption> candidates)
     {
         var uiArgs = Tuple.Create(level, candidates);
-        // 打开升级选能力UI
-        UIManager.Instance.OpenPopup<ModuleSelectUI>(uiArgs);
+        if (!isModuleSelectOpen)
+        {
+            UIManager.Instance.OpenPopup<ModuleSelectUI>(uiArgs);
+        }
+        isModuleSelectOpen = true;
+    }
+
+    private void ToggleModuleSelectPanel()
+    {
+        if (isSettingOpen) return;
+
+        if (!isModuleSelectOpen)
+        {
+            if (UpgradeManager.Instance.UpgradePoints <= 0)
+            {
+                Debug.LogWarning("没有可用的升级点数！");
+                return;
+            }
+
+            var options = ModuleSelectManager.Instance.GetOrCreateOptions();
+            ModuleSelectManager.Instance.OnShowAbilitySelectUI?.Invoke(
+                UpgradeManager.Instance.CurrentLevel,
+                options
+            );
+
+            Time.timeScale = 0f;
+            isModuleSelectOpen = true;
+        }
+        else
+        {
+            ModuleSelectUI moduleSelectUI = FindModuleSelectUIInPopupLayer();
+            if (moduleSelectUI != null)
+            {
+                UIManager.Instance.CloseUI(moduleSelectUI);
+            }
+
+            Time.timeScale = 1f;
+            isModuleSelectOpen = false;
+        }
+    }
+
+
+    private ModuleSelectUI FindModuleSelectUIInPopupLayer()
+    {
+        GameObject canvasObj = GameObject.Find("Canvas");
+        if (canvasObj == null) return null;
+
+        Transform layerPopup = canvasObj.transform.Find("Layer_Popup");
+        if (layerPopup == null) return null;
+
+        foreach (Transform child in layerPopup)
+        {
+            ModuleSelectUI ui = child.GetComponent<ModuleSelectUI>();
+            if (ui != null)
+            {
+                return ui;
+            }
+        }
+
+        return null;
     }
 
     private void ToggleSettingPanel()
     {
         if (!isSettingOpen)
         {
-            // 打开设置面板
             UIManager.Instance.Open<SetVolumeUI>();
-            Time.timeScale = 0f;   // 暂停游戏
+            Time.timeScale = 0f;
             isSettingOpen = true;
         }
         else
         {
-            // 关闭设置面板
             UIManager.Instance.CloseTopPanel();
             Time.timeScale = 1f;
             isSettingOpen = false;
