@@ -17,7 +17,7 @@ MonoBehaviour:
     groups:
     - enemyPrefab: {fileID: 2559620815044795701, guid: 0565c5dd0e594194c936a8e3a1a62198, type: 3}
       count: 50
-      spawnRate: 0.2
+      spawnRate: 0.5
       isParallel: 0
       direction: 0
       delayBeforeStart: 0

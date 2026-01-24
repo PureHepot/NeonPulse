@@ -59,6 +59,7 @@ public class WaveManager : MonoSingleton<WaveManager>
     private int currentWaveIndex = 0;
     private int totalEnemiesAlive = 0;
     private int activeSpawnerCount = 0;
+    private int speedLevel = 1;
     private bool isSpawning => activeSpawnerCount > 0;
 
     private Camera mainCam;
