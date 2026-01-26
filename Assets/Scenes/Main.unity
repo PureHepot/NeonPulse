@@ -1214,15 +1214,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allModuleConfigs:
-  - {fileID: 11400000, guid: b4c0d57770812e8449287da18a445677, type: 2}
   - {fileID: 11400000, guid: bcf8066076506fa45855ebb7387ecbd5, type: 2}
+  - {fileID: 11400000, guid: b4c0d57770812e8449287da18a445677, type: 2}
+  - {fileID: 11400000, guid: 079281829382c1848bb44b23454ac944, type: 2}
   - {fileID: 11400000, guid: f3e70397309e5e74daf6cf3c70681944, type: 2}
   - {fileID: 11400000, guid: 0953ba3ebbeb223458cfa6c317f0fbc5, type: 2}
-  - {fileID: 11400000, guid: 737c88ac4e322104386eca77dfc0e641, type: 2}
-  - {fileID: 11400000, guid: 83c5802cbb4c6b64093edc38374a0ca8, type: 2}
-  - {fileID: 11400000, guid: 079281829382c1848bb44b23454ac944, type: 2}
   baseExpToLevelUp: 100
   expScale: 1.5
+  pointsPerLevel: 3
 --- !u!114 &1357557162
 MonoBehaviour:
   m_ObjectHideFlags: 0
