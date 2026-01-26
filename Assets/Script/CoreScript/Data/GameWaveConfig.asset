@@ -12,4 +12,54 @@ MonoBehaviour:
   m_Script: {fileID: 0}
   m_Name: GameWaveConfig
   m_EditorClassIdentifier: Assembly-CSharp::WavesData
-  allWaves: []
+  allWaves:
+  - waveName: "\u521D\u6B21\u89C1\u9762\uFF01"
+    groups:
+    - enemyPrefab: {fileID: 2559620815044795701, guid: 0565c5dd0e594194c936a8e3a1a62198, type: 3}
+      count: 10
+      spawnRate: 3
+      isParallel: 0
+      direction: 0
+      delayBeforeStart: 0
+  - waveName: 
+    groups:
+    - enemyPrefab: {fileID: 2559620815044795701, guid: 0565c5dd0e594194c936a8e3a1a62198, type: 3}
+      count: 10
+      spawnRate: 2
+      isParallel: 0
+      direction: 0
+      delayBeforeStart: 0
+    - enemyPrefab: {fileID: 5687499291434305790, guid: 706a79fa4b565b747bd409464879a084, type: 3}
+      count: 10
+      spawnRate: 2
+      isParallel: 1
+      direction: 0
+      delayBeforeStart: 4
+  - waveName: 
+    groups:
+    - enemyPrefab: {fileID: 2559620815044795701, guid: 0565c5dd0e594194c936a8e3a1a62198, type: 3}
+      count: 10
+      spawnRate: 1
+      isParallel: 0
+      direction: 0
+      delayBeforeStart: 0
+    - enemyPrefab: {fileID: 5687499291434305790, guid: 706a79fa4b565b747bd409464879a084, type: 3}
+      count: 5
+      spawnRate: 1
+      isParallel: 1
+      direction: 0
+      delayBeforeStart: 0
+    - enemyPrefab: {fileID: 3862104991398879297, guid: f837404300d7da240a1f98c5a0dea4e1, type: 3}
+      count: 5
+      spawnRate: 1
+      isParallel: 1
+      direction: 0
+      delayBeforeStart: 0
+  - waveName: "\u6765\u70B9\u901F\u5EA6\u5427\uFF01"
+    groups:
+    - enemyPrefab: {fileID: 0}
+      count: 5
+      spawnRate: 1
+      isParallel: 0
+      direction: 0
+      delayBeforeStart: 0
