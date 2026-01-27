@@ -13,8 +13,7 @@ public class MainGameState : GameState
         Time.timeScale = 1f;
         AudioManager.Instance.PlayBGM("FightBGM_2");
         StartGame();
-        UIManager.Instance.Open<ExpBarUI>();
-        UIManager.Instance.Open<HpBarUI>();
+        UIManager.Instance.OpenFullScreen<HUDUI>();
     }
 
     public override void OnExit()
@@ -32,8 +31,10 @@ public class MainGameState : GameState
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            ToggleSettingPanel();
+            TogglePausePanel();
         }
+
+        if (isPauseOpen) return;
 
         if (Input.GetKeyDown(KeyCode.Tab))
         {
@@ -128,19 +129,21 @@ public class MainGameState : GameState
         return null;
     }
 
-    private void ToggleSettingPanel()
+    private bool isPauseOpen = false;
+
+    private void TogglePausePanel()
     {
-        if (!isSettingOpen)
+        if (!isPauseOpen)
         {
-            UIManager.Instance.Open<SetVolumeUI>();
+            UIManager.Instance.Open<PauseUI>();
             Time.timeScale = 0f;
-            isSettingOpen = true;
+            isPauseOpen = true;
         }
         else
         {
             UIManager.Instance.CloseTopPanel();
             Time.timeScale = 1f;
-            isSettingOpen = false;
+            isPauseOpen = false;
         }
     }
 

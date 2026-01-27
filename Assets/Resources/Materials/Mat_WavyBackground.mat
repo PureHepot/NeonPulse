@@ -63,8 +63,8 @@ Material:
     - _WaveSpeed: 0.5
     m_Colors:
     - _BaseColor: {r: 0, g: 0, b: 0.101960786, a: 1}
-    - _ColorBottom: {r: 2, g: 1.434169, b: 0, a: 1}
-    - _ColorTop: {r: 0.33967376, g: 2, b: 0, a: 1}
-    - _FocusPos: {r: 0.41993576, g: 0.6010253, b: 0, a: 0}
+    - _ColorBottom: {r: 0.0042884145, g: 1.7353231, b: 0.78510827, a: 1}
+    - _ColorTop: {r: 0.22869837, g: 0.10154586, b: 2, a: 1}
+    - _FocusPos: {r: 0.54226, g: 0.11308092, b: 0, a: 0}
     - _Position: {r: 0.5, g: 0.5, b: 0, a: 1}
   m_BuildTextureStacks: []
