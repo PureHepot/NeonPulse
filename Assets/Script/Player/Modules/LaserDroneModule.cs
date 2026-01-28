@@ -44,7 +44,6 @@ public class LaserDroneModule : PlayerModule
 
     private Vector3[] currentVelocities;
 
-    // 【修改点】使用一个内部类或结构体来管理单台无人机的所有视觉组件
     private class DroneVisuals
     {
         public LineRenderer line;
@@ -376,10 +375,6 @@ public class LaserDroneModule : PlayerModule
 
             v.line.SetPosition(1, endPos);
 
-            // 更新材质 Tiling (防止拉伸)
-            // float lineLength = Vector3.Distance(startPos, endPos);
-            // v.line.material.SetFloat("_Tiling", lineLength / 2f); // 如果 Shader 支持
-
             // 伤害判定
             if (shouldDamage)
             {
@@ -414,6 +409,25 @@ public class LaserDroneModule : PlayerModule
     public override void UpgradeModule(ModuleType moduleType, StatType statType)
     {
         base.UpgradeModule(moduleType, statType);
+        if (moduleType == ModuleType.LaserDrone)
+        {
+            switch (statType)
+            {
+                case StatType.BeamPerTick:
+                    damagePerTick = (int)UpgradeManager.Instance.GetStat(moduleType, statType);
+                    break;
+                case StatType.BeamCooldown:
+                    laserCD = UpgradeManager.Instance.GetStat(moduleType, statType);
+                    break;
+                case StatType.BeamCount:
+                    droneCount = (int)UpgradeManager.Instance.GetStat(moduleType, statType);
+                    break;
+                case StatType.BeamRange:
+                    laserRange = (int)UpgradeManager.Instance.GetStat(moduleType, statType);
+                    break;
+            }
+        }
+
         // 如果升级了数量
         if (moduleType == ModuleType.LaserDrone && statType == StatType.BeamCount)
         {

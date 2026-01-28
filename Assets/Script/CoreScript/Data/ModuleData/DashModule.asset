@@ -15,12 +15,19 @@ MonoBehaviour:
   moduleName: DashModule
   moduleType: 4
   baseStats:
-  - type: 13
-    value: 1
-  unlockLevel: 2
+  - type: 16
+    value: 2
+  - type: 17
+    value: 20
+  unlockLevel: 3
   statUpgrades:
-  - statType: 13
+  - statType: 16
     valuePerUpgrade: -0.1
     maxStacks: 5
     upgradeName: "\u7A81\u8FDB\u51B7\u5374"
     description: "\u51CF\u5C11\u7A81\u8FDB\u51B7\u5374"
+  - statType: 17
+    valuePerUpgrade: 10
+    maxStacks: 3
+    upgradeName: "\u95EA\u907F\u8DDD\u79BB"
+    description: "\u589E\u52A0\u95EA\u907F\u7684\u8DDD\u79BB"

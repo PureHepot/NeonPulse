@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6351400526122343275}
   - component: {fileID: 5254421769257531222}
   m_Layer: 3
-  m_Name: Hexagon Pointed-Top
+  m_Name: EnemySummoner
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

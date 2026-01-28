@@ -66,7 +66,7 @@ public class DashModule : PlayerModule
     private void RecalculateStats()
     {
         dashCooldown = UpgradeManager.Instance.GetStat(ModuleType.Dash, StatType.DashCooldown);
-        if (dashCooldown <= 0.2f) dashCooldown = 0.2f;
+        dashForce = UpgradeManager.Instance.GetStat(ModuleType.Dash, StatType.DashForce);
     }
 
     public bool IsReady()

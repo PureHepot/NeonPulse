@@ -62,37 +62,42 @@ public class ShooterModule : PlayerModule
 
     public override void UpgradeModule(ModuleType moduleType, StatType statType)
     {
-        if (statType == StatType.FireRate || statType == StatType.Damage)
+        if (moduleType == ModuleType.Shooter)
         {
-            float oldRate = GetFinalFireRate();
-            int oldDamage = (int)GetFinalDamage();
-
-            RecalculateStats();
-
-            Debug.Log($"[ShooterModule] FireRate: {oldRate:F2} → {GetFinalFireRate():F2}");
-            Debug.Log($"[ShooterModule] Damage: {oldDamage} → {GetFinalDamage()}");
-        }
-        else if (statType == StatType.ShooterCount)
-        {
-            int old = currentLevel;
-            currentLevel++;
-
-            Debug.Log($"[ShooterModule] ShooterCount: {old} → {currentLevel}");
+            switch (statType)
+            {
+                case StatType.BaseDamage:
+                    baseDamage = (int)UpgradeManager.Instance.GetStat(moduleType, statType);
+                    break;
+                case StatType.BaseFireRate:
+                    baseFireRate = UpgradeManager.Instance.GetStat(moduleType, statType);
+                    break;
+                case StatType.DamageRateMultiplier:
+                    damageMultiplier = UpgradeManager.Instance.GetStat(moduleType, statType);
+                    break;
+                case StatType.FireRateMultiplier:
+                    fireRateMultiplier = UpgradeManager.Instance.GetStat(moduleType, statType);
+                    break;
+                case StatType.ShooterCount:
+                    currentLevel = (int)UpgradeManager.Instance.GetStat(moduleType, statType);
+                    break;
+            }
         }
     }
 
     private void RecalculateStats()
     {
         baseFireRate =
-            UpgradeManager.Instance.GetStat(ModuleType.Shooter, StatType.FireRate);
+            UpgradeManager.Instance.GetStat(ModuleType.Shooter, StatType.BaseFireRate);
         if (baseFireRate <= 0) baseFireRate = 0.8f;
 
         baseDamage =
-            (int)UpgradeManager.Instance.GetStat(ModuleType.Shooter, StatType.Damage);
+            (int)UpgradeManager.Instance.GetStat(ModuleType.Shooter, StatType.BaseDamage);
         if (baseDamage <= 0) baseDamage = 2;
 
-        fireRateMultiplier = 1f;
-        damageMultiplier = 1f;
+        fireRateMultiplier = UpgradeManager.Instance.GetStat(ModuleType.Shooter, StatType.FireRateMultiplier);
+        damageMultiplier = UpgradeManager.Instance.GetStat(ModuleType.Shooter, StatType.DamageRateMultiplier);
+        currentLevel = (int)UpgradeManager.Instance.GetStat(ModuleType.Shooter, StatType.ShooterCount);
     }
 
     private float GetFinalFireRate()
@@ -135,7 +140,8 @@ public class ShooterModule : PlayerModule
 
             bool isActive = false;
             if (currentLevel == 1 && i == 0) isActive = true;
-            if (currentLevel >= 2 && i <= 2) isActive = true;
+            if (currentLevel == 2 && i <= 1) isActive = true;
+            if (currentLevel == 3 && i <= 2) isActive = true;
 
             if (isActive)
             {
@@ -166,6 +172,11 @@ public class ShooterModule : PlayerModule
         if (currentLevel == 1)
         {
             if (muzzles.Count > 0) activeIndices.Add(0);
+        }
+        else if(currentLevel == 2)
+        {
+            if (muzzles.Count > 0) activeIndices.Add(0);
+            if (muzzles.Count > 1) activeIndices.Add(1);
         }
         else
         {

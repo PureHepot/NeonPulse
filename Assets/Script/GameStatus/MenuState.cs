@@ -9,6 +9,7 @@ public class MenuState : GameState
         startUI = UIManager.Instance.Open<StartUI>();
 
         AudioManager.Instance.PlayBGM("MainTheme");
+        PlayerManager.Instance.spawnPoint.gameObject.SetActive(false);
         Debug.Log("UI: 显示开始按钮");
     }
 
@@ -26,5 +27,8 @@ public class MenuState : GameState
         // UIManager.Instance.PopPanel();
         //UIManager.Instance.CloseAllPanels();
         UIManager.Instance.CloseUI(startUI);
+        //更改摄像机模式
+        GameObject.Find("StartScene").SetActive(false);
+        Camera.main.orthographic = true;
     }
 }

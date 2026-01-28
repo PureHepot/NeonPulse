@@ -12,12 +12,12 @@ public class EnemyDrifter : EnemyBase
     private Vector2 moveDirection;
     private Vector2 screenBounds;
 
-    private float limitTime = 2f;
+    private float limitTime = 5f;
 
     public override void OnSpawn()
     {
         base.OnSpawn();
-
+        limitTime = 5f;
         Camera cam = Camera.main;
         float height = cam.orthographicSize;
         float width = height * cam.aspect;

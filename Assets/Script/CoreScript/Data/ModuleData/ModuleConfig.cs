@@ -20,17 +20,21 @@ public enum StatType
     ShieldKnockback,// 击退力度
 
     //ShooterModule
-    Damage,         // 伤害
-    FireRate,       // 射速
+    BaseDamage,         // 伤害
+    DamageRateMultiplier,
+    BaseFireRate,       // 射速
+    FireRateMultiplier,
     ShooterCount,   // 射口数量
 
-    //BeamModule
+    //LaserDroneModule
     BeamRange,      // 射程
     BeamCount,
     BeamCooldown,
+    BeamPerTick,
 
     //Dash
     DashCooldown,   // 突进冷却
+    DashForce,
 
     //诸如此类
 }
