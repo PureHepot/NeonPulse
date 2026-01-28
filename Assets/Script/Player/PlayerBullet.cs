@@ -42,7 +42,7 @@ public class PlayerBullet : MonoBehaviour, IPoolable
             {
                 Vector3 hitPoint = other.ClosestPoint(transform.position);
 
-                Vector3 hitNormal = (PlayerManager.Instance.PlayerPosition - hitPoint).normalized;
+                Vector3 hitNormal = transform.right;
 
                 target.TakeDamage(damage, hitPoint, hitNormal);
 

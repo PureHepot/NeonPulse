@@ -1,8 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using DG.Tweening;
-
+using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
@@ -22,6 +19,12 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     public GameObject deathEffectPrefab;
     public GameObject hitParticlePrefab;
 
+    [Header("Knockback Settings")]
+    public bool canKnockback = false;
+    protected bool isKnockbacking;
+    public float knockbackForce = 8f;
+    public float knockbackTorque = 20f;
+
     protected float currentHp;
     protected Rigidbody2D rb;
     protected Transform playerTransform;
@@ -32,7 +35,6 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         rb = GetComponent<Rigidbody2D>();
         if (bodyRenderer == null) bodyRenderer = GetComponentInChildren<SpriteRenderer>();
     }
-
 
     public virtual void OnSpawn()
     {
@@ -60,7 +62,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
 
     private void FixedUpdate()
     {
-        if (isDead) return;
+        if (isDead || isKnockbacking) return;
         MoveBehavior();
     }
 
@@ -84,7 +86,8 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     {
         if (bodyRenderer != null)
         {
-            bodyRenderer.DOColor(hitColor, 0.05f).OnComplete(() => {
+            bodyRenderer.DOColor(hitColor, 0.05f).OnComplete(() =>
+            {
                 bodyRenderer.DOColor(normalColor, 0.1f);
             });
 
@@ -153,11 +156,32 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         if (isDead) return;
 
         currentHp -= amount;
-        
+
         PlayHitEffect(hitPoint, hitNormal);
+
+        if (canKnockback)
+        {
+            ApplyKnockback(hitNormal);
+        }
 
         if (currentHp <= 0) Die();
         else AudioManager.Instance.PlayEffect("EnemyHit");
+    }
+
+    protected virtual void ApplyKnockback(Vector3 hitNormal)
+    {
+        isKnockbacking = true;
+
+        rb.velocity = Vector2.zero;
+
+        Vector2 forceDir = hitNormal.normalized;
+        rb.AddForce(forceDir * knockbackForce, ForceMode2D.Impulse);
+        rb.AddTorque(Random.Range(-knockbackTorque, knockbackTorque), ForceMode2D.Impulse);
+
+        Timer.Register(0.2f, () =>
+        {
+            isKnockbacking = false;
+        });
     }
 
     protected virtual void PlayHitEffect(Vector3 pos, Vector3 normal)
@@ -185,7 +209,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
 
             Timer.Register(1f, onComplete: () =>
             {
-               ObjectPoolManager.Instance.Return(particleObj);
+                ObjectPoolManager.Instance.Return(particleObj);
             });
 
             ParticleSystem ps = particleObj.GetComponent<ParticleSystem>();

@@ -57,6 +57,9 @@ MonoBehaviour:
   hitColor: {r: 1, g: 1, b: 1, a: 1}
   deathEffectPrefab: {fileID: 6689202797806509915, guid: 0548b8c18e5bbbd48ae41f049526005c, type: 3}
   hitParticlePrefab: {fileID: 6689202797806509915, guid: b0c3f731dec188749b6a1117eea1c8b5, type: 3}
+  canKnockback: 1
+  knockbackForce: 8
+  knockbackTorque: 20
   patrolPoints:
   - {fileID: 8426025922963402707, guid: 313495492b4b431448d816f65d0ab30d, type: 3}
   - {fileID: 5148753187261394870, guid: 24ebee2da55f1404386cd5469e2641d9, type: 3}

@@ -141,6 +141,9 @@ MonoBehaviour:
   hitColor: {r: 0.9433962, g: 0.9433962, b: 0.9433962, a: 1}
   deathEffectPrefab: {fileID: 6689202797806509915, guid: 0548b8c18e5bbbd48ae41f049526005c, type: 3}
   hitParticlePrefab: {fileID: 6689202797806509915, guid: b0c3f731dec188749b6a1117eea1c8b5, type: 3}
+  canKnockback: 1
+  knockbackForce: 8
+  knockbackTorque: 20
   rotateSpeed: 200
   waveFrequency: 2
   waveMagnitude: 2
