@@ -15,11 +15,11 @@ TagManager:
   - Player
   - Wall
   - EnemySkin
-  - 
-  - 
-  - 
-  - 
-  - 
+  - EnemySpawning
+  - ArenaWall
+  - PlayerBullet
+  - EnemyBullet
+  - UI_Model
   - 
   - 
   - 

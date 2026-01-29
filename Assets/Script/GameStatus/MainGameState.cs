@@ -7,6 +7,7 @@ public class MainGameState : GameState
 {
     private bool isSettingOpen = false;
     private bool isModuleSelectOpen = false;
+    private bool isLevelUpOpen = false;
 
     public override void OnEnter()
     {
@@ -38,7 +39,8 @@ public class MainGameState : GameState
 
         if (Input.GetKeyDown(KeyCode.Tab))
         {
-            ToggleModuleSelectPanel();
+            //ToggleModuleSelectPanel();
+            ToggleLevelUpPanel();
         }
     }
 
@@ -49,19 +51,16 @@ public class MainGameState : GameState
 
         WaveManager.Instance.OnWaveIncoming += (level, txt) =>
         {
-            MessageUIArg arg = new MessageUIArg(level, txt);
-            UIManager.Instance.OpenPopup<MessageUI>(arg);
+            if (txt != "")
+            {
+                MessageUIArg arg = new MessageUIArg(level, txt);
+                UIManager.Instance.OpenPopup<MessageUI>(arg);
+            }
         };
 
         UpgradeManager.Instance.SyncWithPlayerManager();
         ModuleSelectManager.Instance.OnShowAbilitySelectUI += HandleShowAbilityUI;
         GameManager.Instance.StartCoroutine(WaveManager.Instance.GameLoopRoutine());
-
-        Timer.Register(5f, onComplete: () => BackgroundFXController.Instance.SwitchToNextTheme());
-        Timer.Register(10f, onComplete: () => BackgroundFXController.Instance.SwitchToNextTheme());
-        Timer.Register(15f, onComplete: () => BackgroundFXController.Instance.SwitchToNextTheme());
-        Timer.Register(20f, onComplete: () => BackgroundFXController.Instance.SwitchToNextTheme());
-        Timer.Register(25f, onComplete: () => BackgroundFXController.Instance.SwitchToNextTheme());
     }
 
     private void HandleShowAbilityUI(int level, List<UpgradeOption> candidates)
@@ -72,6 +71,23 @@ public class MainGameState : GameState
             UIManager.Instance.OpenPopup<ModuleSelectUI>(uiArgs);
         }
         isModuleSelectOpen = true;
+    }
+
+    private void ToggleLevelUpPanel()
+    {
+        if (isSettingOpen) return;
+        if (!isLevelUpOpen)
+        {
+            UIManager.Instance.Open<LevelUpUI>();
+            Time.timeScale = 0f;
+            isLevelUpOpen = true;
+        }
+        else
+        {
+            UIManager.Instance.CloseTopPanel();
+            Time.timeScale = 1f;
+            isLevelUpOpen = false;
+        }
     }
 
     private void ToggleModuleSelectPanel()

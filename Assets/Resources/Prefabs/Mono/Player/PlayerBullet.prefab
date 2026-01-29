@@ -134,9 +134,9 @@ CircleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.006014357, y: 0.0848933}
+  m_Offset: {x: 0.006014357, y: 0.04420353}
   serializedVersion: 2
-  m_Radius: 0.50459707
+  m_Radius: 0.7803297
 --- !u!96 &953598002057476516
 TrailRenderer:
   serializedVersion: 3

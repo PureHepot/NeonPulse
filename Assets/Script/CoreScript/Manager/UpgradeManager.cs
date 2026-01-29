@@ -17,7 +17,7 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
     [Header("Level Settings")]
     public int baseExpToLevelUp = 100;
     public float expScale = 1.5f;
-    public int pointsPerLevel = 3;
+    public int pointsPerLevel = 2;
 
     public int UpgradePoints { get; private set; } = 0;
 
@@ -133,6 +133,24 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
             return data.GetCurrentStat(statType);
         }
         return defaultValue;
+    }
+
+    public int GetLevel(ModuleType moduleType, StatType statType)
+    {
+        if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
+        {
+            return data.GetStatLevel(statType);
+        }
+        return 0;
+    }
+
+    public List<StatType> GetUpgradedStats(ModuleType moduleType)
+    {
+        if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
+        {
+            return data.statTypes;
+        }
+        return null;
     }
 
     public bool IsModuleUnlocked(ModuleType type)

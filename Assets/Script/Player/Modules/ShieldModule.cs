@@ -12,6 +12,11 @@ public class ShieldModule : PlayerModule
     public float rechargeRate = 1f;
     public float rotateSpeed = 200f;
 
+    [Header("Parameter")]
+    public float ShieldCapacity = 100;
+    public float ShieldRegen = 10f;
+    public float ShieldKnockback = 10;
+
     public override void Initialize(PlayerController _player)
     {
         base.Initialize(_player);
@@ -61,5 +66,25 @@ public class ShieldModule : PlayerModule
     {
         base.OnDeactivate();
         if (shieldObject) shieldObject.SetActive(false);
+    }
+
+    public override void UpgradeModule(ModuleType moduleType, StatType statType)
+    {
+        base.UpgradeModule(moduleType, statType);
+        if (moduleType == ModuleType.Shield)
+        {
+            switch (statType)
+            {
+                case StatType.ShieldCapacity:
+                    this.ShieldCapacity = UpgradeManager.Instance.GetStat(moduleType, statType);
+                    break;
+                case StatType.ShiledRegen:
+                    this.ShieldRegen = UpgradeManager.Instance.GetStat(moduleType, statType);
+                    break;
+                case StatType.ShieldKnockback:
+                    this.ShieldRegen = UpgradeManager.Instance.GetStat(moduleType, statType);
+                    break;
+            }
+        }
     }
 }

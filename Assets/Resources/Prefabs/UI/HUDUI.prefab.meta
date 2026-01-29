@@ -1,7 +1,14 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Resources/Materials/Mat_CyberGrid.mat.meta
+guid: c048de30303d61f4e9c2e9fb3a5fe8da
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+========
 guid: d58c2cde7aad1164d870ebb51859b8b6
 PrefabImporter:
   externalObjects: {}
+>>>>>>>> 7621642ed2dc2f41e133eda091a869107b092ff6:Assets/Resources/Prefabs/UI/HUDUI.prefab.meta
   userData: 
   assetBundleName: 
   assetBundleVariant: 

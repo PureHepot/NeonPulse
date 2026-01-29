@@ -7,12 +7,12 @@ public class ShieldController : MonoBehaviour
 {
     [Header("Settings")]
     public float maxIntegrity = 100f;
-    public float recoveryRate = 10f;       // 每秒恢复量
-    public float recoveryDelay = 1.0f;     // 受击后多久开始恢复
-    public float bounceForce = 10f;        // 反弹力度
+    public float recoveryRate = 10f;
+    public float recoveryDelay = 1.0f;
+    public float bounceForce = 10f;
 
     [Header("Visual & Physics")]
-    public Transform visualRoot;  
+    public Transform visualRoot;
     public Vector2 maxColliderSize;       
     public Vector2 minColliderSize;       
 
@@ -25,12 +25,21 @@ public class ShieldController : MonoBehaviour
     private float targetDeployFactor = 0f; // 0 = 收起, 1 = 展开
     private float currentDeployFactor = 0f;
 
-    public DynamicArcShield dynamicShield; 
+    public DynamicArcShield dynamicShield;
+
+    private Vector3 originalScale;
+    private bool isInitialized = false;
 
     private void Start()
     {
         currentIntegrity = maxIntegrity;
         UpdateShieldState(0f);
+
+        if (visualRoot != null)
+        {
+            originalScale = visualRoot.localScale;
+            isInitialized = true;
+        }
     }
 
     void UpdateShieldState(float factor)
@@ -78,7 +87,20 @@ public class ShieldController : MonoBehaviour
                 otherRb.AddForce(knockbackDir * bounceForce, ForceMode2D.Impulse);
             }
 
-            visualRoot.DOPunchScale(new Vector3(0.2f, 0.2f, 0), 0.1f);
+            if (visualRoot != null)
+            {
+                if (!isInitialized)
+                {
+                    originalScale = visualRoot.localScale;
+                    isInitialized = true;
+                }
+
+                visualRoot.DOKill();
+
+                visualRoot.localScale = originalScale;
+
+                visualRoot.DOPunchScale(new Vector3(0.2f, 0.2f, 0), 0.1f);
+            }
         }
     }
 }
