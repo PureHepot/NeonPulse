@@ -58,8 +58,6 @@ public class LaserDroneModule : PlayerModule
             if (obj == null) return;
             if (active)
             {
-                // 如果需要显示，且对象还没激活，或者粒子没发射
-                // 这里我们简单处理：让Emission开启
                 foreach (var p in particles)
                 {
                     var em = p.emission;

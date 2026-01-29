@@ -103,6 +103,11 @@ public class PlayerModuleManager : MonoBehaviour
         return null;
     }
 
+    public List<PlayerModule> GetAllActiveModules()
+    {
+        return new List<PlayerModule>(activeModules);
+    }
+
     public bool HasAbility(ModuleType type)
     {
         if (moduleDict.TryGetValue(type, out PlayerModule module))

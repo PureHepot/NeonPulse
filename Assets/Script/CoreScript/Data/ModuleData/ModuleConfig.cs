@@ -92,4 +92,14 @@ public class ModuleConfig : ScriptableObject
         }
         return null;
     }
+
+    public string GetDescription(StatType type)
+    {
+        var def = GetUpgradeDefinition(type);
+        if (def != null)
+        {
+            return def.description;
+        }
+        return string.Empty;
+    }
 }

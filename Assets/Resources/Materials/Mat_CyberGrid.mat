@@ -37,14 +37,14 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _FadeDistance: 1
-    - _GridScale: 10
-    - _LineWidth: 0.05
+    - _FadeDistance: 1.2
+    - _GridScale: 20
+    - _LineWidth: 0.03
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _ScrollSpeed: 0.5
+    - _ScrollSpeed: 2
     m_Colors:
-    - _GridColor: {r: 2.90566, g: 0.09594167, b: 1.568308, a: 0}
+    - _GridColor: {r: 3.435943, g: 0.21298036, b: 5.8113194, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &9103395773328481158
 MonoBehaviour:

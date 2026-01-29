@@ -8,10 +8,17 @@ public class ModuleRuntimeData
     public int currentLevel = 1;
 
     private Dictionary<StatType, int> upgradeCounts = new Dictionary<StatType, int>();
+    public readonly List<StatType> statTypes = new List<StatType>();
 
     public ModuleRuntimeData(ModuleConfig config)
     {
         this.config = config;
+        for(int i = 0; i < config.statUpgrades.Count; i++)
+        {
+            var def = config.statUpgrades[i];
+            upgradeCounts[def.statType] = 0;
+            statTypes.Add(def.statType);
+        }
     }
 
     /// <summary>
@@ -22,6 +29,7 @@ public class ModuleRuntimeData
         if (!upgradeCounts.ContainsKey(type))
         {
             upgradeCounts[type] = 0;
+            statTypes.Add(type);
         }
 
         var def = config.GetUpgradeDefinition(type);
@@ -67,6 +75,8 @@ public class ModuleRuntimeData
     {
         return upgradeCounts.TryGetValue(type, out int count) ? count : 0;
     }
+
+
 
     /// <summary>
     /// 是否已达到最大升级层数
