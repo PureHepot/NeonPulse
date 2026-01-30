@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 
-public class ShooterModule : PlayerModule
+public class OriginShooterModule : PlayerModule
 {
     [Header("Hierarchy Refs")]
     public Transform partToRotate;
@@ -16,7 +16,7 @@ public class ShooterModule : PlayerModule
     public float rotationSpeed = 15f;
 
     [Header("Combat Settings")]
-    public float sequenceDelay = 0.1f;
+    public float sequenceDelay = 0.01f;
 
     //---属性---
     private float baseFireRate;
@@ -193,7 +193,7 @@ public class ShooterModule : PlayerModule
 
             muzzleT.localScale = Vector3.one * 1.5f;
 
-            yield return new WaitForSeconds(0.05f);
+            yield return new WaitForSeconds(0.01f);
 
             SpawnBullet(muzzleT);
 
