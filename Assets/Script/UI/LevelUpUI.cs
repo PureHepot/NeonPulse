@@ -5,9 +5,18 @@ using UnityEngine.UI;
 
 public class LevelUpUI : UIBase
 {
+    private PlayerPreview playerPreview;
+
+    private void Awake()
+    {
+        playerPreview = GameObject.Find("PlayerModelCamera").GetComponent<PlayerPreview>();
+    }
+
     public override void OnEnter(object args)
     {
         base.OnEnter(args);
+
+        Time.timeScale = 0f;
 
         RefreshUI();
     }
@@ -72,5 +81,6 @@ public class LevelUpUI : UIBase
     public override void OnClose()
     {
         base.OnClose();
+        Time.timeScale = 1f;
     }
 }

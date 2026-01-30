@@ -32,19 +32,29 @@ public class MainGameState : GameState
 
     public override void OnUpdate()
     {
+        HandleUIEvent();
+    }
+
+    private void HandleUIEvent()
+    {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            TogglePausePanel();
+            if (UIManager.Instance.CheckUIListEmpty())
+            {
+                UIManager.Instance.Open<PauseUI>();
+            }
+            else
+            {
+                UIManager.Instance.CloseTopPanel();
+            }
         }
 
-        if (isPauseOpen) return;
-
-        if (Input.GetKeyDown(KeyCode.Tab))
+        if (Input.GetKeyDown(KeyCode.Tab) && !UIManager.Instance.CheckUIOpen<LevelUpUI>())
         {
-            //ToggleModuleSelectPanel();
-            ToggleLevelUpPanel();
+            UIManager.Instance.Open<LevelUpUI>();
         }
     }
+
 
     private void StartGame()
     {
@@ -92,60 +102,60 @@ public class MainGameState : GameState
         }
     }
 
-    private void ToggleModuleSelectPanel()
-    {
-        if (isSettingOpen) return;
+    //private void ToggleModuleSelectPanel()
+    //{
+    //    if (isSettingOpen) return;
 
-        if (!isModuleSelectOpen)
-        {
-            if (UpgradeManager.Instance.UpgradePoints <= 0)
-            {
-                Debug.LogWarning("没有可用的升级点数！");
-                return;
-            }
+    //    if (!isModuleSelectOpen)
+    //    {
+    //        if (UpgradeManager.Instance.UpgradePoints <= 0)
+    //        {
+    //            Debug.LogWarning("没有可用的升级点数！");
+    //            return;
+    //        }
 
-            var options = ModuleSelectManager.Instance.GetOrCreateOptions();
-            ModuleSelectManager.Instance.OnShowAbilitySelectUI?.Invoke(
-                UpgradeManager.Instance.CurrentLevel,
-                options
-            );
+    //        var options = ModuleSelectManager.Instance.GetOrCreateOptions();
+    //        ModuleSelectManager.Instance.OnShowAbilitySelectUI?.Invoke(
+    //            UpgradeManager.Instance.CurrentLevel,
+    //            options
+    //        );
 
-            Time.timeScale = 0f;
-            isModuleSelectOpen = true;
-        }
-        else
-        {
-            ModuleSelectUI moduleSelectUI = FindModuleSelectUIInPopupLayer();
-            if (moduleSelectUI != null)
-            {
-                UIManager.Instance.CloseUI(moduleSelectUI);
-            }
+    //        Time.timeScale = 0f;
+    //        isModuleSelectOpen = true;
+    //    }
+    //    else
+    //    {
+    //        ModuleSelectUI moduleSelectUI = FindModuleSelectUIInPopupLayer();
+    //        if (moduleSelectUI != null)
+    //        {
+    //            UIManager.Instance.CloseUI(moduleSelectUI);
+    //        }
 
-            Time.timeScale = 1f;
-            isModuleSelectOpen = false;
-        }
-    }
+    //        Time.timeScale = 1f;
+    //        isModuleSelectOpen = false;
+    //    }
+    //}
 
 
-    private ModuleSelectUI FindModuleSelectUIInPopupLayer()
-    {
-        GameObject canvasObj = GameObject.Find("Canvas");
-        if (canvasObj == null) return null;
+    //private ModuleSelectUI FindModuleSelectUIInPopupLayer()
+    //{
+    //    GameObject canvasObj = GameObject.Find("Canvas");
+    //    if (canvasObj == null) return null;
 
-        Transform layerPopup = canvasObj.transform.Find("Layer_Popup");
-        if (layerPopup == null) return null;
+    //    Transform layerPopup = canvasObj.transform.Find("Layer_Popup");
+    //    if (layerPopup == null) return null;
 
-        foreach (Transform child in layerPopup)
-        {
-            ModuleSelectUI ui = child.GetComponent<ModuleSelectUI>();
-            if (ui != null)
-            {
-                return ui;
-            }
-        }
+    //    foreach (Transform child in layerPopup)
+    //    {
+    //        ModuleSelectUI ui = child.GetComponent<ModuleSelectUI>();
+    //        if (ui != null)
+    //        {
+    //            return ui;
+    //        }
+    //    }
 
-        return null;
-    }
+    //    return null;
+    //}
 
     private bool isPauseOpen = false;
 

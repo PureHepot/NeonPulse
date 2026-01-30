@@ -9,6 +9,7 @@ public class PlayerPreview : MonoBehaviour
     public string uiLayerName = "UI_Model";
 
     private GameObject currentModel;
+    public GameObject CurrentModel => currentModel;
 
     void Start()
     {

@@ -255,5 +255,16 @@ public class UIManager : MonoSingleton<UIManager>
         return null;
     }
 
+    public bool CheckUIListEmpty()
+    {
+        return panelList.Count == 0;
+    }
+
+    public bool CheckUIOpen<T>() where T : UIBase
+    {
+        return GetUI<T>() != null;
+    }
+
+
     #endregion
 }
