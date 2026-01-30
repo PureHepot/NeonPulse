@@ -21,7 +21,7 @@ MonoBehaviour:
     waveSpeed: 0.5
     peakFocus: 3
     waveFrequency: 1
-    punchStrength: 100
+    punchStrength: 5
   - themeName: Normal_2
     themeTransitionDuration: 1
     colorTop: {r: 2, g: 1.3302627, b: 0, a: 1}

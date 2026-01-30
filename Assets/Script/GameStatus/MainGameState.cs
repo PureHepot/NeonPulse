@@ -9,6 +9,8 @@ public class MainGameState : GameState
     private bool isModuleSelectOpen = false;
     private bool isLevelUpOpen = false;
 
+    private LevelUpUI levelUpUI;
+
     public override void OnEnter()
     {
         Time.timeScale = 1f;
@@ -58,7 +60,7 @@ public class MainGameState : GameState
             }
         };
 
-        UpgradeManager.Instance.SyncWithPlayerManager();
+        //UpgradeManager.Instance.SyncWithPlayerManager();
         ModuleSelectManager.Instance.OnShowAbilitySelectUI += HandleShowAbilityUI;
         GameManager.Instance.StartCoroutine(WaveManager.Instance.GameLoopRoutine());
     }
@@ -78,13 +80,13 @@ public class MainGameState : GameState
         if (isSettingOpen) return;
         if (!isLevelUpOpen)
         {
-            UIManager.Instance.Open<LevelUpUI>();
+            levelUpUI = UIManager.Instance.Open<LevelUpUI>();
             Time.timeScale = 0f;
             isLevelUpOpen = true;
         }
         else
         {
-            UIManager.Instance.CloseTopPanel();
+            UIManager.Instance.CloseUI(levelUpUI);
             Time.timeScale = 1f;
             isLevelUpOpen = false;
         }

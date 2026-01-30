@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-4606472371948648859
+--- !u!114 &-715612782586483390
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
@@ -20,8 +20,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Mat_WavyBackground
-  m_Shader: {fileID: -6465566751694194690, guid: 8c89f16c9ad2e9d45b599b902891db76, type: 3}
+  m_Name: Mat_NeonPlayer
+  m_Shader: {fileID: -6465566751694194690, guid: ba301e43235de06438be420413405809, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -36,6 +36,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -50,21 +54,9 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _FocusArea: 33.38
-    - _FocusPower: 0
-    - _LineBrightness: 0.03
-    - _LineThickness: 30
-    - _LineTiling: 15
-    - _PeakFocus: 3
+    - _HitFlashStrength: 0.1
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _WaveAmplitude: 0.1
-    - _WaveFrequency: 1
-    - _WaveSpeed: 0.5
     m_Colors:
-    - _BaseColor: {r: 0, g: 0, b: 0.101960786, a: 1}
-    - _ColorBottom: {r: 2, g: 1.434169, b: 0, a: 1}
-    - _ColorTop: {r: 0.33967376, g: 2, b: 0, a: 1}
-    - _FocusPos: {r: 0.015880555, g: 0.019033104, b: 0, a: 0}
-    - _Position: {r: 0.5, g: 0.5, b: 0, a: 1}
+    - _NeonColor: {r: 2.670157, g: 2.670157, b: 2.670157, a: 1}
   m_BuildTextureStacks: []
