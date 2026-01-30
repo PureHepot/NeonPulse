@@ -65,7 +65,7 @@ public class PlayerManager : MonoSingleton<PlayerManager>
 
         this.PlayerPreview = GameObject.Find("PlayerModelCamera").GetComponent<PlayerPreview>();
 
-        UpgradeManager.Instance.ApplyModulesToPlayer(this.PlayerPreview.CurrentModel.GetComponent<PlayerModuleManager>());
+        //UpgradeManager.Instance.ApplyModulesToPlayer(this.PlayerPreview.CurrentModel.GetComponent<PlayerModuleManager>());
 
         CurrentModules.Initialize?.Invoke();
 
