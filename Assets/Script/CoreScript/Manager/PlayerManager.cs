@@ -15,6 +15,10 @@ public class PlayerManager : MonoSingleton<PlayerManager>
     public PlayerModuleManager CurrentModules { get; private set; }
     public PlayerPreview PlayerPreview { get; private set; }
 
+    public bool IsPlayerAlive => CurrentPlayerObj != null;
+
+    public Vector3 PlayerPosition => CurrentPlayerObj ? CurrentPlayerObj.transform.position : Vector3.zero;
+
     // --- 玩家视觉引用 ---
     [Header("Visual References")]
     public SpriteRenderer bodyRenderer;
