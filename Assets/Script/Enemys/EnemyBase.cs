@@ -40,7 +40,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     {
         currentHp = maxHp;
         isDead = false;
-        this.gameObject.layer = LayerMask.NameToLayer("EnemySpawning");
+        this.gameObject.layer = LayerMask.NameToLayer("Enemy");
 
         if (bodyRenderer != null) bodyRenderer.color = normalColor;
         transform.localScale = Vector3.one;

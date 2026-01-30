@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Script/CoreScript/Data/NewWaveConfig.asset.meta
+guid: 777adca51b7d37c45bfd631f30582c47
+========
+guid: 7b9863cf33c296a43a9633cec20cee11
+>>>>>>>> 7fb7e601d925488ce090543d22979883a8f7c88b:Assets/Script/CoreScript/Data/Test2.asset.meta
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

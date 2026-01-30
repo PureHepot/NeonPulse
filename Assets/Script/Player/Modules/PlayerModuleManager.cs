@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,25 +11,29 @@ public class PlayerModuleManager : MonoBehaviour
 
     private List<PlayerModule> activeModules = new List<PlayerModule>();
 
+    public Action Initialize { get; private set; }
+
     void Awake()
     {
         playerController = GetComponent<PlayerController>();
-
         PlayerModule[] modules = GetComponentsInChildren<PlayerModule>(true);
-
         foreach (var module in modules)
         {
-            module.Initialize(playerController);
-
             if (!moduleDict.ContainsKey(module.moduleType))
             {
                 moduleDict.Add(module.moduleType, module);
             }
-            else
-            {
-                Debug.LogWarning($"重复的模块类型: {module.moduleType}");
-            }
         }
+
+        Initialize = () =>
+        {
+            modules = GetComponentsInChildren<PlayerModule>(true);
+
+            foreach (var module in modules)
+            {
+                module.Initialize(playerController);
+            }
+        };
     }
 
     void Update()

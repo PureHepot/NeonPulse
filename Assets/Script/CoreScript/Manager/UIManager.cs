@@ -243,5 +243,17 @@ public class UIManager : MonoSingleton<UIManager>
         return ui;
     }
 
+    public T GetUI<T>() where T : UIBase
+    {
+        foreach (var ui in panelList)
+        {
+            if (ui is T)
+            {
+                return ui as T;
+            }
+        }
+        return null;
+    }
+
     #endregion
 }

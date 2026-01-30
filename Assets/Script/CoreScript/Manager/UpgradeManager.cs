@@ -21,8 +21,13 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
 
     public int UpgradePoints { get; private set; } = 0;
 
+    private HashSet<ModuleType> unlockedModuleTypes = new HashSet<ModuleType>();
+
     private Dictionary<ModuleType, ModuleRuntimeData> activeModules =
         new Dictionary<ModuleType, ModuleRuntimeData>();
+
+    [Header("Default Loadout")]
+    public List<ModuleType> startingModules;
 
     public int CurrentLevel { get; private set; } = 1;
     public int CurrentExp { get; private set; } = 0;
@@ -59,12 +64,50 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
     {
         foreach (var config in allModuleConfigs)
         {
-            if (PlayerManager.Instance.IsModuleUnlocked(config.moduleType))
+            if (IsModuleUnlocked(config.moduleType))
             {
                 InitializeRuntimeData(config);
             }
         }
     }
+
+    public void ApplyModulesToPlayer()
+    {
+        var playerModules = PlayerManager.Instance.CurrentModules;
+        if (playerModules == null) return;
+        foreach (var module in startingModules)
+        {
+            UnlockModule(module);
+        }
+    }
+
+    public void UnlockModule(ModuleType type)
+    {
+        if (!unlockedModuleTypes.Contains(type))
+        {
+            unlockedModuleTypes.Add(type);
+
+            ModuleConfig config = GetConfig(type);
+            if (config != null && !activeModules.ContainsKey(type))
+            {
+                activeModules.Add(type, new ModuleRuntimeData(config));
+            }
+
+            if (PlayerManager.Instance.CurrentModules != null)
+            {
+                PlayerManager.Instance.CurrentModules.UnlockModule(type);
+            }
+        }
+    }
+
+    public bool ConsumeUpgradePoint(int amount = 1)
+    {
+        if (UpgradePoints < amount) return false;
+        UpgradePoints -= amount;
+        return true;
+    }
+
+    public bool IsModuleUnlocked(ModuleType type) => unlockedModuleTypes.Contains(type);
 
     public void AddExperience(int amount)
     {
@@ -93,21 +136,27 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         return true;
     }
 
+    //注意，判定成功后会直接扣费  
+    public bool CanUpgrade(ModuleType moduleType, StatType statType)
+    {
+        return ConsumeUpgradePoint(GetCost(moduleType, statType));
+    }
+
     private int GetExpToLevelUp()
     {
         return Mathf.RoundToInt(baseExpToLevelUp * Mathf.Pow(expScale, CurrentLevel - 1));
     }
 
-    public void UnlockModule(ModuleType type)
-    {
-        ModuleConfig config = GetConfig(type);
-        if (config == null) return;
+    //public void UnlockModule(ModuleType type)
+    //{
+    //    ModuleConfig config = GetConfig(type);
+    //    if (config == null) return;
 
-        if (activeModules.ContainsKey(type)) return;
+    //    if (activeModules.ContainsKey(type)) return;
 
-        PlayerManager.Instance.UnlockModuleData(type);
-        InitializeRuntimeData(config);
-    }
+    //    PlayerManager.Instance.UnlockModuleData(type);
+    //    InitializeRuntimeData(config);
+    //}
 
     public void UpgradeModuleStat(ModuleType moduleType, StatType statType)
     {
@@ -153,9 +202,13 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         return null;
     }
 
-    public bool IsModuleUnlocked(ModuleType type)
+    public int GetCost(ModuleType moduleType, StatType statType)
     {
-        return activeModules.ContainsKey(type);
+        if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
+        {
+            return data.config.GetUpgradeDefinition(statType).pointCost + data.GetStatLevel(statType);
+        }
+        return -1;
     }
 
     /// <summary>

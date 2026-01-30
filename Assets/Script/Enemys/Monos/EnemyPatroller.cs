@@ -10,6 +10,11 @@ public class EnemyPatroller : EnemyBase
     [Header("平滑路径参数")]
     public float curveSmoothness = 0.5f; // 曲线平滑度
     public int curveSampleCount = 20;    // 每个路径段的插值点数
+    [Header("Random Noise Settings")]
+    public float noiseStrength = 0.2f;   // 偏移幅度
+    public float noiseFrequency = 2f;  // 噪声变化速度
+    private float noiseSeedX;
+    private float noiseSeedY;
 
     private Transform currentTargetPoint;
     private int currentPointIndex = 0; // 当前巡逻点的索引
@@ -34,6 +39,8 @@ public class EnemyPatroller : EnemyBase
             Debug.LogWarning("未配置巡逻点");
         }
         if (patrolSpeed > 0) moveSpeed = patrolSpeed;
+        noiseSeedX = Random.Range(0f, 1000f);
+        noiseSeedY = Random.Range(0f, 1000f);
 
         SetEnemyScale();
     }
@@ -118,20 +125,24 @@ public class EnemyPatroller : EnemyBase
             return;
         }
 
-        Vector2 targetPos = smoothPathPoints[currentPathIndex];
-        float distanceToTarget = Vector2.Distance(transform.position, targetPos);
+        Vector2 baseTarget = smoothPathPoints[currentPathIndex];
 
-        Vector2 directionToTarget = (targetPos - (Vector2)transform.position).normalized;
-        rb.velocity = directionToTarget * moveSpeed;
+        float t = Time.time * noiseFrequency;
 
-        if (distanceToTarget < 0.1f)
+        float offsetX = (Mathf.PerlinNoise(noiseSeedX, t) - 0.5f) * 2f;
+        float offsetY = (Mathf.PerlinNoise(noiseSeedY, t) - 0.5f) * 2f;
+
+        Vector2 noiseOffset = new Vector2(offsetX, offsetY) * noiseStrength;
+        Vector2 noisyTarget = baseTarget + noiseOffset;
+
+        Vector2 desiredVelocity = (noisyTarget - (Vector2)transform.position).normalized * moveSpeed;
+        rb.velocity = Vector2.Lerp(rb.velocity, desiredVelocity, Time.deltaTime * 8f);
+
+        float distanceToBase = Vector2.Distance(transform.position, baseTarget);
+
+        if (distanceToBase < 0.15f)
         {
             currentPathIndex = (currentPathIndex + 1) % smoothPathPoints.Count;
-
-            if (currentPathIndex == 0)
-            {
-                GenerateSmoothPath();
-            }
         }
     }
 

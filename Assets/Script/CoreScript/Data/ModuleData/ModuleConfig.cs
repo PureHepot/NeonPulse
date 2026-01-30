@@ -51,6 +51,7 @@ public class StatUpgradeDefinition
 {
     public StatType statType;//属性
     public float valuePerUpgrade;//数值
+    public int pointCost = 1;
     public int maxStacks = -1;//-1为无限升级
 
     [Header("UI Info")]

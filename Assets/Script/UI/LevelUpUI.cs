@@ -9,10 +9,10 @@ public class LevelUpUI : UIBase
     {
         base.OnEnter(args);
 
-        Init();
+        RefreshUI();
     }
 
-    private void Init()
+    public void RefreshUI()
     {
         List<PlayerModule> modules = PlayerManager.Instance.CurrentModules.GetAllActiveModules();
 
@@ -41,17 +41,22 @@ public class LevelUpUI : UIBase
 
                 detailItem.Find("UpgradeBtn").GetComponent<Button>().onClick.SetListener(() =>
                 {
-                    UpgradeManager.Instance.UpgradeModuleStat(modules[i].moduleType, statType);
-                    Init();
+                    if (UpgradeManager.Instance.CanUpgrade(modules[i].moduleType, statType))
+                    {
+                        UpgradeManager.Instance.UpgradeModuleStat(modules[i].moduleType, statType);
+                        RefreshUI();
+                    }
                 });
             }
         }
 
         Get<Button>("ModuleBtn").onClick.SetListener(() =>
         {
-            //UIManager.Instance.Open<>();
-            Init();
+            UIManager.Instance.Open<MaskGachaUI>();
+            RefreshUI();
         });
+
+        Get<Text>("PointNum").text = UpgradeManager.Instance.UpgradePoints.ToString();
     }
 
     private void ChangeThemeColor()
