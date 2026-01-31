@@ -104,6 +104,8 @@ public class WaveManager : MonoSingleton<WaveManager>
 
                     activeSpawnerCount = 0;
 
+                    ClearAllEnemies();
+
                     break;
                 }
 
@@ -208,6 +210,15 @@ public class WaveManager : MonoSingleton<WaveManager>
         }
 
         return pos;
+    }
+
+    private void ClearAllEnemies()
+    {
+        var enemies = FindObjectsOfType<EnemyBase>();
+        foreach (var enemy in enemies)
+        {
+            enemy.TakeDamage(99999);
+        }
     }
 
     public void RegisterEnemyDeath()

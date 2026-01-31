@@ -233,7 +233,7 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
     {
         if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
         {
-            return data.config.GetUpgradeDefinition(statType).pointCosts[data.GetStatLevel(statType)];
+            return data.config.GetUpgradeDefinition(statType).pointCost;
         }
         return -1;
     }
