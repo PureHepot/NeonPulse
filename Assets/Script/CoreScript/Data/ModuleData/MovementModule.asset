@@ -21,6 +21,8 @@ MonoBehaviour:
   statUpgrades:
   - statType: 3
     valuePerUpgrade: 1
+    pointCost: 1
     maxStacks: -1
     upgradeName: "\u79FB\u901F"
     description: "\u63D0\u9AD8\u79FB\u901F"
+  themeColor: {r: 1, g: 0.62498116, b: 0, a: 1}
