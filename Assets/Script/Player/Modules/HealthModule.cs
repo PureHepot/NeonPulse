@@ -16,6 +16,17 @@ public class HealthModule : PlayerModule
     public Color normalColor = Color.white;
 
     private bool isInvincible = false;
+    public bool IsInvincible
+    {
+        get
+        {
+            return isInvincible;
+        }
+        set
+        {
+            isInvincible = value;
+        }
+    }
     private float regenTimer;
     private float regenAccumulator = 0f;
 
@@ -68,6 +79,7 @@ public class HealthModule : PlayerModule
 
         CurrentHp -= amount;
         CurrentHp = Mathf.Clamp(CurrentHp, 0, MaxHp);
+        AudioManager.Instance.PlayEffect("PlayerHit");
 
         PlayerManager.Instance.SyncHp(Mathf.RoundToInt(CurrentHp), MaxHp);
 
@@ -123,6 +135,9 @@ public class HealthModule : PlayerModule
         player.IsDead = true;
         player.SetVelocity(Vector2.zero);
         player.OnDeath?.Invoke();
+        AudioManager.Instance.PlayEffect("PlayerDie");
+        Time.timeScale = 0f;
+        UIManager.Instance.Open<GameOverUI>();
         Debug.Log("Player Died");
     }
 

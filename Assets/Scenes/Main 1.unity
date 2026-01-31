@@ -628,7 +628,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _pc2D: {fileID: 519420033}
   _serializedAxis: 0
-  ShakePresets: []
+  ShakePresets:
+  - {fileID: 11400000, guid: 6704889258f43a847a03d79534447c4c, type: 2}
   ConstantShakePresets: []
   StartConstantShakePreset: {fileID: 0}
   CurrentConstantShakePreset: {fileID: 0}
@@ -1725,7 +1726,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab40e1850c2462f4192d067cfcabb369, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wavesData: {fileID: 11400000, guid: d1962fe2c3242dd4e8878382360f17c8, type: 2}
+  wavesData: {fileID: 11400000, guid: 083657e380ce16f458cc6edfc7c1db76, type: 2}
   timeBetweenWaves: 3
   spawnPadding: 1.5
 --- !u!114 &1357557158
@@ -1771,12 +1772,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allModuleConfigs:
-  - {fileID: 11400000, guid: 737c88ac4e322104386eca77dfc0e641, type: 2}
-  - {fileID: 11400000, guid: bcf8066076506fa45855ebb7387ecbd5, type: 2}
   - {fileID: 11400000, guid: b4c0d57770812e8449287da18a445677, type: 2}
+  - {fileID: 11400000, guid: bcf8066076506fa45855ebb7387ecbd5, type: 2}
+  - {fileID: 11400000, guid: f3e70397309e5e74daf6cf3c70681944, type: 2}
   - {fileID: 11400000, guid: 079281829382c1848bb44b23454ac944, type: 2}
   - {fileID: 11400000, guid: 0953ba3ebbeb223458cfa6c317f0fbc5, type: 2}
-  - {fileID: 11400000, guid: f3e70397309e5e74daf6cf3c70681944, type: 2}
+  - {fileID: 11400000, guid: 737c88ac4e322104386eca77dfc0e641, type: 2}
+  - {fileID: 11400000, guid: 472761cc1f14d544c8df1634bd73db0a, type: 2}
+  - {fileID: 11400000, guid: dcd474ec85357a043840da7bbf32b8de, type: 2}
+  - {fileID: 11400000, guid: c76b4233dee69224bb67a1b25753cb9e, type: 2}
   baseExpToLevelUp: 100
   expScale: 1.5
   pointsPerLevel: 3
@@ -1812,8 +1816,9 @@ MonoBehaviour:
   maskPool:
   - {fileID: 11400000, guid: 377c82103c5b94d4db97350edabd3555, type: 2}
   - {fileID: 11400000, guid: 3d2f798d7f505a843b0aae7d413ff6c1, type: 2}
-  - {fileID: 11400000, guid: 8fe534fdc20e150469749223e96f857e, type: 2}
   - {fileID: 11400000, guid: b3bce4be2af46954aa3c96ab8b0dbc95, type: 2}
+  - {fileID: 11400000, guid: d7b26890c285e614c90e7f42cee9eabb, type: 2}
+  - {fileID: 11400000, guid: 87566234c404c9b449faa63c79c8f52e, type: 2}
   gachaCost: 0
   currentMask: {fileID: 0}
 --- !u!1 &1539998153
@@ -2027,7 +2032,7 @@ GameObject:
   - component: {fileID: 1668960204}
   - component: {fileID: 1668960203}
   - component: {fileID: 1668960201}
-  - component: {fileID: 1668960200}
+  - component: {fileID: 1668960205}
   m_Layer: 0
   m_Name: PlayerModelCamera
   m_TagString: Untagged
@@ -2035,21 +2040,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1668960200
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1668960199}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a60412b14a862b45a0867c76fbb57a3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  playerPrefab: {fileID: 6236048808547626479, guid: e4eef060148b4ac42a54b7cdc2645e60, type: 3}
-  spawnPoint: {fileID: 1668960204}
-  uiLayerName: UI_Model
 --- !u!114 &1668960201
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2160,6 +2150,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1668960205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1668960199}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da05504a162024642872fc9378b071b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerPrefab: {fileID: 6236048808547626479, guid: e4eef060148b4ac42a54b7cdc2645e60, type: 3}
+  previewRoot: {fileID: 1668960204}
+  uiLayerName: UI_Model
 --- !u!1 &1705225886
 GameObject:
   m_ObjectHideFlags: 0

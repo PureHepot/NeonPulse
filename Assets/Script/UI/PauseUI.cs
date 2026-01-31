@@ -36,6 +36,7 @@ public class PauseUI : UIBase
     {
         Time.timeScale = 1f;
         UIManager.Instance.CloseUI(this);
+
     }
 
     void OnClickSettings()
@@ -45,13 +46,28 @@ public class PauseUI : UIBase
 
     void OnClickRestart()
     {
+        UIManager.Instance.CloseUI(this);
         Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        DestroyDontDestroyManagers();
+
+        string sceneName = SceneManager.GetActiveScene().name;
+        SceneManager.LoadScene(sceneName);
     }
 
     void OnClickExit()
     {
-        Time.timeScale = 1f;
-        SceneManager.LoadScene("MainMenu");  // 改成你主菜单场景名
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
+
+    private void DestroyDontDestroyManagers()
+    {
+        if (GameManager.Instance != null) Destroy(GameManager.Instance.gameObject);
+        if (AudioManager.Instance != null) Destroy(AudioManager.Instance.gameObject);
+        if (UIManager.Instance != null) Destroy(UIManager.Instance.gameObject);
+        if (PlayerManager.Instance != null) Destroy(PlayerManager.Instance.gameObject);
     }
 }

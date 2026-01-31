@@ -46,6 +46,22 @@ public class OriginShooterModule : PlayerModule
         RecalculateStats();
     }
 
+    public override void OnActivate()
+    {
+        base.OnActivate();
+        UpdateMuzzleVisibility();
+    }
+
+    public override void OnDeactivate()
+    {
+        base.OnDeactivate();
+        foreach (var m in muzzles)
+        {
+            if (m != null)
+                m.gameObject.SetActive(false);
+        }
+    }
+
     public override void OnModuleUpdate()
     {
         HandleRotation();
@@ -128,6 +144,9 @@ public class OriginShooterModule : PlayerModule
 
     void HandleReloadVisuals()
     {
+        if (!isUnlocked || muzzleVisualProgress == null || muzzleVisualProgress.Count != muzzles.Count)
+            return;
+
         float recoverSpeed = 1f / GetFinalFireRate();
 
         for (int i = 0; i < muzzles.Count; i++)
@@ -148,9 +167,7 @@ public class OriginShooterModule : PlayerModule
                 if (!muzzles[i].gameObject.activeSelf)
                     muzzles[i].gameObject.SetActive(true);
 
-                float finalScale =
-                    DOVirtual.EasedValue(0, 1, muzzleVisualProgress[i], Ease.OutBack);
-
+                float finalScale = DOVirtual.EasedValue(0, 1, muzzleVisualProgress[i], Ease.OutBack);
                 muzzles[i].localScale = Vector3.one * finalScale;
             }
             else
@@ -206,6 +223,8 @@ public class OriginShooterModule : PlayerModule
 
     void SpawnBullet(Transform muzzlePoint)
     {
+        AudioManager.Instance.PlayEffect("Shootershoot");
+
         GameObject bullet = ObjectPoolManager.Instance.Get(
             bulletPrefab,
             muzzlePoint.position,
@@ -215,5 +234,20 @@ public class OriginShooterModule : PlayerModule
         PlayerBullet bulletScript = bullet.GetComponent<PlayerBullet>();
         if (bulletScript)
             bulletScript.damage = (int)GetFinalDamage();
+    }
+
+    private void UpdateMuzzleVisibility()
+    {
+        if (muzzles == null || muzzles.Count == 0) return;
+
+        for (int i = 0; i < muzzles.Count; i++)
+        {
+            bool shouldBeActive = false;
+            if (currentLevel == 1 && i == 0) shouldBeActive = true;
+            if (currentLevel == 2 && i <= 1) shouldBeActive = true;
+            if (currentLevel == 3 && i <= 2) shouldBeActive = true;
+
+            muzzles[i].gameObject.SetActive(shouldBeActive);
+        }
     }
 }

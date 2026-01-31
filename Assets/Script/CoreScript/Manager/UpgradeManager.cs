@@ -22,6 +22,7 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
     public int UpgradePoints { get; private set; } = 0;
 
     private HashSet<ModuleType> unlockedModuleTypes = new HashSet<ModuleType>();
+    public HashSet<ModuleType> UnlockedModuleTypes => unlockedModuleTypes;
 
     private Dictionary<ModuleType, ModuleRuntimeData> activeModules =
         new Dictionary<ModuleType, ModuleRuntimeData>();
@@ -78,6 +79,7 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         foreach (var module in startingModules)
         {
             UnlockModule(module);
+            EventManager.Broadcast<ModuleType>(GameEvent.PlayerUIModelUnlock, module);
         }
     }
 
@@ -111,6 +113,19 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         }
     }
 
+    public void LockModule(ModuleType type)
+    {
+        if (unlockedModuleTypes.Contains(type))
+        {
+            unlockedModuleTypes.Remove(type);
+            //activeModules.Remove(type);
+            if (PlayerManager.Instance.CurrentModules != null)
+            {
+                PlayerManager.Instance.CurrentModules.DisableModule(type);
+            }
+        }
+    }
+
     public bool ConsumeUpgradePoint(int amount = 1)
     {
         if (UpgradePoints < amount) return false;
@@ -135,6 +150,7 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
             OnUpgradePointsChanged?.Invoke(UpgradePoints);
 
             expToLevelUp = GetExpToLevelUp();
+            AudioManager.Instance.PlayEffect("LevelUp");
             OnExpChanged?.Invoke(CurrentExp, expToLevelUp, CurrentLevel);
         }
     }
@@ -173,8 +189,8 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
     {
         if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
         {
-            data.AddStatUpgrade(statType);
-            EventManager.Broadcast<ModuleType, StatType>(GameEvent.ModuleUpgrade, moduleType, statType);
+            if(data.AddStatUpgrade(statType))
+                EventManager.Broadcast<ModuleType, StatType>(GameEvent.ModuleUpgrade, moduleType, statType);
         }
     }
 
@@ -217,7 +233,7 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
     {
         if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
         {
-            return data.config.GetUpgradeDefinition(statType).pointCost + data.GetStatLevel(statType);
+            return data.config.GetUpgradeDefinition(statType).pointCosts[data.GetStatLevel(statType)];
         }
         return -1;
     }

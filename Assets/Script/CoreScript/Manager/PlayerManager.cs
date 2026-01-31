@@ -71,6 +71,8 @@ public class PlayerManager : MonoSingleton<PlayerManager>
         CurrentModules.Initialize?.Invoke();
 
         MaskSystemManager.Instance?.ApplyCurrentMaskVisuals();
+
+        GameObject.Find("PlayerModelCamera").GetComponent<PlayerPreviewSync>().RebuildPreview();
     }
 
     private void HandlePlayerDeath()

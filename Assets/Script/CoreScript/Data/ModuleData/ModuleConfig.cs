@@ -36,6 +36,23 @@ public enum StatType
     DashCooldown,   // 突进冷却
     DashForce,
 
+    //SniperModule
+    SnipeDamage,    // 伤害
+    SnipeFireRate,  // 射速
+    SnipePenetration, // 穿透次数
+
+    //ShotgunModule
+    ShotgunDamage,
+    ShotgunFireRate,
+    ShotgunPelletCount,   // 弹丸数量
+    ShotgunSpreadAngle,   // 扩散角度
+
+    //SawBladeModule
+    BladeBaseDamage,
+    BladeChargeTime,
+    BladeHitCount,
+
+
     //诸如此类
 }
 
@@ -52,6 +69,7 @@ public class StatUpgradeDefinition
     public StatType statType;//属性
     public float valuePerUpgrade;//数值
     public int pointCost = 1;
+    public List<int> pointCosts;
     public int maxStacks = -1;//-1为无限升级
 
     [Header("UI Info")]
@@ -75,6 +93,9 @@ public class ModuleConfig : ScriptableObject
 
     [Header("Upgrade Definitions")]
     public List<StatUpgradeDefinition> statUpgrades;
+
+    [Header("Visual Settings")]
+    public Color themeColor = Color.cyan;
 
     public float GetBaseStat(StatType type)
     {

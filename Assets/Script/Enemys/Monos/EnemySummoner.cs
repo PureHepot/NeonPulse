@@ -116,6 +116,7 @@ public class EnemySummoner : EnemyBase
         if (summonedEnemy != null)
         {
             summonedEnemy.OnSpawn();
+            AudioManager.Instance.PlayEffect("Summon");
             summonedEnemies.Add(summonedEnemy);
         }
         else

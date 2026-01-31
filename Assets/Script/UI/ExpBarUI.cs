@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// ¾­Ñé½ø¶ÈÌõUI
+/// ç»éªŒè¿›åº¦æ¡UI
 /// </summary>
 public class ExpBarUI : UIBase
 {
@@ -12,7 +12,7 @@ public class ExpBarUI : UIBase
 
     private void Awake()
     {
-        // ³õÊ¼»¯UI
+        // åˆå§‹åŒ–UI
         InitExpUI();
     }
 
@@ -20,7 +20,7 @@ public class ExpBarUI : UIBase
     {
         base.OnEnter(args);
 
-        // ¶©ÔÄ¾­ÑéÊÂ¼ş
+        // è®¢é˜…ç»éªŒäº‹ä»¶
         if (UpgradeManager.Instance != null)
         {
             UpgradeManager.Instance.OnExpChanged += UpdateExpUI;
@@ -31,7 +31,7 @@ public class ExpBarUI : UIBase
     {
         base.OnClose();
 
-        // È¡Ïû¶©ÔÄ
+        // å–æ¶ˆè®¢é˜…
         if (UpgradeManager.Instance != null)
         {
             UpgradeManager.Instance.OnExpChanged -= UpdateExpUI;
@@ -40,22 +40,22 @@ public class ExpBarUI : UIBase
     }
 
     /// <summary>
-    /// ³õÊ¼»¯UI
+    /// åˆå§‹åŒ–UI
     /// </summary>
     private void InitExpUI()
     {
-        // ÏÈ¼ì²é¿Ø¼şÊÇ·ñ¹ÒÔØ³É¹¦
+        // å…ˆæ£€æŸ¥æ§ä»¶æ˜¯å¦æŒ‚è½½æˆåŠŸ
         if (expFillImage == null || levelText == null || expText == null)
         {
-            Debug.LogError("¿Ø¼şÎ´¹ÒÔØ£¬ÇëÔÚInspectorÍÏÈë¶ÔÓ¦×é¼ş");
+            Debug.LogError("æ§ä»¶æœªæŒ‚è½½ï¼Œè¯·åœ¨Inspectoræ‹–å…¥å¯¹åº”ç»„ä»¶");
             return;
         }
 
         expFillImage.fillAmount = 0;
-        levelText.text = "Lv.1";
+        levelText.text = "1";
         expText.text = "0/100";
 
-        // Í¬²½ÕæÊµÊı¾İ
+        // åŒæ­¥çœŸå®æ•°æ®
         if (UpgradeManager.Instance != null)
         {
             int initExp = UpgradeManager.Instance.baseExpToLevelUp;
@@ -64,7 +64,7 @@ public class ExpBarUI : UIBase
     }
 
     /// <summary>
-    /// ¸üĞÂ¾­ÑéUI
+    /// æ›´æ–°ç»éªŒUI
     /// </summary>
     public void UpdateExpUI(int currentExp, int expToLevelUp, int currentLevel)
     {
@@ -72,9 +72,9 @@ public class ExpBarUI : UIBase
 
         float progress = expToLevelUp <= 0 ? 0 : (float)currentExp / expToLevelUp;
 
-        // ¸üĞÂ½ø¶ÈÌõºÍÎÄ±¾
+        // æ›´æ–°è¿›åº¦æ¡å’Œæ–‡æœ¬
         expFillImage.fillAmount = progress;
-        levelText.text = $"Lv.{currentLevel}";
+        levelText.text = $"{currentLevel}";
         expText.text = $"{currentExp}/{expToLevelUp}";
     }
 }

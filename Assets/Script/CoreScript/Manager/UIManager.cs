@@ -183,6 +183,12 @@ public class UIManager : MonoSingleton<UIManager>
     {
         if (panelList.Count == 0) return;
 
+        for (int i = 0; i < panelList.Count; i++)
+        {
+            if (panelList[i] == null)
+                panelList.RemoveAt(i--);
+        }
+
         // 获取栈顶
         var topUI = panelList[^1];
         ClosePanel(topUI);

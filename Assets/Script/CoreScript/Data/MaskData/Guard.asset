@@ -16,4 +16,4 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 8c621ffc509b58144b64a0698f3e3ceb, type: 3}
   bodySprite: {fileID: 21300000, guid: 8c621ffc509b58144b64a0698f3e3ceb, type: 3}
   themeColor: {r: 0.14522237, g: 0.8396226, b: 0.07524917, a: 1}
-  guaranteedModules: 00000000010000000200000003000000
+  guaranteedModules: 00000000010000000700000003000000

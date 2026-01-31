@@ -10,6 +10,9 @@ public enum ModuleType
     Shield,
     Dash,
     LaserDrone,
+    Sniper,
+    Shotgun,
+    SawBlade,
 }
 
 

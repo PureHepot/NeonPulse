@@ -56,7 +56,7 @@ public class DashModule : PlayerModule
 
     public override void UpgradeModule(ModuleType moduleType, StatType statType)
     {
-        if (statType == StatType.DashCooldown)
+        if (moduleType == ModuleType.Dash)
         {
             RecalculateStats();
             Debug.Log($"[DashModule] 冷却升级 → {dashCooldown:F2}s");
@@ -71,13 +71,14 @@ public class DashModule : PlayerModule
 
     public bool IsReady()
     {
-        return Time.time >= lastDashTime + dashCooldown;
+        return Time.time >= lastDashTime + dashCooldown + dashDuration;
     }
 
     public void OnDashStart()
     {
         lastDashTime = Time.time;
         if (dashTrail != null) dashTrail.emitting = true;
+        AudioManager.Instance.PlayEffect("Dash");
 
         Physics2D.IgnoreLayerCollision(playerLayerID, enemyLayerID, true);
 
@@ -113,9 +114,11 @@ public class DashModule : PlayerModule
             dashDirection = new Vector2(dir.x, dir.y).normalized;
         }
 
+        player.Rigid2d.AddForce(dashForce * dashDirection);
+
         // 获取当前正常移速
         float targetSpeed = UpgradeManager.Instance.GetStat(ModuleType.Movement, StatType.MoveSpeed);
-        if (targetSpeed <= 0) targetSpeed = 5f; // 防止取不到数据导致不动
+        if (targetSpeed <= 0) targetSpeed = 5f;
 
         // 开始平滑衰减循环
         float timer = 0f;
