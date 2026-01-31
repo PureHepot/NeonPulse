@@ -17,7 +17,7 @@ public class LevelUpUI : UIBase
     {
         base.OnEnter(args);
 
-        Time.timeScale = 0f;
+        Time.timeScale = 0.01f;
 
         InputManager.Instance.SetLockLevel(InputLockLevel.AllLocked);
 
@@ -77,7 +77,11 @@ public class LevelUpUI : UIBase
                     }
                 });
             }
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(item.GetComponent<RectTransform>());
         }
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(trans.GetComponent<RectTransform>());
 
         Get<Button>("ModuleBtn").onClick.SetListener(() =>
         {

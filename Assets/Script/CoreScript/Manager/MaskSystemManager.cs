@@ -11,11 +11,16 @@ public class MaskSystemManager : MonoSingleton<MaskSystemManager>
     [Header("Current State")]
     public MaskConfig currentMask;
 
+    private List<ModuleType> mods = new();//临时存
+
     public void ApplyCurrentMaskVisuals()
     {
         if (currentMask != null)
         {
             PlayerManager.Instance.UpdatePlayerVisuals(currentMask.bodySprite, currentMask.themeColor);
+            HealthModule health = PlayerManager.Instance.CurrentModules.GetModule<HealthModule>(ModuleType.Health);
+            health.normalColor = currentMask.themeColor;
+            health.normalColor = Color.white - currentMask.themeColor;
         }
     }
 
@@ -55,7 +60,8 @@ public class MaskSystemManager : MonoSingleton<MaskSystemManager>
         }
 
         //将不是面具带来的模块禁用
-        foreach(var mod in UpgradeManager.Instance.UnlockedModuleTypes)
+        mods.Clear();
+        foreach (var mod in UpgradeManager.Instance.UnlockedModuleTypes)
         {
             bool isFromMask = false;
             foreach(var m in mask.guaranteedModules)
@@ -68,9 +74,14 @@ public class MaskSystemManager : MonoSingleton<MaskSystemManager>
             }
             if(!isFromMask)
             {
-                PlayerManager.Instance.CurrentModules.DisableModule(mod);
+                mods.Add(mod);
                 EventManager.Broadcast(GameEvent.PlayerUIModelLock, mod);
             }
+        }
+
+        foreach (var mod in mods)
+        {
+            UpgradeManager.Instance.LockModule(mod);
         }
 
         Debug.Log($"装备面具: {mask.maskName}");

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+using DG.Tweening;
 public class StartUI : UIBase
 {
     public override void OnEnter(object args)
@@ -37,9 +37,18 @@ public class StartUI : UIBase
 
         Get<Button>("Exit").onClick.SetListener(() =>
         {
-            // 退出游戏逻辑
-            Debug.Log("退出游戏");
-        }); 
+            Application.Quit();
+        });
+
+        DOVirtual.Float(0f, 1f, 3f, (value) =>
+        {
+            Color rainbowColor = Color.HSVToRGB(value, 0.8f, 1f);
+            Get<Image>("Start").color = rainbowColor;
+            Get<Image>("Start").GetComponentInChildren<Text>().color = rainbowColor;
+        })
+            .SetLoops(-1, LoopType.Restart)
+            .SetEase(Ease.Linear)
+            .SetUpdate(true);
     }
 
 

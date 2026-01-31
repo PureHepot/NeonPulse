@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6523726963308551432}
   - component: {fileID: 3334438611879363698}
-  - component: {fileID: 9126253519375017355}
+  - component: {fileID: 4320572003310335287}
   - component: {fileID: 953598002057476516}
   - component: {fileID: -8942256775795501433}
   m_Layer: 11
@@ -87,8 +87,8 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!58 &9126253519375017355
-CircleCollider2D:
+--- !u!70 &4320572003310335287
+CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -116,12 +116,12 @@ CircleCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.009268598, y: 0.04420352}
-  serializedVersion: 2
-  m_Radius: 2.430943
+  m_Offset: {x: -4.712774, y: -0.23653135}
+  m_Size: {x: 12.535646, y: 6.598013}
+  m_Direction: 1
 --- !u!96 &953598002057476516
 TrailRenderer:
   serializedVersion: 3
@@ -174,7 +174,7 @@ TrailRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.024366813
+        value: 0.04103348
         inSlope: 0
         outSlope: 0
         tangentMode: 0
