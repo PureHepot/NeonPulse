@@ -76,6 +76,9 @@ public class ModuleConfig : ScriptableObject
     [Header("Upgrade Definitions")]
     public List<StatUpgradeDefinition> statUpgrades;
 
+    [Header("Visual Settings")]
+    public Color themeColor = Color.cyan;
+
     public float GetBaseStat(StatType type)
     {
         foreach (var stat in baseStats)
