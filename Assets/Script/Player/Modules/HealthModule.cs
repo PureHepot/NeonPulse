@@ -16,6 +16,17 @@ public class HealthModule : PlayerModule
     public Color normalColor = Color.white;
 
     private bool isInvincible = false;
+    public bool IsInvincible
+    {
+        get
+        {
+            return isInvincible;
+        }
+        set
+        {
+            isInvincible = value;
+        }
+    }
     private float regenTimer;
     private float regenAccumulator = 0f;
 

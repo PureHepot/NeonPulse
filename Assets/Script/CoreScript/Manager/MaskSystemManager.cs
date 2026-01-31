@@ -20,7 +20,7 @@ public class MaskSystemManager : MonoSingleton<MaskSystemManager>
             PlayerManager.Instance.UpdatePlayerVisuals(currentMask.bodySprite, currentMask.themeColor);
             HealthModule health = PlayerManager.Instance.CurrentModules.GetModule<HealthModule>(ModuleType.Health);
             health.normalColor = currentMask.themeColor;
-            health.normalColor = Color.white - currentMask.themeColor;
+            health.hurtColor = Color.white - currentMask.themeColor;
         }
     }
 

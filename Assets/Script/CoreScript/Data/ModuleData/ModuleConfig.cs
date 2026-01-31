@@ -47,6 +47,12 @@ public enum StatType
     ShotgunPelletCount,   // 弹丸数量
     ShotgunSpreadAngle,   // 扩散角度
 
+    //SawBladeModule
+    BladeBaseDamage,
+    BladeChargeTime,
+    BladeHitCount,
+
+
     //诸如此类
 }
 
