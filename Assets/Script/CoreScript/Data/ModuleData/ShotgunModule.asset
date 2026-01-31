@@ -28,24 +28,29 @@ MonoBehaviour:
   - statType: 21
     valuePerUpgrade: 1
     pointCost: 1
+    pointCosts: 0200000002000000030000000400000005000000
     maxStacks: 5
     upgradeName: "\u6563\u5F39\u4F24\u5BB3"
     description: "\u63D0\u5347\u6563\u5F39\u4F24\u5BB3"
   - statType: 22
     valuePerUpgrade: -0.1
     pointCost: 1
+    pointCosts: 0300000003000000030000000400000004000000
     maxStacks: 5
     upgradeName: "\u6563\u5F39\u51B7\u5374"
     description: "\u52A0\u5FEB\u6563\u5F39\u5145\u80FD"
   - statType: 23
     valuePerUpgrade: 1
     pointCost: 1
+    pointCosts: 0200000003000000030000000400000004000000
     maxStacks: 5
     upgradeName: "\u5F39\u4E38\u6570\u91CF"
     description: "\u589E\u52A0\u5F39\u4E38\u6570\u91CF"
   - statType: 24
     valuePerUpgrade: 5
     pointCost: 1
+    pointCosts: 010000000100000002000000020000000300000003000000
     maxStacks: 6
     upgradeName: "\u6269\u6563\u89D2\u5EA6"
     description: "\u589E\u5927\u6269\u6563\u89D2\u5EA6"
+  themeColor: {r: 0, g: 1, b: 1, a: 1}

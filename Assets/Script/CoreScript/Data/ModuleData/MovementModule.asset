@@ -22,6 +22,7 @@ MonoBehaviour:
   - statType: 3
     valuePerUpgrade: 1
     pointCost: 1
+    pointCosts: 0200000002000000030000000300000004000000040000000500000005000000
     maxStacks: -1
     upgradeName: "\u79FB\u901F"
     description: "\u63D0\u9AD8\u79FB\u901F"
