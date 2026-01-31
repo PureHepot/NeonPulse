@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3334438611879363698}
   - component: {fileID: 4320572003310335287}
   - component: {fileID: 953598002057476516}
-  - component: {fileID: -8942256775795501433}
+  - component: {fileID: 2642764940066054215}
   m_Layer: 11
   m_Name: PlayerSnipeBullet
   m_TagString: Untagged
@@ -235,7 +235,7 @@ TrailRenderer:
   m_Autodestruct: 0
   m_Emitting: 1
   m_ApplyActiveColorSpace: 1
---- !u!114 &-8942256775795501433
+--- !u!114 &2642764940066054215
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

@@ -79,6 +79,7 @@ public class HealthModule : PlayerModule
 
         CurrentHp -= amount;
         CurrentHp = Mathf.Clamp(CurrentHp, 0, MaxHp);
+        AudioManager.Instance.PlayEffect("PlayerHit");
 
         PlayerManager.Instance.SyncHp(Mathf.RoundToInt(CurrentHp), MaxHp);
 

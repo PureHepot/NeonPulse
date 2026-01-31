@@ -135,6 +135,7 @@ public class MaskGachaUI : UIBase
         }
 
         //开始滚动
+        AudioManager.Instance.PlayEffect("Lottery");
         scrollContainer.anchoredPosition = new Vector2(scrollContainer.anchoredPosition.x, 0);
         float targetY = totalFakeItems * itemHeight - 0.25f * itemHeight;
 

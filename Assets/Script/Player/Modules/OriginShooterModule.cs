@@ -223,6 +223,8 @@ public class OriginShooterModule : PlayerModule
 
     void SpawnBullet(Transform muzzlePoint)
     {
+        AudioManager.Instance.PlayEffect("Shootershoot");
+
         GameObject bullet = ObjectPoolManager.Instance.Get(
             bulletPrefab,
             muzzlePoint.position,
