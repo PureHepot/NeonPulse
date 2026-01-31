@@ -41,8 +41,18 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _GlowIntensity: 2
-    m_Colors: []
+    - UNITY_UI_CLIP_RECT: 0
+    - _ColorMask: 15
+    - _GlowIntensity: 1.5
+    - _Stencil: 0
+    - _StencilComp: 8
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
+    - _UNITY_UI_CLIP_RECT: 0
+    - _UseUIAlphaClip: 0
+    m_Colors:
+    - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
 --- !u!114 &3549605219764765413
 MonoBehaviour:

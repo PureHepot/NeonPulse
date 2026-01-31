@@ -23,11 +23,14 @@ MonoBehaviour:
   statUpgrades:
   - statType: 1
     valuePerUpgrade: 5
+    pointCost: 1
     maxStacks: -1
     upgradeName: "\u6700\u5927\u751F\u547D\u503C"
     description: "\u63D0\u9AD8\u6700\u5927\u751F\u547D\u503C"
   - statType: 2
     valuePerUpgrade: 0.1
+    pointCost: 1
     maxStacks: 5
     upgradeName: "\u751F\u547D\u6062\u590D"
     description: "\u52A0\u5FEB\u751F\u547D\u503C\u6062\u590D"
+  themeColor: {r: 0.024959564, g: 1, b: 0, a: 1}

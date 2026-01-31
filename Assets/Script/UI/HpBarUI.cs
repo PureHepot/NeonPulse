@@ -46,6 +46,6 @@ public class HpBarUI : UIBase
         hpFillImage.DOKill();
         hpFillImage.DOFillAmount(percent, smoothTime);
 
-        hpText.text = $"HP:{current}/{max}";
+        hpText.text = $"{current}/{max}";
     }
 }
