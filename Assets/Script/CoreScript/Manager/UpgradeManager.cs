@@ -22,6 +22,7 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
     public int UpgradePoints { get; private set; } = 0;
 
     private HashSet<ModuleType> unlockedModuleTypes = new HashSet<ModuleType>();
+    public HashSet<ModuleType> UnlockedModuleTypes => unlockedModuleTypes;
 
     private Dictionary<ModuleType, ModuleRuntimeData> activeModules =
         new Dictionary<ModuleType, ModuleRuntimeData>();
@@ -78,6 +79,7 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         foreach (var module in startingModules)
         {
             UnlockModule(module);
+            EventManager.Broadcast<ModuleType>(GameEvent.PlayerUIModelUnlock, module);
         }
     }
 
@@ -107,6 +109,19 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
             if (PlayerManager.Instance.CurrentModules != null)
             {
                 PlayerManager.Instance.CurrentModules.UnlockModule(type);
+            }
+        }
+    }
+
+    public void LockModule(ModuleType type)
+    {
+        if (unlockedModuleTypes.Contains(type))
+        {
+            unlockedModuleTypes.Remove(type);
+            //activeModules.Remove(type);
+            if (PlayerManager.Instance.CurrentModules != null)
+            {
+                PlayerManager.Instance.CurrentModules.DisableModule(type);
             }
         }
     }

@@ -116,7 +116,25 @@ public class MaskGachaUI : UIBase
         // 强制刷新布局
         LayoutRebuilder.ForceRebuildLayoutImmediate(scrollContainer);
 
-        // --- 开始滚动 ---
+        Image edgeImg = Get<Image>("Edge"); // 确保Hierarchy里那个框的名字叫 "Edge"
+        Color originalEdgeColor = Color.white;
+        Tween rainbowTween = null;
+
+        if (edgeImg != null)
+        {
+            originalEdgeColor = edgeImg.color;
+
+            rainbowTween = DOVirtual.Float(0f, 1f, 0.5f, (value) =>
+            {
+                Color rainbowColor = Color.HSVToRGB(value, 0.8f, 1f);
+                edgeImg.color = rainbowColor;
+            })
+            .SetLoops(-1, LoopType.Restart)
+            .SetEase(Ease.Linear)
+            .SetUpdate(true);
+        }
+
+        //开始滚动
         scrollContainer.anchoredPosition = new Vector2(scrollContainer.anchoredPosition.x, 0);
         float targetY = totalFakeItems * itemHeight - 0.25f * itemHeight;
 
@@ -125,6 +143,12 @@ public class MaskGachaUI : UIBase
             .SetEase(Ease.OutCubic).SetUpdate(true);
 
         yield return currentTween.WaitForCompletion();
+
+        if (rainbowTween != null) rainbowTween.Kill(); //停止彩虹动画
+        if (edgeImg != null)
+        {
+            edgeImg.color = originalEdgeColor; //恢复原来的颜色
+        }
 
         Debug.Log("Gacha Finished: " + finalResult.maskName);
 

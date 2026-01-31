@@ -29,17 +29,33 @@ public class PlayerPreview : MonoBehaviour
         if (controller) Destroy(controller);
         var rb = currentModel.GetComponent<Rigidbody2D>();
         if (rb) Destroy(rb);
+        currentModel.GetComponent<PlayerModuleManager>().RemoveModule(ModuleType.Movement);
 
         SetLayerRecursively(currentModel, LayerMask.NameToLayer(uiLayerName));
         currentModel.tag = "Untagged";
         SetUnscaledTimeRecursively(currentModel);
 
-        EventManager.AddListener<ModuleType>(GameEvent.PlayerUIModel, UnLockUIModule);
+        EventManager.AddListener<ModuleType>(GameEvent.PlayerUIModelUnlock, UnLockUIModule);
+        EventManager.AddListener<ModuleType>(GameEvent.PlayerUIModelLock, LockUIModule);
     }
 
     private void UnLockUIModule(ModuleType moduleType)
     {
         currentModel.GetComponent<PlayerModuleManager>().UnlockModule(moduleType);
+    }
+
+    private void InitUIModule()
+    {
+        currentModel.GetComponent<PlayerModuleManager>().Initialize?.Invoke();
+    }
+    private void UpgradeUIModule(ModuleType moduleType, StatType statType)
+    {
+        currentModel.GetComponent<PlayerModuleManager>().UpgradeModule(moduleType, statType);
+    }
+
+    private void LockUIModule(ModuleType type)
+    {
+        currentModel.GetComponent<PlayerModuleManager>().DisableModule(type);
     }
 
     void Update()

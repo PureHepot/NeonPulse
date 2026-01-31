@@ -27,7 +27,7 @@ public class PlayerModuleManager : MonoBehaviour
 
         Initialize = () =>
         {
-            modules = GetComponentsInChildren<PlayerModule>(true);
+            PlayerModule[] modules = GetComponentsInChildren<PlayerModule>(true);
 
             foreach (var module in modules)
             {
@@ -61,13 +61,13 @@ public class PlayerModuleManager : MonoBehaviour
         }
     }
 
-    public void UpgradeModule(ModuleType type)
+    public void UpgradeModule(ModuleType type, StatType stat)
     {
         if (moduleDict.TryGetValue(type, out PlayerModule module))
         {
             if (module.isUnlocked)
             {
-                //module.UpgradeModule();
+                module.UpgradeModule(type, stat);
                 Debug.Log($"<color=green>模块已升级: {type}</color>");
             }
             else
@@ -93,6 +93,14 @@ public class PlayerModuleManager : MonoBehaviour
                 module.OnDeactivate();
                 activeModules.Remove(module);
             }
+        }
+    }
+
+    public void RemoveModule(ModuleType type)
+    {
+        if (moduleDict.ContainsKey(type))
+        {
+            moduleDict.Remove(type);
         }
     }
 
