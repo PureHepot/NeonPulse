@@ -79,7 +79,6 @@ public class SniperModule : PlayerModule
         if (muzzle == null) return;
 
         cooldown = fireRate;
-        AudioManager.Instance.PlayEffect("Snipershoot");
 
         GameObject bullet = ObjectPoolManager.Instance.Get(
             sniperBulletPrefab,
