@@ -51,7 +51,9 @@ public class BossPhase2State : SingerBossBaseState
                     StartTeleport(); // 第一次瞬移
 
                     currentStage = StageState.Looping;
-                    stageTimer = boss.p2AttackDuration; // 设置攻击总时长
+
+                    // 【修正点】使用 p2TotalDuration (之前报错是因为写成了 p2AttackDuration)
+                    stageTimer = boss.p2TotalDuration;
                 }
                 break;
 
@@ -75,9 +77,13 @@ public class BossPhase2State : SingerBossBaseState
                 stageTimer -= Time.deltaTime;
                 if (stageTimer <= 0)
                 {
-                    // 彻底结束，销毁头发，切回 P1
+                    // 彻底结束
                     CleanUpHairs();
                     boss.hasFinishedPhase2 = true;
+
+                    // P2 结束，回到 P1 时，开启屏幕干扰！
+                    boss.StartScreenDisturb();
+
                     boss.TransitionToState(boss.Phase1);
                 }
                 break;
@@ -94,7 +100,7 @@ public class BossPhase2State : SingerBossBaseState
             case AttackCycle.Teleporting:
                 // 瞬移已在 StartTeleport 执行，直接切到稳定状态
                 currentCycle = AttackCycle.Stabilizing;
-                cycleTimer = boss.p2StabilizeTime; // 停顿，让玩家看清位置
+                cycleTimer = boss.p2StabilizeTime; // 停顿
                 break;
 
             case AttackCycle.Stabilizing:
@@ -102,8 +108,7 @@ public class BossPhase2State : SingerBossBaseState
                 {
                     FireLasers();
                     currentCycle = AttackCycle.Firing;
-                    // 等待激光生命周期 (假设预警1s + 伤害0.5s = 1.5s)
-                    // 额外加一点点缓冲防止瞬移穿帮
+                    // 等待激光生命周期 (假设预警+伤害 约 1.5s)
                     cycleTimer = 1.6f;
                 }
                 break;
@@ -131,13 +136,8 @@ public class BossPhase2State : SingerBossBaseState
     {
         Debug.Log("P2 攻击结束，进入退场缓冲...");
         currentStage = StageState.Exiting;
-
-        // 销毁头发 (或者你可以选择保留头发但不发射，看你想怎么演出)
-        // 这里建议先保留头发，等退场缓冲结束再销毁，避免突兀消失
-        // 如果想让它立刻消失，就调用 CleanUpHairs();
-
-        // 设置等待时间 (等待最后的激光消失 + 额外的发呆时间)
         stageTimer = boss.p2ExitDelay;
+        // 此时我们不销毁头发，等退场缓冲结束再销毁
     }
 
     void CleanUpHairs()
@@ -189,13 +189,11 @@ public class BossPhase2State : SingerBossBaseState
         if (fp)
         {
             GameObject l = Object.Instantiate(boss.laserBeamPrefab, fp.position, Quaternion.identity);
-
             LaserBeam beam = l.GetComponent<LaserBeam>();
             if (beam != null)
             {
-                // 【新增】应用 BossSinger 设置的 P2 宽度
+                // 应用 P2 宽度
                 beam.laserWidth = boss.p2LaserWidth;
-
                 beam.Fire(fp.position, dir);
             }
         }

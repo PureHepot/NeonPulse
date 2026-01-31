@@ -21,3 +21,4 @@ MonoBehaviour:
       isParallel: 0
       direction: 5
       delayBeforeStart: 0
+    waveDuration: 0
