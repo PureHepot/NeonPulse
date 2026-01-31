@@ -1,3 +1,4 @@
+using Sirenix.Reflection.Editor;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -181,12 +182,18 @@ public class WaveManager : MonoSingleton<WaveManager>
     Vector3 GetSpawnPosition(SpawnDirection dir)
     {
         Vector3 pos = Vector3.zero;
-        float xLimit = camWidth / 2f + spawnPadding;
-        float yLimit = camHeight / 2f + spawnPadding;
+
+        // 计算屏幕的一半宽高
+        float halfHeight = camHeight / 2f;
+        float halfWidth = camWidth / 2f;
+
+        // 原有的 limit 是给屏幕外生成用的
+        float xLimit = halfWidth + spawnPadding;
+        float yLimit = halfHeight + spawnPadding;
 
         if (dir == SpawnDirection.Random)
         {
-            dir = (SpawnDirection)Random.Range(1, 5); // 1-4 是上下左右
+            dir = (SpawnDirection)Random.Range(1, 5);
         }
 
         switch (dir)
@@ -203,9 +210,13 @@ public class WaveManager : MonoSingleton<WaveManager>
             case SpawnDirection.Right:
                 pos = new Vector3(xLimit, Random.Range(-yLimit, yLimit), 0);
                 break;
+
+            // 【修改处】
             case SpawnDirection.TopCenter:
-                // X轴固定为0 (屏幕中心)，Y轴在上方边缘
-                pos = new Vector3(0, 11, 0);
+                // X轴居中 = 0
+                // Y轴 = 屏幕顶边缘(halfHeight) - 偏移量(比如 1.5f 或 2.0f)
+                // 这样怪物就会刚好出现在屏幕内部的上方，而不是屏幕外
+                pos = new Vector3(0, halfHeight - 1.5f, 0);
                 break;
         }
 

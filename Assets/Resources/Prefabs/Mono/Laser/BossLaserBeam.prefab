@@ -9705,7 +9705,6 @@ GameObject:
   - component: {fileID: 2309910256282418437}
   - component: {fileID: -8487200295123928613}
   - component: {fileID: 2282018982245281237}
-  - component: {fileID: -4925945184325525139}
   m_Layer: 3
   m_Name: BossLaserBeam
   m_TagString: Untagged
@@ -9905,20 +9904,3 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 21, y: 1}
   m_EdgeRadius: 0
---- !u!114 &-4925945184325525139
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6355293803146212029}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 35ebdfdfa88877446832adef04756d5c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 15
-  damage: 1
-  lifeTime: 4
-  hitVFXPrefab: {fileID: 6321916889492637054, guid: df16c1a6f3c41784abda5e4503ae0175, type: 3}
-  muzzleVFXPrefab: {fileID: 2222235006804172273, guid: 0bd5ba2a997dfac4db82d9121f931367, type: 3}
