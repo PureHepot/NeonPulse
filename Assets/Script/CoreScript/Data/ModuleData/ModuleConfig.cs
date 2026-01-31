@@ -36,6 +36,11 @@ public enum StatType
     DashCooldown,   // 突进冷却
     DashForce,
 
+    //SniperModule
+    SnipeDamage,    // 伤害
+    SnipeFireRate,  // 射速
+    SnipePenetration, // 穿透次数
+
     //诸如此类
 }
 

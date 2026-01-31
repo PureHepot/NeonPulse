@@ -10,11 +10,11 @@ GameObject:
   m_Component:
   - component: {fileID: 6523726963308551432}
   - component: {fileID: 3334438611879363698}
-  - component: {fileID: 2848320141522801014}
   - component: {fileID: 9126253519375017355}
   - component: {fileID: 953598002057476516}
+  - component: {fileID: -8942256775795501433}
   m_Layer: 11
-  m_Name: PlayerBullet
+  m_Name: PlayerSnipeBullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -29,8 +29,8 @@ Transform:
   m_GameObject: {fileID: 3724406646315978653}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.31633973, y: 0.08733624, z: 0}
-  m_LocalScale: {x: 0.15, y: 0.026749998, z: 0.15}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.048486743, y: 0.013055007, z: 0.15}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -76,8 +76,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 0, g: 0.91949296, b: 1, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 41606869b72c37744a54f9dc38d360dd, type: 3}
+  m_Color: {r: 1, g: 0.025963945, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -87,21 +87,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &2848320141522801014
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3724406646315978653}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 29b44e7dcf260734eaef06827a12d73f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 30
-  damage: 1
-  lifeTime: 2
 --- !u!58 &9126253519375017355
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -134,9 +119,9 @@ CircleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.006014357, y: 0.04420353}
+  m_Offset: {x: -0.009268598, y: 0.04420352}
   serializedVersion: 2
-  m_Radius: 0.7803297
+  m_Radius: 2.430943
 --- !u!96 &953598002057476516
 TrailRenderer:
   serializedVersion: 3
@@ -250,3 +235,15 @@ TrailRenderer:
   m_Autodestruct: 0
   m_Emitting: 1
   m_ApplyActiveColorSpace: 1
+--- !u!114 &-8942256775795501433
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3724406646315978653}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 395e21693389dd6479d79320f6690d35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

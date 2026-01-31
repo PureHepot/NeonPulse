@@ -33,6 +33,7 @@ public class PauseUI : UIBase
     {
         Time.timeScale = 1f;
         UIManager.Instance.CloseUI(this);
+
     }
 
     void OnClickSettings()
