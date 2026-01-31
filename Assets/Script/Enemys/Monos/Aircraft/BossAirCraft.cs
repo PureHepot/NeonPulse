@@ -9,38 +9,38 @@ public class BossAirCraft : EnemyBase
     [Header("Spawner Settings")]
     public GameObject drifterPrefab;
 
-    [Tooltip("´óÉú³É¼ä¸ô£ºÁ½²¨´óÉú³ÉÖ®¼äµÄµÈ´ıÊ±¼ä")]
+    [Tooltip("å¤§ç”Ÿæˆé—´éš”ï¼šä¸¤æ³¢å¤§ç”Ÿæˆä¹‹é—´çš„ç­‰å¾…æ—¶é—´")]
     public float majorSpawnInterval = 5.0f;
 
-    [Tooltip("Ğ¡Éú³É¼ä¸ô£ºÒ»´Î´óÉú³ÉÄÚ²¿£¬Á¬ĞøÉú³ÉĞ¡¹ÖµÄ¼ä¸ô")]
+    [Tooltip("å°ç”Ÿæˆé—´éš”ï¼šä¸€æ¬¡å¤§ç”Ÿæˆå†…éƒ¨ï¼Œè¿ç»­ç”Ÿæˆå°æ€ªçš„é—´éš”")]
     public float minorSpawnInterval = 1.0f;
 
-    [Tooltip("Ã¿´Î´óÉú³É°üº¬¼¸´ÎĞ¡Éú³É")]
+    [Tooltip("æ¯æ¬¡å¤§ç”ŸæˆåŒ…å«å‡ æ¬¡å°ç”Ÿæˆ")]
     public int wavesPerMajor = 3;
 
-    // ×î´óĞ¡¹Ö´æÔÚÊıÁ¿ÏŞÖÆ
+    // æœ€å¤§å°æ€ªå­˜åœ¨æ•°é‡é™åˆ¶
     public int maxMinions = 6;
 
     [Header("Entrance Settings")]
     public Vector3 targetEntryPosition = new Vector3(0, 11, 0);
     public float enterSpeed = 3.0f;
 
-    // ¡¾ĞÂÔö¡¿Ğü¸¡ÉèÖÃ
+    // ã€æ–°å¢ã€‘æ‚¬æµ®è®¾ç½®
     [Header("Hover Settings")]
-    [Tooltip("Ğü¸¡ËÙ¶È£ºÊıÖµÔ½´óÉÏÏÂ¶¯µÃÔ½¿ì")]
+    [Tooltip("æ‚¬æµ®é€Ÿåº¦ï¼šæ•°å€¼è¶Šå¤§ä¸Šä¸‹åŠ¨å¾—è¶Šå¿«")]
     public float hoverSpeed = 1.0f;
 
-    [Tooltip("Ğü¸¡·ù¶È£ºÉÏÏÂÒÆ¶¯µÄ×î´ó¾àÀë")]
+    [Tooltip("æ‚¬æµ®å¹…åº¦ï¼šä¸Šä¸‹ç§»åŠ¨çš„æœ€å¤§è·ç¦»")]
     public float hoverDistance = 0.5f;
 
-    // ÄÚ²¿±äÁ¿
+    // å†…éƒ¨å˜é‡
     private Transform leftSpawnPoint;
     private Transform rightSpawnPoint;
     private float majorTimer;
     private bool isEntering = true;
     private bool isSpawningWave = false;
 
-    // ¡¾ĞÂÔö¡¿¼ÇÂ¼Ğü¸¡µÄÖĞĞÄµãÎ»ÖÃ
+    // ã€æ–°å¢ã€‘è®°å½•æ‚¬æµ®çš„ä¸­å¿ƒç‚¹ä½ç½®
     private Vector3 hoverAnchorPos;
 
     private List<GameObject> activeMinions = new List<GameObject>();
@@ -73,10 +73,14 @@ public class BossAirCraft : EnemyBase
         }
         else
         {
-            // ½×¶Î¶ş£ºĞü¸¡ + Éú³ÉÂß¼­
-            HoverMovement(); // ¡¾ĞÂÔö¡¿µ÷ÓÃĞü¸¡
+            HoverMovement();
             HandleSpawningTimer();
         }
+    }
+
+    protected override void PlayHitEffect(Vector3 hitPoint, Vector3 hitNormal)
+    {
+        
     }
 
     void EntranceMovement()
@@ -97,30 +101,28 @@ public class BossAirCraft : EnemyBase
         isEntering = false;
         rb.velocity = Vector2.zero;
 
-        // ¡¾ĞÂÔö¡¿Èë³¡½áÊøºó£¬¼ÇÂ¼µ±Ç°Î»ÖÃ×÷ÎªĞü¸¡µÄÖĞĞÄµã
         hoverAnchorPos = transform.position;
 
         majorTimer = majorSpawnInterval;
     }
 
-    // ¡¾ĞÂÔö¡¿Ğü¸¡ÔË¶¯Âß¼­
     void HoverMovement()
     {
         if (isDead) return;
 
-        // Ê¹ÓÃ Sin º¯Êı¼ÆËãµ±Ç°µÄ Y ÖáÆ«ÒÆÁ¿
-        // Time.time * hoverSpeed ¿ØÖÆÆµÂÊ
-        // * hoverDistance ¿ØÖÆ·ù¶È
+        // ä½¿ç”¨ Sin å‡½æ•°è®¡ç®—å½“å‰çš„ Y è½´åç§»é‡
+        // Time.time * hoverSpeed æ§åˆ¶é¢‘ç‡
+        // * hoverDistance æ§åˆ¶å¹…åº¦
         float newY = hoverAnchorPos.y + Mathf.Sin(Time.time * hoverSpeed) * hoverDistance;
 
-        // ±£³Ö X ÖáÎ»ÖÃ²»±ä£¨¼´ hoverAnchorPos.x£©£¬Ö»¸Ä±ä Y
+        // ä¿æŒ X è½´ä½ç½®ä¸å˜ï¼ˆå³ hoverAnchorPos.xï¼‰ï¼Œåªæ”¹å˜ Y
         Vector2 targetPos = new Vector2(hoverAnchorPos.x, newY);
 
-        // Ê¹ÓÃ MovePosition ÒÆ¶¯¸ÕÌå
+        // ä½¿ç”¨ MovePosition ç§»åŠ¨åˆšä½“
         rb.MovePosition(targetPos);
     }
 
-    // --- Éú³ÉÂß¼­¿ØÖÆ ---
+    // --- ç”Ÿæˆé€»è¾‘æ§åˆ¶ ---
     void HandleSpawningTimer()
     {
         if (isSpawningWave) return;
@@ -164,7 +166,7 @@ public class BossAirCraft : EnemyBase
 
         activeMinions.RemoveAll(item => item == null || !item.activeInHierarchy);
 
-        // ¼ì²é³á°òÊÇ·ñ´æ»î + ÊıÁ¿ÏŞÖÆ
+        // æ£€æŸ¥ç¿…è†€æ˜¯å¦å­˜æ´» + æ•°é‡é™åˆ¶
         if (leftSpawnPoint != null && leftSpawnPoint.gameObject.activeInHierarchy && activeMinions.Count < maxMinions)
             CreateMinion(leftSpawnPoint.position);
 

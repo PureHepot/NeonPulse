@@ -140,4 +140,11 @@ public class DashModule : PlayerModule
 
         OnDashEnd();
     }
+
+
+    public override void OnActivate()
+    {
+        base.OnActivate();
+        RecalculateStats();
+    }
 }

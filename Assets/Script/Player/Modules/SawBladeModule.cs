@@ -311,6 +311,12 @@ public class SawBladeModule : PlayerModule
         }
     }
 
+    public override void OnActivate()
+    {
+        base.OnActivate();
+        RecalculateStats();
+    }
+
     public override void OnDeactivate()
     {
         base.OnDeactivate();
