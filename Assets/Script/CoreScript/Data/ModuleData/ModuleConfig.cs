@@ -41,6 +41,12 @@ public enum StatType
     SnipeFireRate,  // 射速
     SnipePenetration, // 穿透次数
 
+    //ShotgunModule
+    ShotgunDamage,
+    ShotgunFireRate,
+    ShotgunPelletCount,   // 弹丸数量
+    ShotgunSpreadAngle,   // 扩散角度
+
     //诸如此类
 }
 

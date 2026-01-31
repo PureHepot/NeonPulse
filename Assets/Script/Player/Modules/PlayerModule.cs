@@ -11,6 +11,7 @@ public enum ModuleType
     Dash,
     LaserDrone,
     Sniper,
+    Shotgun,
 }
 
 

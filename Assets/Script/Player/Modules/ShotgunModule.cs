@@ -1,18 +1,19 @@
 using UnityEngine;
 
-public class SniperModule : PlayerModule
+public class ShotgunModule : PlayerModule
 {
     [Header("Refs")]
     public Transform muzzle;
     public Transform partToRotate;
-    public GameObject sniperBulletPrefab;
+    public GameObject bulletPrefab;
 
     [Header("Rotation")]
-    public float rotationSpeed = 12f;
+    public float rotationSpeed = 15f;
 
     private float fireRate;
     private int damage;
-    private int penetration;
+    private int pelletCount;
+    private float spreadAngle;
 
     private float cooldown;
 
@@ -56,33 +57,59 @@ public class SniperModule : PlayerModule
 
     public override void UpgradeModule(ModuleType moduleType, StatType statType)
     {
-        if (moduleType != ModuleType.Sniper) return;
+        if (moduleType != ModuleType.Shotgun) return;
         RecalculateStats();
     }
 
     void RecalculateStats()
     {
-        fireRate = UpgradeManager.Instance.GetStat(ModuleType.Sniper, StatType.SnipeFireRate);
-        if (fireRate <= 0) fireRate = 2f;
+        fireRate = UpgradeManager.Instance.GetStat(
+            ModuleType.Shotgun, StatType.ShotgunFireRate);
+        if (fireRate <= 0) fireRate = 3.0f;
 
-        damage = (int)UpgradeManager.Instance.GetStat(ModuleType.Sniper, StatType.SnipeDamage);
-        if (damage <= 0) damage = 4;
+        damage = (int)UpgradeManager.Instance.GetStat(
+            ModuleType.Shotgun, StatType.ShotgunDamage);
+        if (damage <= 0) damage = 2;
 
-        penetration = (int)UpgradeManager.Instance.GetStat(ModuleType.Sniper, StatType.SnipePenetration);
+        pelletCount = (int)UpgradeManager.Instance.GetStat(
+            ModuleType.Shotgun, StatType.ShotgunPelletCount);
+        if (pelletCount <= 0) pelletCount = 6;
+
+        spreadAngle = UpgradeManager.Instance.GetStat(
+            ModuleType.Shotgun, StatType.ShotgunSpreadAngle);
+        if (spreadAngle <= 0) spreadAngle = 30f;
     }
 
     void Fire()
     {
-        if (muzzle == null) return;
+        cooldown = fireRate;
+
+        float baseAngle = muzzle.eulerAngles.z;
+        float startAngle = baseAngle - spreadAngle * 0.5f;
+
+        float step = pelletCount > 1
+            ? spreadAngle / (pelletCount - 1)
+            : 0f;
+
+        for (int i = 0; i < pelletCount; i++)
+        {
+            float angle = startAngle + step * i;
+            SpawnPellet(angle);
+        }
+    }
+
+    void SpawnPellet(float angle)
+    {
+        Quaternion rot = Quaternion.Euler(0, 0, angle);
 
         GameObject bullet = ObjectPoolManager.Instance.Get(
-            sniperBulletPrefab,
+            bulletPrefab,
             muzzle.position,
-            muzzle.rotation
+            rot
         );
 
-        var bulletScript = bullet.GetComponent<PlayerBullet>();
-        if (bulletScript != null)
+        PlayerBullet bulletScript = bullet.GetComponent<PlayerBullet>();
+        if (bulletScript)
             bulletScript.damage = damage;
     }
 
@@ -103,3 +130,4 @@ public class SniperModule : PlayerModule
         );
     }
 }
+
