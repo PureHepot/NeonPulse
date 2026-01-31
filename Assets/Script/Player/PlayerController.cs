@@ -33,4 +33,9 @@ public class PlayerController : MonoBehaviour
         if (IsStunned) return;
         Rigid2d.velocity = velocity;
     }
+
+    public void SetInvincible(bool state)
+    {
+        Modules.GetModule<HealthModule>(ModuleType.Health).IsInvincible = state;
+    }
 }

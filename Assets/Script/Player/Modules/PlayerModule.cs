@@ -12,6 +12,7 @@ public enum ModuleType
     LaserDrone,
     Sniper,
     Shotgun,
+    SawBlade,
 }
 
 

@@ -184,6 +184,39 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         });
     }
 
+    public void TakeDamage(int amount, Vector3 hitPoint, Vector3 knockbackDir, float customForce)
+    {
+        if (isDead) return;
+
+        currentHp -= amount;
+
+        PlayHitEffect(hitPoint, knockbackDir); // 播放特效
+
+        if (canKnockback && customForce > 0)
+        {
+            ApplyCustomKnockback(knockbackDir, customForce);
+        }
+
+        if (currentHp <= 0) Die();
+        else AudioManager.Instance.PlayEffect("EnemyHit");
+    }
+
+    protected virtual void ApplyCustomKnockback(Vector3 forceDir, float force)
+    {
+        isKnockbacking = true;
+        rb.velocity = Vector2.zero; // 清空当前速度，保证击退瞬间爆发力
+
+        rb.AddForce(forceDir * force, ForceMode2D.Impulse);
+        rb.AddTorque(Random.Range(-knockbackTorque, knockbackTorque), ForceMode2D.Impulse);
+
+        Timer.Register(0.2f, () =>
+        {
+            isKnockbacking = false;
+        });
+    }
+
+
+
     protected virtual void PlayHitEffect(Vector3 pos, Vector3 normal)
     {
         if (bodyRenderer != null)

@@ -113,9 +113,11 @@ public class DashModule : PlayerModule
             dashDirection = new Vector2(dir.x, dir.y).normalized;
         }
 
+        player.Rigid2d.AddForce(dashForce * dashDirection);
+
         // 获取当前正常移速
         float targetSpeed = UpgradeManager.Instance.GetStat(ModuleType.Movement, StatType.MoveSpeed);
-        if (targetSpeed <= 0) targetSpeed = 5f; // 防止取不到数据导致不动
+        if (targetSpeed <= 0) targetSpeed = 5f;
 
         // 开始平滑衰减循环
         float timer = 0f;
