@@ -263,6 +263,8 @@ public enum GameEvent
     ShowSettlementPanel,
     InputDeviceChanged, //手柄控制切换
 
-    PlayerUIModel,
+    PlayerUIModelUnlock,
+    PlayerUIModelLock,
+    PlayerSkinChanged
 }
 

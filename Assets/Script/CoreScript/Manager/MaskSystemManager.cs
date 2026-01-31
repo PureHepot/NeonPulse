@@ -44,10 +44,33 @@ public class MaskSystemManager : MonoSingleton<MaskSystemManager>
         // 应用外观
         ApplyCurrentMaskVisuals();
 
+        EventManager.Broadcast(GameEvent.PlayerSkinChanged);
+
         // 解锁模块
         foreach (var mod in mask.guaranteedModules)
         {
             UpgradeManager.Instance.UnlockModule(mod);
+            //PlayrPreview的模块同步解锁
+            EventManager.Broadcast(GameEvent.PlayerUIModelUnlock, mod);
+        }
+
+        //将不是面具带来的模块禁用
+        foreach(var mod in UpgradeManager.Instance.UnlockedModuleTypes)
+        {
+            bool isFromMask = false;
+            foreach(var m in mask.guaranteedModules)
+            {
+                if(mod == m)
+                {
+                    isFromMask = true;
+                    break;
+                }
+            }
+            if(!isFromMask)
+            {
+                PlayerManager.Instance.CurrentModules.DisableModule(mod);
+                EventManager.Broadcast(GameEvent.PlayerUIModelLock, mod);
+            }
         }
 
         Debug.Log($"装备面具: {mask.maskName}");

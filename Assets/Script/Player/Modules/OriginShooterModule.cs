@@ -46,6 +46,12 @@ public class OriginShooterModule : PlayerModule
         RecalculateStats();
     }
 
+    public override void OnActivate()
+    {
+        base.OnActivate();
+
+    }
+
     public override void OnModuleUpdate()
     {
         HandleRotation();
@@ -128,6 +134,8 @@ public class OriginShooterModule : PlayerModule
 
     void HandleReloadVisuals()
     {
+        if (muzzleVisualProgress == null || muzzleVisualProgress.Count != muzzles.Count)
+            return;
         float recoverSpeed = 1f / GetFinalFireRate();
 
         for (int i = 0; i < muzzles.Count; i++)

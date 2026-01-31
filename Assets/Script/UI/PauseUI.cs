@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 public class PauseUI : UIBase
 {
-    [Header("°´Å¥")]
+    [Header("æŒ‰é’®")]
     public Button continueButton;
     public Button settingsButton;
     public Button restartButton;
@@ -13,6 +13,8 @@ public class PauseUI : UIBase
     public override void OnEnter(object args)
     {
         base.OnEnter(args);
+
+        Time.timeScale = 0;
 
         continueButton.onClick.SetListener(OnClickContinue);
         settingsButton.onClick.SetListener(OnClickSettings);
@@ -27,6 +29,7 @@ public class PauseUI : UIBase
         restartButton.onClick.RemoveAllListeners();
         exitButton.onClick.RemoveAllListeners();
         base.OnClose();
+        Time.timeScale = 1f;
     }
 
     void OnClickContinue()
@@ -50,6 +53,6 @@ public class PauseUI : UIBase
     void OnClickExit()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("MainMenu");  // ¸Ä³ÉÄãÖ÷²Ëµ¥³¡¾°Ãû
+        SceneManager.LoadScene("MainMenu");  // æ”¹æˆä½ ä¸»èœå•åœºæ™¯å
     }
 }

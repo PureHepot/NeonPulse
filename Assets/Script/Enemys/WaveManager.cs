@@ -10,7 +10,8 @@ public enum SpawnDirection
     Top,    // 上方
     Bottom, // 下方
     Left,   // 左侧
-    Right   // 右侧
+    Right,   // 右侧
+    TopCenter //
 }
 
 [System.Serializable]
@@ -197,6 +198,10 @@ public class WaveManager : MonoSingleton<WaveManager>
                 break;
             case SpawnDirection.Right:
                 pos = new Vector3(xLimit, Random.Range(-yLimit, yLimit), 0);
+                break;
+            case SpawnDirection.TopCenter:
+                // X轴固定为0 (屏幕中心)，Y轴在上方边缘
+                pos = new Vector3(0, 11, 0);
                 break;
         }
 

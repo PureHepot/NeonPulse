@@ -13,6 +13,11 @@ public class PlayerManager : MonoSingleton<PlayerManager>
     public Transform spawnPoint;
     public GameObject CurrentPlayerObj { get; private set; }
     public PlayerModuleManager CurrentModules { get; private set; }
+    public PlayerPreview PlayerPreview { get; private set; }
+
+    public bool IsPlayerAlive => CurrentPlayerObj != null;
+
+    public Vector3 PlayerPosition => CurrentPlayerObj ? CurrentPlayerObj.transform.position : Vector3.zero;
 
     // --- 玩家视觉引用 ---
     [Header("Visual References")]
@@ -58,7 +63,10 @@ public class PlayerManager : MonoSingleton<PlayerManager>
 
         Debug.Log("<color=green>Player Generated</color>");
 
+        this.PlayerPreview = GameObject.Find("PlayerModelCamera").GetComponent<PlayerPreview>();
+
         UpgradeManager.Instance.ApplyModulesToPlayer();
+        //UpgradeManager.Instance.ApplyModulesToPlayer(this.PlayerPreview.CurrentModel.GetComponent<PlayerModuleManager>());
 
         CurrentModules.Initialize?.Invoke();
 

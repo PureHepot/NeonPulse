@@ -85,9 +85,14 @@ public class LaserDroneModule : PlayerModule
     private float[] radiusOffsets;
     private Vector3[] attackRandomOffsets;
 
+    private GameObject _debrisHolder;
+
     public override void Initialize(PlayerController _player)
     {
         base.Initialize(_player);
+
+        if (_debrisHolder != null) Destroy(_debrisHolder);
+        _debrisHolder = new GameObject($"[{player.name}]_DroneHolder");
 
         int count = droneTransforms.Count;
         currentVelocities = new Vector3[count];
@@ -99,7 +104,7 @@ public class LaserDroneModule : PlayerModule
         for (int i = 0; i < count; i++)
         {
             Transform drone = droneTransforms[i];
-            drone.SetParent(null);
+            drone.SetParent(_debrisHolder.transform);
 
             // --- 初始化视觉组件 ---
             DroneVisuals visuals = new DroneVisuals();
@@ -110,6 +115,7 @@ public class LaserDroneModule : PlayerModule
                 GameObject lObj = Instantiate(laserLinePrefab, Vector3.zero, Quaternion.identity);
                 lObj.transform.position = Vector3.zero;
                 visuals.line = lObj.GetComponent<LineRenderer>();
+                if (visuals.line) visuals.line.transform.SetParent(_debrisHolder.transform);
                 visuals.line.enabled = false;
             }
 
@@ -130,6 +136,7 @@ public class LaserDroneModule : PlayerModule
             {
                 GameObject hObj = Instantiate(hitVFXPrefab, Vector3.zero, Quaternion.identity);
                 visuals.hitObj = hObj;
+                if (visuals.hitObj) visuals.hitObj.transform.SetParent(_debrisHolder.transform);
                 visuals.hitParticles = hObj.GetComponentsInChildren<ParticleSystem>();
                 visuals.SetVFXActive(false, visuals.hitParticles, visuals.hitObj);
             }
@@ -140,7 +147,6 @@ public class LaserDroneModule : PlayerModule
             radiusOffsets[i] = Random.Range(5000f, 6000f);
         }
 
-        // 初始激活状态
         UpdateActiveDrones();
     }
 
@@ -156,13 +162,9 @@ public class LaserDroneModule : PlayerModule
 
     private void OnDestroy()
     {
-        foreach (var drone in droneTransforms) if (drone != null) Destroy(drone.gameObject);
-
-        // 清理特效实例
-        foreach (var v in droneVisualsList)
+        if (_debrisHolder != null)
         {
-            if (v.line) Destroy(v.line.gameObject);
-            if (v.hitObj) Destroy(v.hitObj);
+            Destroy(_debrisHolder);
         }
     }
 

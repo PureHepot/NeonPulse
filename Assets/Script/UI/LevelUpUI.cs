@@ -5,9 +5,20 @@ using UnityEngine.UI;
 
 public class LevelUpUI : UIBase
 {
+    private PlayerPreviewSync playerPreview;
+
+    private void Awake()
+    {
+        playerPreview = GameObject.Find("PlayerModelCamera").GetComponent<PlayerPreviewSync>();
+    }
+
     public override void OnEnter(object args)
     {
         base.OnEnter(args);
+
+        Time.timeScale = 0f;
+
+        InputManager.Instance.SetLockLevel(InputLockLevel.AllLocked);
 
         RefreshUI();
     }
@@ -44,6 +55,7 @@ public class LevelUpUI : UIBase
                     if (UpgradeManager.Instance.CanUpgrade(modules[i].moduleType, statType))
                     {
                         UpgradeManager.Instance.UpgradeModuleStat(modules[i].moduleType, statType);
+                        
                         RefreshUI();
                     }
                 });
@@ -53,10 +65,11 @@ public class LevelUpUI : UIBase
         Get<Button>("ModuleBtn").onClick.SetListener(() =>
         {
             UIManager.Instance.Open<MaskGachaUI>();
-            RefreshUI();
         });
 
         Get<Text>("PointNum").text = UpgradeManager.Instance.UpgradePoints.ToString();
+
+        playerPreview.RebuildPreview();
     }
 
     private void ChangeThemeColor()
@@ -72,5 +85,7 @@ public class LevelUpUI : UIBase
     public override void OnClose()
     {
         base.OnClose();
+        Time.timeScale = 1f;
+        InputManager.Instance.SetLockLevel(InputLockLevel.None);
     }
 }
