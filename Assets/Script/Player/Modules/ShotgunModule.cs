@@ -102,6 +102,8 @@ public class ShotgunModule : PlayerModule
     {
         Quaternion rot = Quaternion.Euler(0, 0, angle);
 
+        AudioManager.Instance.PlayEffect("Shotgunnershoot",0.1f,1f);
+
         GameObject bullet = ObjectPoolManager.Instance.Get(
             bulletPrefab,
             muzzle.position,

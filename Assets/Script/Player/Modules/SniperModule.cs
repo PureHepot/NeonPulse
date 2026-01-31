@@ -41,16 +41,22 @@ public class SniperModule : PlayerModule
         base.OnDeactivate();
     }
 
+    private bool hasFiredThisCycle = false; 
+
     public override void OnModuleUpdate()
     {
         HandleRotation();
 
         if (cooldown > 0)
+        {
             cooldown -= Time.deltaTime;
+            hasFiredThisCycle = false; 
+        }
 
-        if (InputManager.Instance.Mouse0() && cooldown <= 0)
+        if (Input.GetMouseButton(0) && cooldown <= 0 && !hasFiredThisCycle)
         {
             Fire();
+            hasFiredThisCycle = true;
         }
     }
 
@@ -63,7 +69,7 @@ public class SniperModule : PlayerModule
     void RecalculateStats()
     {
         fireRate = UpgradeManager.Instance.GetStat(ModuleType.Sniper, StatType.SnipeFireRate);
-        if (fireRate <= 0) fireRate = 2f;
+        if (fireRate <= 0) fireRate = 3f;
 
         damage = (int)UpgradeManager.Instance.GetStat(ModuleType.Sniper, StatType.SnipeDamage);
         if (damage <= 0) damage = 4;
@@ -76,6 +82,7 @@ public class SniperModule : PlayerModule
         if (muzzle == null) return;
 
         cooldown = fireRate;
+        AudioManager.Instance.PlayEffect("Snipershoot");
         GameObject bullet = ObjectPoolManager.Instance.Get(
             sniperBulletPrefab,
             muzzle.position,

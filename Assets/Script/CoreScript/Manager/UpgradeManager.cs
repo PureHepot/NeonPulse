@@ -150,6 +150,7 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
             OnUpgradePointsChanged?.Invoke(UpgradePoints);
 
             expToLevelUp = GetExpToLevelUp();
+            AudioManager.Instance.PlayEffect("LevelUp");
             OnExpChanged?.Invoke(CurrentExp, expToLevelUp, CurrentLevel);
         }
     }

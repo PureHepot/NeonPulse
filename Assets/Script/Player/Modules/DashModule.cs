@@ -78,6 +78,7 @@ public class DashModule : PlayerModule
     {
         lastDashTime = Time.time;
         if (dashTrail != null) dashTrail.emitting = true;
+        AudioManager.Instance.PlayEffect("Dash");
 
         Physics2D.IgnoreLayerCollision(playerLayerID, enemyLayerID, true);
 
