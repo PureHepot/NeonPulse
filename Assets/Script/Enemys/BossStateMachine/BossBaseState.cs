@@ -7,6 +7,7 @@ public abstract class BossBaseState
     protected BossSlimeController ctx;
     protected float stateTimer;
 
+   
     public virtual void Enter(BossSlimeController context)
     {
         ctx = context;
@@ -15,4 +16,5 @@ public abstract class BossBaseState
     public virtual void OnUpdate() { stateTimer += Time.deltaTime; Debug.Log($"Updating in {this.ToString()}"); }
     public virtual void OnFixedUpdate() { Debug.Log($"FixedUpdating in {this.ToString()}"); }
     public virtual void Exit() { }
+   
 }

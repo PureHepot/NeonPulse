@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - Enemy
+  - Reflector
   layers:
   - Default
   - TransparentFX
@@ -20,7 +21,7 @@ TagManager:
   - PlayerBullet
   - EnemyBullet
   - UI_Model
-  - 
+  - EnemyReflector
   - 
   - 
   - 
