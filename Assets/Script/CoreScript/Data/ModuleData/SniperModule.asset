@@ -41,3 +41,4 @@ MonoBehaviour:
     maxStacks: 5
     upgradeName: "\u7A7F\u900F\u4E2A\u6570"
     description: "\u589E\u52A0\u7A7F\u900F\u4E2A\u6570"
+  themeColor: {r: 0, g: 1, b: 1, a: 1}

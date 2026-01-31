@@ -75,13 +75,14 @@ public class SniperModule : PlayerModule
     {
         if (muzzle == null) return;
 
+        cooldown = fireRate;
         GameObject bullet = ObjectPoolManager.Instance.Get(
             sniperBulletPrefab,
             muzzle.position,
             muzzle.rotation
         );
 
-        var bulletScript = bullet.GetComponent<PlayerBullet>();
+        var bulletScript = bullet.GetComponent<PlayerSniperBullet>();
         if (bulletScript != null)
             bulletScript.damage = damage;
     }

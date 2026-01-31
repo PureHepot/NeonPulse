@@ -13,6 +13,7 @@ public class SetVolumeUI : UIBase
     public override void OnEnter(object args)
     {
         base.OnEnter(args);
+        transform.localScale = Vector3.one * 0.7f;
 
         if (bgmSlider == null || effectSlider == null || closeButton == null)
         {

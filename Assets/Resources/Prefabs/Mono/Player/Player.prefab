@@ -1383,7 +1383,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4969249526720642887}
-  - component: {fileID: 8927412262267064582}
+  - component: {fileID: 2973348956800738359}
   m_Layer: 6
   m_Name: Sniper
   m_TagString: Untagged
@@ -1407,7 +1407,7 @@ Transform:
   - {fileID: 9181234039565064316}
   m_Father: {fileID: 6811986722074343809}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8927412262267064582
+--- !u!114 &2973348956800738359
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1416,18 +1416,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 7136540075497435404}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55fce6915dd1a5347a3b273480f3d9b1, type: 3}
+  m_Script: {fileID: 11500000, guid: 69817f263dce9bf4e8f893b6fc08052a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   moduleType: 6
   isUnlocked: 0
+  muzzle: {fileID: 9181234039565064316}
   partToRotate: {fileID: 4969249526720642887}
-  muzzles:
-  - {fileID: 9181234039565064316}
-  bulletPrefab: {fileID: 3724406646315978653, guid: 6b79f76f75d43504daf451d743d303a9, type: 3}
-  rotationSpeed: 15
-  sequenceDelay: 0.2
-  currentLevel: 1
+  sniperBulletPrefab: {fileID: 3724406646315978653, guid: 6b79f76f75d43504daf451d743d303a9, type: 3}
+  rotationSpeed: 12
 --- !u!1 &8443050613234949280
 GameObject:
   m_ObjectHideFlags: 0
