@@ -4,71 +4,152 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
-public class EnemyProjectile : MonoBehaviour
+public class EnemyProjectile : MonoBehaviour, IPoolable
 {
     [Header("Basic Stats")]
-    public float speed = 15f;
+    public float speed = 5f;
     public int damage = 1;
     public float lifeTime = 5f;
 
-    [Header("Collision Settings")]
-    // 【关键新增】在这里勾选你的墙壁/地面 Layer
-    // 这样代码就会检测 Layer，而不是 Tag
-    public LayerMask obstacleLayer;
+    [Header("Raycast Collision")]
+    public LayerMask hitLayers;
 
-    private Rigidbody2D rb;
+    [Header("Reflection Settings")]
+    public bool enableReflection = false;
+    public int maxBounces = 2;
+    public string reflectionTag = "Reflector";
+
+    [Header("Homing Reflection (新增: 追踪反弹)")]
+    [Tooltip("反弹导向修正：0为纯物理反弹，1为直接射向玩家，建议0.3左右")]
+    [Range(0f, 1f)]
+    public float reflectionHomingBias = 0.3f;
+
     private float timer;
     private bool isInitialized = false;
+    private int currentBounceCount = 0;
+
+    // 记录实际飞行方向
+    public Vector3 direction { get; private set; }
+    private Transform myTransform;
 
     private void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
-        // 确保使用动力学，完全由代码控制移动，不受重力影响
+        myTransform = transform;
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
         rb.bodyType = RigidbodyType2D.Kinematic;
     }
 
-    /// <summary>
-    /// 初始化子弹（由 BossTurret 调用）
-    /// </summary>
-    public void Initialize(Vector2 direction)
+    public void Initialize(Vector3 dir)
     {
         timer = 0f;
+        currentBounceCount = 0;
         isInitialized = true;
 
-        // 计算角度：让子弹的“右侧（Right）”指向目标方向
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-
-        // 设定自动销毁时间
-        Destroy(gameObject, lifeTime);
+        this.direction = dir.normalized;
+        UpdateRotation();
     }
+
+    public void OnSpawn() { }
+    public void OnDespawn() { }
 
     private void Update()
     {
         if (!isInitialized) return;
 
-        // 核心移动逻辑：始终沿着自身的右方移动
-        transform.Translate(Vector3.right * speed * Time.deltaTime);
+        float moveDistance = speed * Time.deltaTime;
+
+        // 射线检测
+        RaycastHit2D hit = Physics2D.Raycast(myTransform.position, direction, moveDistance, hitLayers);
+
+        if (hit.collider != null)
+        {
+            OnHitObject(hit.collider, hit.point, hit.normal);
+        }
+        else
+        {
+            myTransform.Translate(direction * moveDistance, Space.World);
+        }
+
+        timer += Time.deltaTime;
+        if (timer >= lifeTime) RecycleSelf();
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    void OnHitObject(Collider2D other, Vector2 hitPoint, Vector2 hitNormal)
     {
-        // 1. 撞到玩家
         if (other.CompareTag("Player"))
         {
             var health = other.GetComponentInChildren<HealthModule>();
-            if (health != null)
-            {
-                health.TakeDamage(damage, transform);
-                Destroy(gameObject); // 造成伤害后销毁自己
-            }
+            if (health != null) health.TakeDamage(damage, myTransform);
+            RecycleSelf();
         }
-        // 2. 【修改重点】撞到障碍物 (使用 LayerMask 检测)
-        // (1 << other.gameObject.layer) 是将当前物体的 layer 索引转换为掩码
-        // & obstacleLayer 运算如果不为 0，说明这个 layer 被勾选了
-        else if (((1 << other.gameObject.layer) & obstacleLayer) != 0)
+        else if (enableReflection && other.CompareTag(reflectionTag))
         {
-            Destroy(gameObject);
+            HandleReflection(hitPoint, hitNormal);
         }
+        else
+        {
+            RecycleSelf();
+        }
+    }
+
+    void HandleReflection(Vector2 hitPoint, Vector2 hitNormal)
+    {
+        if (currentBounceCount >= maxBounces)
+        {
+            RecycleSelf();
+            return;
+        }
+
+        currentBounceCount++;
+
+        // 1. 移动到碰撞点
+        myTransform.position = hitPoint;
+
+        // --- 核心修改：计算带有“杀意”的反弹方向 ---
+
+        // A. 计算标准的物理反射方向
+        Vector2 standardReflectDir = Vector2.Reflect(direction, hitNormal).normalized;
+
+        // B. 计算指向玩家的方向
+        Vector2 targetDir = standardReflectDir; // 默认回退
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            targetDir = (player.transform.position - (Vector3)hitPoint).normalized;
+        }
+
+        // C. 融合两个方向 (Vector3.Lerp)
+        // Lerp 会在 A 和 B 之间插值。Bias = 0 是A，Bias = 1 是B。
+        Vector2 finalDir = Vector3.Lerp(standardReflectDir, targetDir, reflectionHomingBias).normalized;
+
+        // 2. 检查反弹角度安全性 (可选优化)
+        // 确保新方向也是朝向“外侧”的，防止插值过度导致子弹反弹回墙里
+        // 如果 finalDir 和 hitNormal 的夹角大于 90度 (点积 < 0)，说明反向穿墙了
+        if (Vector2.Dot(finalDir, hitNormal) < 0)
+        {
+            // 如果计算出的方向会穿墙，强制使用物理反射保底
+            finalDir = standardReflectDir;
+        }
+
+        // 3. 应用新方向
+        this.direction = finalDir;
+        UpdateRotation();
+
+        // 4. 推离表面
+        myTransform.Translate(direction * 0.1f, Space.World);
+    }
+
+    void UpdateRotation()
+    {
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        myTransform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+    }
+
+    void RecycleSelf()
+    {
+        if (ObjectPoolManager.Instance != null)
+            ObjectPoolManager.Instance.Return(this.gameObject);
+        else
+            Destroy(gameObject);
     }
 }

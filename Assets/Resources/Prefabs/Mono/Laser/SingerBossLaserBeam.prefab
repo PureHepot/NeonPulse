@@ -9705,8 +9705,9 @@ GameObject:
   - component: {fileID: 2309910256282418437}
   - component: {fileID: -8487200295123928613}
   - component: {fileID: 2282018982245281237}
+  - component: {fileID: 983318590070126667}
   m_Layer: 3
-  m_Name: BossLaserBeam
+  m_Name: SingerBossLaserBeam
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9891,7 +9892,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 10, y: 0}
+  m_Offset: {x: 10.000145, y: 0.0029390827}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -9902,5 +9903,27 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 21, y: 1}
+  m_Size: {x: 20.015762, y: 0.11500485}
   m_EdgeRadius: 0
+--- !u!114 &983318590070126667
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6355293803146212029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5fd4ebd3c66a444c848245757beb3f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  warningTime: 0.5
+  activeTime: 0.25
+  maxDistance: 25
+  laserWidth: 25
+  hitboxScale: 0.1
+  damage: 1
+  hitLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  showDebugHitbox: 1
