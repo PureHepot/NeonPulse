@@ -13,16 +13,15 @@ public class SniperModule : PlayerModule
     private float fireRate;
     private int damage;
     private int penetration;
-
     private float cooldown;
+
+    private bool hasFiredThisCycle = false;
 
     public override void Initialize(PlayerController _player)
     {
         base.Initialize(_player);
-
         if (muzzle != null)
             muzzle.gameObject.SetActive(false);
-
         RecalculateStats();
     }
 
@@ -37,11 +36,8 @@ public class SniperModule : PlayerModule
     {
         if (muzzle != null)
             muzzle.gameObject.SetActive(false);
-
         base.OnDeactivate();
     }
-
-    private bool hasFiredThisCycle = false; 
 
     public override void OnModuleUpdate()
     {
@@ -50,7 +46,7 @@ public class SniperModule : PlayerModule
         if (cooldown > 0)
         {
             cooldown -= Time.deltaTime;
-            hasFiredThisCycle = false; 
+            hasFiredThisCycle = false;  
         }
 
         if (Input.GetMouseButton(0) && cooldown <= 0 && !hasFiredThisCycle)
@@ -75,6 +71,7 @@ public class SniperModule : PlayerModule
         if (damage <= 0) damage = 4;
 
         penetration = (int)UpgradeManager.Instance.GetStat(ModuleType.Sniper, StatType.SnipePenetration);
+        if (penetration <= 0) penetration = 2;
     }
 
     void Fire()
@@ -83,6 +80,7 @@ public class SniperModule : PlayerModule
 
         cooldown = fireRate;
         AudioManager.Instance.PlayEffect("Snipershoot");
+
         GameObject bullet = ObjectPoolManager.Instance.Get(
             sniperBulletPrefab,
             muzzle.position,
@@ -91,7 +89,10 @@ public class SniperModule : PlayerModule
 
         var bulletScript = bullet.GetComponent<PlayerSniperBullet>();
         if (bulletScript != null)
+        {
             bulletScript.damage = damage;
+            bulletScript.penetrationCount = penetration;
+        }
     }
 
     void HandleRotation()
@@ -100,7 +101,6 @@ public class SniperModule : PlayerModule
 
         Vector3 mousePos = MUtils.GetMouseWorldPosition();
         Vector2 dir = mousePos - partToRotate.position;
-
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         Quaternion target = Quaternion.AngleAxis(angle, Vector3.forward);
 

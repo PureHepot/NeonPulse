@@ -14,16 +14,13 @@ public class ShotgunModule : PlayerModule
     private int damage;
     private int pelletCount;
     private float spreadAngle;
-
     private float cooldown;
 
     public override void Initialize(PlayerController _player)
     {
         base.Initialize(_player);
-
         if (muzzle != null)
             muzzle.gameObject.SetActive(false);
-
         RecalculateStats();
     }
 
@@ -38,7 +35,6 @@ public class ShotgunModule : PlayerModule
     {
         if (muzzle != null)
             muzzle.gameObject.SetActive(false);
-
         base.OnDeactivate();
     }
 
@@ -63,20 +59,16 @@ public class ShotgunModule : PlayerModule
 
     void RecalculateStats()
     {
-        fireRate = UpgradeManager.Instance.GetStat(
-            ModuleType.Shotgun, StatType.ShotgunFireRate);
+        fireRate = UpgradeManager.Instance.GetStat(ModuleType.Shotgun, StatType.ShotgunFireRate);
         if (fireRate <= 0) fireRate = 3.0f;
 
-        damage = (int)UpgradeManager.Instance.GetStat(
-            ModuleType.Shotgun, StatType.ShotgunDamage);
+        damage = (int)UpgradeManager.Instance.GetStat(ModuleType.Shotgun, StatType.ShotgunDamage);
         if (damage <= 0) damage = 2;
 
-        pelletCount = (int)UpgradeManager.Instance.GetStat(
-            ModuleType.Shotgun, StatType.ShotgunPelletCount);
+        pelletCount = (int)UpgradeManager.Instance.GetStat(ModuleType.Shotgun, StatType.ShotgunPelletCount);
         if (pelletCount <= 0) pelletCount = 6;
 
-        spreadAngle = UpgradeManager.Instance.GetStat(
-            ModuleType.Shotgun, StatType.ShotgunSpreadAngle);
+        spreadAngle = UpgradeManager.Instance.GetStat(ModuleType.Shotgun, StatType.ShotgunSpreadAngle);
         if (spreadAngle <= 0) spreadAngle = 30f;
     }
 
@@ -86,10 +78,7 @@ public class ShotgunModule : PlayerModule
 
         float baseAngle = muzzle.eulerAngles.z;
         float startAngle = baseAngle - spreadAngle * 0.5f;
-
-        float step = pelletCount > 1
-            ? spreadAngle / (pelletCount - 1)
-            : 0f;
+        float step = pelletCount > 1 ? spreadAngle / (pelletCount - 1) : 0f;
 
         for (int i = 0; i < pelletCount; i++)
         {
@@ -101,8 +90,7 @@ public class ShotgunModule : PlayerModule
     void SpawnPellet(float angle)
     {
         Quaternion rot = Quaternion.Euler(0, 0, angle);
-
-        AudioManager.Instance.PlayEffect("Shotgunnershoot",0.1f,1f);
+        AudioManager.Instance.PlayEffect("Shotgunnershoot", 0.1f, 1f);
 
         GameObject bullet = ObjectPoolManager.Instance.Get(
             bulletPrefab,
@@ -110,8 +98,8 @@ public class ShotgunModule : PlayerModule
             rot
         );
 
-        PlayerBullet bulletScript = bullet.GetComponent<PlayerBullet>();
-        if (bulletScript)
+        PlayerShotgunBullet bulletScript = bullet.GetComponent<PlayerShotgunBullet>();
+        if (bulletScript != null)
             bulletScript.damage = damage;
     }
 
@@ -121,7 +109,6 @@ public class ShotgunModule : PlayerModule
 
         Vector3 mousePos = MUtils.GetMouseWorldPosition();
         Vector2 dir = mousePos - partToRotate.position;
-
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         Quaternion target = Quaternion.AngleAxis(angle, Vector3.forward);
 
@@ -132,4 +119,3 @@ public class ShotgunModule : PlayerModule
         );
     }
 }
-

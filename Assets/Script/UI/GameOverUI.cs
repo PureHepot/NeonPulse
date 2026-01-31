@@ -1,61 +1,55 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
-public class PauseUI : UIBase
+public class GameOverUI : UIBase
 {
-    [Header("鎸夐挳")]
-    public Button continueButton;
-    public Button settingsButton;
-    public Button restartButton;
-    public Button exitButton;
+    [Header("按钮组件")]
+    public Button restartButton;   // 重新开始
+    public Button quitButton;      // 退出游戏
 
     public override void OnEnter(object args)
     {
         base.OnEnter(args);
+        transform.localScale = Vector3.one * 0.85f;
 
-        Time.timeScale = 0;
+        if (restartButton == null || quitButton == null)
+        {
+            Debug.LogError("GameOverUI：请在Inspector中为restartButton和quitButton赋值");
+            return;
+        }
 
-        continueButton.onClick.SetListener(OnClickContinue);
-        settingsButton.onClick.SetListener(OnClickSettings);
-        restartButton.onClick.SetListener(OnClickRestart);
-        exitButton.onClick.SetListener(OnClickExit);
+        // 清理旧监听
+        restartButton.onClick.RemoveAllListeners();
+        quitButton.onClick.RemoveAllListeners();
+
+        restartButton.onClick.AddListener(OnClickRestart);
+        quitButton.onClick.AddListener(OnClickQuit);
     }
 
     public override void OnClose()
     {
-        continueButton.onClick.RemoveAllListeners();
-        settingsButton.onClick.RemoveAllListeners();
-        restartButton.onClick.RemoveAllListeners();
-        exitButton.onClick.RemoveAllListeners();
+        if (restartButton != null)
+            restartButton.onClick.RemoveAllListeners();
+        if (quitButton != null)
+            quitButton.onClick.RemoveAllListeners();
         base.OnClose();
-        Time.timeScale = 1f;
     }
 
-    void OnClickContinue()
+    private void OnClickRestart()
     {
         Time.timeScale = 1f;
         UIManager.Instance.CloseUI(this);
 
-    }
-
-    void OnClickSettings()
-    {
-        UIManager.Instance.Open<SetVolumeUI>();
-    }
-
-    void OnClickRestart()
-    {
-        UIManager.Instance.CloseUI(this);
-        Time.timeScale = 1f;
         DestroyDontDestroyManagers();
 
         string sceneName = SceneManager.GetActiveScene().name;
         SceneManager.LoadScene(sceneName);
     }
 
-    void OnClickExit()
+    private void OnClickQuit()
     {
+        // 直接退出游戏
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else

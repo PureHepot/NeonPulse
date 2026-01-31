@@ -124,6 +124,9 @@ public class HealthModule : PlayerModule
         player.IsDead = true;
         player.SetVelocity(Vector2.zero);
         player.OnDeath?.Invoke();
+        AudioManager.Instance.PlayEffect("PlayerDie");
+        Time.timeScale = 0f;
+        UIManager.Instance.Open<GameOverUI>();
         Debug.Log("Player Died");
     }
 
