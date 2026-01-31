@@ -24,7 +24,7 @@ public class ModuleRuntimeData
     /// <summary>
     /// 对指定属性进行一次升级
     /// </summary>
-    public void AddStatUpgrade(StatType type)
+    public bool AddStatUpgrade(StatType type)
     {
         if (!upgradeCounts.ContainsKey(type))
         {
@@ -36,17 +36,18 @@ public class ModuleRuntimeData
         if (def == null)
         {
             Debug.LogWarning($"[{config.moduleName}] 找不到升级定义: {type}");
-            return;
+            return false;
         }
 
         if (def.maxStacks != -1 && upgradeCounts[type] >= def.maxStacks)
         {
             Debug.LogWarning($"[{config.moduleName}] 属性 {type} 已达最大等级");
-            return;
+            return false;
         }
 
         upgradeCounts[type]++;
         Debug.Log($"[{config.moduleName}] 属性 {type} 升级! 当前层数: {upgradeCounts[type]}");
+        return true;
     }
 
     /// <summary>

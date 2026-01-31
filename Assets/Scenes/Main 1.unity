@@ -1726,7 +1726,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab40e1850c2462f4192d067cfcabb369, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wavesData: {fileID: 11400000, guid: d1962fe2c3242dd4e8878382360f17c8, type: 2}
+  wavesData: {fileID: 11400000, guid: 083657e380ce16f458cc6edfc7c1db76, type: 2}
   timeBetweenWaves: 3
   spawnPadding: 1.5
 --- !u!114 &1357557158
@@ -1784,7 +1784,7 @@ MonoBehaviour:
   baseExpToLevelUp: 100
   expScale: 1.5
   pointsPerLevel: 3
-  startingModules: 00000000010000000400000008000000
+  startingModules: 000000000100000002000000
 --- !u!114 &1357557162
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1818,6 +1818,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3d2f798d7f505a843b0aae7d413ff6c1, type: 2}
   - {fileID: 11400000, guid: b3bce4be2af46954aa3c96ab8b0dbc95, type: 2}
   - {fileID: 11400000, guid: d7b26890c285e614c90e7f42cee9eabb, type: 2}
+  - {fileID: 11400000, guid: 87566234c404c9b449faa63c79c8f52e, type: 2}
   gachaCost: 0
   currentMask: {fileID: 0}
 --- !u!1 &1539998153

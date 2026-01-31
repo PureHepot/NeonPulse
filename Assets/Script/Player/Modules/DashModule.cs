@@ -56,7 +56,7 @@ public class DashModule : PlayerModule
 
     public override void UpgradeModule(ModuleType moduleType, StatType statType)
     {
-        if (statType == StatType.DashCooldown)
+        if (moduleType == ModuleType.Dash)
         {
             RecalculateStats();
             Debug.Log($"[DashModule] 冷却升级 → {dashCooldown:F2}s");
@@ -71,7 +71,7 @@ public class DashModule : PlayerModule
 
     public bool IsReady()
     {
-        return Time.time >= lastDashTime + dashCooldown;
+        return Time.time >= lastDashTime + dashCooldown + dashDuration;
     }
 
     public void OnDashStart()

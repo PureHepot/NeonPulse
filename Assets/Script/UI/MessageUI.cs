@@ -11,7 +11,7 @@ public class MessageUI : UIBase
         base.OnEnter(args);
         MessageUIArg arg = args as MessageUIArg;
 
-        Get<TextMeshProUGUI>("Text").text = arg.txt;
+        Get<Text>("Text").text = arg.txt;
 
         Timer.Register(2f,
 

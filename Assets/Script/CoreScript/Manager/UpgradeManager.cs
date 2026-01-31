@@ -189,8 +189,8 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
     {
         if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
         {
-            data.AddStatUpgrade(statType);
-            EventManager.Broadcast<ModuleType, StatType>(GameEvent.ModuleUpgrade, moduleType, statType);
+            if(data.AddStatUpgrade(statType))
+                EventManager.Broadcast<ModuleType, StatType>(GameEvent.ModuleUpgrade, moduleType, statType);
         }
     }
 
@@ -233,7 +233,7 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
     {
         if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
         {
-            return data.config.GetUpgradeDefinition(statType).pointCost + data.GetStatLevel(statType);
+            return data.config.GetUpgradeDefinition(statType).pointCosts[data.GetStatLevel(statType)];
         }
         return -1;
     }

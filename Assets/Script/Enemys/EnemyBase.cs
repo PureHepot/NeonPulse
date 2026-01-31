@@ -198,7 +198,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         }
 
         if (currentHp <= 0) Die();
-        else AudioManager.Instance.PlayEffect("EnemyHit");
+        else AudioManager.Instance.PlayEffect("EnemyHit1");
     }
 
     protected virtual void ApplyCustomKnockback(Vector3 forceDir, float force)

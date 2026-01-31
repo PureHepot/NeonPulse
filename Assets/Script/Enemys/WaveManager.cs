@@ -13,35 +13,6 @@ public enum SpawnDirection
     Right,   // 右侧
     TopCenter //
 }
-
-[System.Serializable]
-public class WaveGroup
-{
-    [Header("配置")]
-    public GameObject enemyPrefab; // 怪物的预制体
-    public int count = 5;          // 数量
-    public float spawnRate = 1f;   // 间隔时间(秒)
-    public bool isParallel = false;
-    public SpawnDirection direction = SpawnDirection.Random;
-
-    [Header("延迟")]
-    public float delayBeforeStart = 0f; // 这组怪开始刷之前的等待时间
-}
-
-[System.Serializable]
-
-public class WaveData
-{
-    public string waveName = "Wave ";
-    public List<WaveGroup> groups; // 这一波包含的所有怪组
-}
-
-[CreateAssetMenu(fileName = "NewWaveConfig", menuName = "Game/Wave Config")]
-public class WavesData : ScriptableObject
-{
-    public List<WaveData> allWaves;
-}
-
 public class WaveManager : MonoSingleton<WaveManager>
 {
     [Header("关卡配置")]
@@ -66,6 +37,8 @@ public class WaveManager : MonoSingleton<WaveManager>
     private Camera mainCam;
     private float camHeight;
     private float camWidth;
+
+    private Coroutine currentWaveSpawnCoroutine;
 
     private void Start()
     {
@@ -98,15 +71,43 @@ public class WaveManager : MonoSingleton<WaveManager>
             OnWaveIncoming?.Invoke(currentWaveIndex + 1, currentWave.waveName);
             Debug.Log($"<color=cyan>--- {currentWave.waveName} 即将开始 ---</color>");
 
-            //等待 UI 动画展示时间
+            //波次休息时间
             yield return new WaitForSeconds(timeBetweenWaves);
 
-            //开始执行这一波的刷怪逻辑
-            yield return StartCoroutine(SpawnWaveRoutine(currentWave));
+            currentWaveSpawnCoroutine = StartCoroutine(SpawnWaveRoutine(currentWave));
+
+            float waveTimer = 0f;
+            bool isTimedWave = currentWave.waveDuration > 0;
+
 
             //每帧检查有没有怪，还有就继续循环等下一帧
-            while (totalEnemiesAlive > 0 || isSpawning)
+            while (true)
             {
+                // 1. 胜利条件：怪杀光了 且 不再刷怪了
+                bool allClear = totalEnemiesAlive <= 0 && !isSpawning;
+
+                // 2. 超时条件：是限时波次 且 时间到了
+                bool timeUp = isTimedWave && waveTimer >= currentWave.waveDuration;
+
+                if (allClear)
+                {
+                    Debug.Log("波次结束：所有敌人已清除");
+                    break;
+                }
+
+                if (timeUp)
+                {
+                    Debug.Log("波次结束：时间耗尽，强制进入下一波");
+
+                    if (currentWaveSpawnCoroutine != null)
+                        StopCoroutine(currentWaveSpawnCoroutine);
+
+                    activeSpawnerCount = 0;
+
+                    break;
+                }
+
+                waveTimer += Time.deltaTime;
                 yield return null;
             }
 
@@ -123,6 +124,7 @@ public class WaveManager : MonoSingleton<WaveManager>
         OnAllWavesCleared?.Invoke();
         Debug.Log("所有波次已清空！胜利！");
     }
+
 
     // --- 刷怪逻辑 ---
     IEnumerator SpawnWaveRoutine(WaveData wave)
@@ -211,6 +213,9 @@ public class WaveManager : MonoSingleton<WaveManager>
     public void RegisterEnemyDeath()
     {
         totalEnemiesAlive--;
-        if (totalEnemiesAlive < 0) totalEnemiesAlive = 0;
+        if (totalEnemiesAlive < 0)
+        {
+            totalEnemiesAlive = 0;
+        }
     }
 }

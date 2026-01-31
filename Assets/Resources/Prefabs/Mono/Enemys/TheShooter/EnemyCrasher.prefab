@@ -151,7 +151,7 @@ MonoBehaviour:
   dashSpeed: 40
   dashDistance: 30
   dashDuration: 2
-  homingStrength: 1
+  homingStrength: 0.25
   warningLine: {fileID: 2939079180622390587}
 --- !u!60 &5072550230078654586
 PolygonCollider2D:
