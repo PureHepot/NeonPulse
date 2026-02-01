@@ -6,7 +6,7 @@ public class PauseUI : UIBase
 {
     [Header("按钮")]
     public Button continueButton;
-    public Button settingsButton;
+    //public Button settingsButton;
     public Button restartButton;
     public Button exitButton;
 
@@ -17,7 +17,7 @@ public class PauseUI : UIBase
         Time.timeScale = 0;
 
         continueButton.onClick.SetListener(OnClickContinue);
-        settingsButton.onClick.SetListener(OnClickSettings);
+        //settingsButton.onClick.SetListener(OnClickSettings);
         restartButton.onClick.SetListener(OnClickRestart);
         exitButton.onClick.SetListener(OnClickExit);
     }
@@ -25,7 +25,7 @@ public class PauseUI : UIBase
     public override void OnClose()
     {
         continueButton.onClick.RemoveAllListeners();
-        settingsButton.onClick.RemoveAllListeners();
+        //settingsButton.onClick.RemoveAllListeners();
         restartButton.onClick.RemoveAllListeners();
         exitButton.onClick.RemoveAllListeners();
         base.OnClose();
@@ -56,11 +56,7 @@ public class PauseUI : UIBase
 
     void OnClickExit()
     {
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
         Application.Quit();
-#endif
     }
 
     private void DestroyDontDestroyManagers()

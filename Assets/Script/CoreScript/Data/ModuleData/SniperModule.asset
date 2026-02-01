@@ -18,7 +18,7 @@ MonoBehaviour:
   - type: 18
     value: 3
   - type: 19
-    value: 2
+    value: 1.5
   - type: 20
     value: 2
   unlockLevel: 1

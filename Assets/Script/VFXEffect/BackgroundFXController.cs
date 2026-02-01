@@ -24,12 +24,6 @@ public class VisualThemePreset
     public float punchStrength = 2.0f; // 这个主题下的受击扭曲强度
 }
 
-[CreateAssetMenu(fileName = "NewThemeConfig", menuName = "Game/Theme Config")]
-public class SOVisualThemePresets : ScriptableObject
-{
-    public List<VisualThemePreset> allPresets;
-}
-
 public class BackgroundFXController : MonoSingleton<BackgroundFXController>
 {
     [Header("材质引用")]

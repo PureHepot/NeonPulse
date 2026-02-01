@@ -279,6 +279,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7712dfcc041935c48a29a59c6e38d5a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  damageChain: 0.5
   partMaxHp: 50
   passDamageToBoss: 1
   explosionPrefab: {fileID: 0}
@@ -494,7 +495,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e09412fee946c664c8db95cc32f77268, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHp: 180
+  maxHp: 200
   moveSpeed: 10
   scoreValue: 10
   contactDamage: 1
@@ -774,6 +775,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7712dfcc041935c48a29a59c6e38d5a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  damageChain: 0.5
   partMaxHp: 30
   passDamageToBoss: 0
   explosionPrefab: {fileID: 0}
@@ -943,6 +945,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7712dfcc041935c48a29a59c6e38d5a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  damageChain: 0.5
   partMaxHp: 30
   passDamageToBoss: 0
   explosionPrefab: {fileID: 0}
@@ -1092,6 +1095,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7712dfcc041935c48a29a59c6e38d5a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  damageChain: 0.5
   partMaxHp: 40
   passDamageToBoss: 1
   explosionPrefab: {fileID: 0}
@@ -1258,6 +1262,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7712dfcc041935c48a29a59c6e38d5a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  damageChain: 0.5
   partMaxHp: 50
   passDamageToBoss: 1
   explosionPrefab: {fileID: 0}

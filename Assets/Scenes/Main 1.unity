@@ -475,7 +475,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -1.361186, y: -0.006190151}
+  m_Offset: {x: -2.431669, y: 0.024283767}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -486,7 +486,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 3.2868466, y: 0.8537658}
+  m_Size: {x: 5.427813, y: 1.3126671}
   m_EdgeRadius: 0
 --- !u!1 &519420028
 GameObject:
@@ -826,7 +826,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -1.9100702, y: -0.015974343}
+  m_Offset: {x: -3.2523658, y: 0.0127283335}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -837,7 +837,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 4.3773284, y: 1.164491}
+  m_Size: {x: 7.0619197, y: 1.3427498}
   m_EdgeRadius: 0
 --- !u!1 &623491159
 GameObject:
@@ -1154,7 +1154,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 1.850214, y: 0.04820651}
+  m_Offset: {x: 3.293814, y: -0.017136425}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -1165,7 +1165,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 4.259707, y: 1.2318686}
+  m_Size: {x: 7.1469073, y: 1.3625546}
   m_EdgeRadius: 0
 --- !u!1 &909480353
 GameObject:
@@ -1748,6 +1748,7 @@ MonoBehaviour:
   wavesData: {fileID: 11400000, guid: 66960ef162e603f49ad187e496e15649, type: 2}
   timeBetweenWaves: 3
   spawnPadding: 1.5
+  currentWaveIndex: 0
 --- !u!114 &1357557158
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1819,7 +1820,7 @@ MonoBehaviour:
   bgMaterial: {fileID: 2100000, guid: 52e802eea0dab184e959328a7c1fd1e6, type: 2}
   wallMaterial: {fileID: 2100000, guid: 838f95f1fe3f2644fb8a3ba1d397b180, type: 2}
   punchDuration: 1
-  presets: {fileID: 11400000, guid: ba4fee4812645184c961a6fd3dab8971, type: 2}
+  presets: {fileID: 11400000, guid: ade3f143988cdce478adf8817dba7be9, type: 2}
 --- !u!114 &1357557163
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1833,11 +1834,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maskPool:
+  - {fileID: 11400000, guid: 87566234c404c9b449faa63c79c8f52e, type: 2}
   - {fileID: 11400000, guid: 377c82103c5b94d4db97350edabd3555, type: 2}
+  - {fileID: 11400000, guid: b3bce4be2af46954aa3c96ab8b0dbc95, type: 2}
+  - {fileID: 11400000, guid: 3d2f798d7f505a843b0aae7d413ff6c1, type: 2}
+  - {fileID: 11400000, guid: 8fe534fdc20e150469749223e96f857e, type: 2}
+  - {fileID: 11400000, guid: b3bce4be2af46954aa3c96ab8b0dbc95, type: 2}
   - {fileID: 11400000, guid: 3d2f798d7f505a843b0aae7d413ff6c1, type: 2}
   - {fileID: 11400000, guid: b3bce4be2af46954aa3c96ab8b0dbc95, type: 2}
-  - {fileID: 11400000, guid: d7b26890c285e614c90e7f42cee9eabb, type: 2}
-  - {fileID: 11400000, guid: 87566234c404c9b449faa63c79c8f52e, type: 2}
   gachaCost: 3
   currentMask: {fileID: 0}
 --- !u!1 &1367779161
@@ -1875,7 +1879,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.00024414062, y: 0.00036621094}
+  m_AnchoredPosition: {x: 0.00024414062, y: 0.00048828125}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!225 &1367779163
@@ -2115,7 +2119,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 1.4417899, y: -0.002060786}
+  m_Offset: {x: 2.762812, y: -0.019068718}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -2126,7 +2130,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 3.461215, y: 0.749632}
+  m_Size: {x: 6.1032596, y: 1.2419658}
   m_EdgeRadius: 0
 --- !u!1 &1668960199
 GameObject:

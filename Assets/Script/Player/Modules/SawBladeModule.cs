@@ -40,6 +40,7 @@ public class SawBladeModule : PlayerModule
     private int currentStage = 0;
 
     private Vector3 dashDirection;
+    [SerializeField]
     private float currentDashSpeed;
 
     private HashSet<Collider2D> hitTargets = new HashSet<Collider2D>();
@@ -72,7 +73,9 @@ public class SawBladeModule : PlayerModule
     {
         baseDamage = (int)UpgradeManager.Instance.GetStat(ModuleType.SawBlade, StatType.BladeBaseDamage);
         maxChargeTime = UpgradeManager.Instance.GetStat(ModuleType.SawBlade, StatType.BladeChargeTime);
-        hitCount = (int)UpgradeManager.Instance.GetStat(ModuleType.SawBlade, StatType.BladeHitCount); 
+        hitCount = (int)UpgradeManager.Instance.GetStat(ModuleType.SawBlade, StatType.BladeHitCount);
+        minDashSpeed = UpgradeManager.Instance.GetStat(ModuleType.Movement, StatType.MoveSpeed) * 2;
+        maxDashSpeed = UpgradeManager.Instance.GetStat(ModuleType.Movement, StatType.MoveSpeed)*2 + 5f;
     }
 
     public override void OnModuleUpdate()
@@ -368,8 +371,8 @@ public class SawBladeModule : PlayerModule
                     break;
             }
         }
-
-        maxDashSpeed = UpgradeManager.Instance.GetStat(ModuleType.Movement, StatType.MoveSpeed) + 5f;
+        minDashSpeed = UpgradeManager.Instance.GetStat(ModuleType.Movement, StatType.MoveSpeed) * 2;
+        maxDashSpeed = UpgradeManager.Instance.GetStat(ModuleType.Movement, StatType.MoveSpeed) * 2 + 5f;
     }
 
     private void OnDrawGizmosSelected()
