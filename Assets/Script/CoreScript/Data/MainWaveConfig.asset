@@ -286,6 +286,21 @@ MonoBehaviour:
       direction: 0
       delayBeforeStart: 0
     waveDuration: 0
+  - waveName: Warning
+    groups:
+    - enemyPrefab: {fileID: 5131009551565671278, guid: 23505cc7beff46b4cb4a04436fb18646, type: 3}
+      count: 8
+      spawnRate: 2
+      isParallel: 0
+      direction: 0
+      delayBeforeStart: 0
+    - enemyPrefab: {fileID: 4452659823603071457, guid: 8119c42fc89ecaa4ab499225bc459165, type: 3}
+      count: 8
+      spawnRate: 2
+      isParallel: 0
+      direction: 0
+      delayBeforeStart: 0
+    waveDuration: 0
   - waveName: Singer
     groups:
     - enemyPrefab: {fileID: 2604878067555025342, guid: 337a5153cb2ff5c4f83eb1d3023f177b, type: 3}

@@ -67,7 +67,7 @@ public class SniperModule : PlayerModule
     void RecalculateStats()
     {
         fireRate = UpgradeManager.Instance.GetStat(ModuleType.Sniper, StatType.SnipeFireRate);
-        if (fireRate <= 0) fireRate = 2f;
+        if (fireRate <= 0) fireRate = 1.8f;
 
         damage = (int)UpgradeManager.Instance.GetStat(ModuleType.Sniper, StatType.SnipeDamage);
         if (damage <= 0) damage = 4;
@@ -82,6 +82,7 @@ public class SniperModule : PlayerModule
 
         cooldown = fireRate;
 
+        AudioManager.Instance.PlayEffect("SniperShoot");
         GameObject bullet = ObjectPoolManager.Instance.Get(
             sniperBulletPrefab,
             muzzle.position,

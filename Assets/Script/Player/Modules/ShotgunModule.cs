@@ -62,7 +62,7 @@ public class ShotgunModule : PlayerModule
     void RecalculateStats()
     {
         fireRate = UpgradeManager.Instance.GetStat(ModuleType.Shotgun, StatType.ShotgunFireRate);
-        if (fireRate <= 0) fireRate = 3.0f;
+        if (fireRate <= 0) fireRate = 1.5f;
 
         damage = (int)UpgradeManager.Instance.GetStat(ModuleType.Shotgun, StatType.ShotgunDamage);
         if (damage <= 0) damage = 2;
