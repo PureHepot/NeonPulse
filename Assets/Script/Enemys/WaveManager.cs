@@ -66,6 +66,10 @@ public class WaveManager : MonoSingleton<WaveManager>
     private Coroutine currentWaveSpawnCoroutine;
     private List<Coroutine> runningGroupRoutines = new List<Coroutine>();
 
+    [Tooltip("当玩家距离墙壁多少米内时，触发避让逻辑")]
+    public float wallProximityCheck = 0.5f;
+    public float playerSafetyRadius = 0.5f;
+
     private void Start()
     {
         mainCam = Camera.main;
@@ -213,13 +217,22 @@ public class WaveManager : MonoSingleton<WaveManager>
     {
         Vector3 pos = Vector3.zero;
 
-        // 计算屏幕的一半宽高
-        float halfHeight = camHeight / 2f;
-        float halfWidth = camWidth / 2f;
+        // 获取屏幕边界 (正交相机)
+        float halfHeight = mainCam.orthographicSize;
+        float halfWidth = halfHeight * mainCam.aspect;
 
-        // 原有的 limit 是给屏幕外生成用的
         float xLimit = halfWidth + spawnPadding;
         float yLimit = halfHeight + spawnPadding;
+
+        // 尝试获取玩家位置
+        Vector3 playerPos = Vector3.zero;
+        bool playerFound = false;
+        GameObject p = GameObject.FindGameObjectWithTag("Player");
+        if (p != null)
+        {
+            playerPos = p.transform.position;
+            playerFound = true;
+        }
 
         if (dir == SpawnDirection.Random)
         {
@@ -229,28 +242,106 @@ public class WaveManager : MonoSingleton<WaveManager>
         switch (dir)
         {
             case SpawnDirection.Top:
-                pos = new Vector3(Random.Range(-xLimit, xLimit), yLimit, 0);
-                break;
-            case SpawnDirection.Bottom:
-                pos = new Vector3(Random.Range(-xLimit, xLimit), -yLimit, 0);
-                break;
-            case SpawnDirection.Left:
-                pos = new Vector3(-xLimit, Random.Range(-yLimit, yLimit), 0);
-                break;
-            case SpawnDirection.Right:
-                pos = new Vector3(xLimit, Random.Range(-yLimit, yLimit), 0);
+                // 墙的位置：y = yLimit
+                // 检查玩家是否靠近上墙
+                if (playerFound && Mathf.Abs(playerPos.y - yLimit) < wallProximityCheck)
+                {
+                    // 玩家在上墙附近，X轴需要避开玩家的X
+                    float safeX = GetSafeRandomCoord(-xLimit, xLimit, playerPos.x, playerSafetyRadius);
+                    pos = new Vector3(safeX, yLimit, 0);
+                }
+                else
+                {
+                    pos = new Vector3(Random.Range(-xLimit, xLimit), yLimit, 0);
+                }
                 break;
 
-            // 【修改处】
+            case SpawnDirection.Bottom:
+                // 墙的位置：y = -yLimit
+                if (playerFound && Mathf.Abs(playerPos.y - (-yLimit)) < wallProximityCheck)
+                {
+                    float safeX = GetSafeRandomCoord(-xLimit, xLimit, playerPos.x, playerSafetyRadius);
+                    pos = new Vector3(safeX, -yLimit, 0);
+                }
+                else
+                {
+                    pos = new Vector3(Random.Range(-xLimit, xLimit), -yLimit, 0);
+                }
+                break;
+
+            case SpawnDirection.Left:
+                // 墙的位置：x = -xLimit
+                if (playerFound && Mathf.Abs(playerPos.x - (-xLimit)) < wallProximityCheck)
+                {
+                    // 玩家在左墙附近，Y轴需要避开玩家的Y
+                    float safeY = GetSafeRandomCoord(-yLimit, yLimit, playerPos.y, playerSafetyRadius);
+                    pos = new Vector3(-xLimit, safeY, 0);
+                }
+                else
+                {
+                    pos = new Vector3(-xLimit, Random.Range(-yLimit, yLimit), 0);
+                }
+                break;
+
+            case SpawnDirection.Right:
+                // 墙的位置：x = xLimit
+                if (playerFound && Mathf.Abs(playerPos.x - xLimit) < wallProximityCheck)
+                {
+                    float safeY = GetSafeRandomCoord(-yLimit, yLimit, playerPos.y, playerSafetyRadius);
+                    pos = new Vector3(xLimit, safeY, 0);
+                }
+                else
+                {
+                    pos = new Vector3(xLimit, Random.Range(-yLimit, yLimit), 0);
+                }
+                break;
+
             case SpawnDirection.TopCenter:
-                // X轴居中 = 0
-                // Y轴 = 屏幕顶边缘(halfHeight) - 偏移量(比如 1.5f 或 2.0f)
-                // 这样怪物就会刚好出现在屏幕内部的上方，而不是屏幕外
                 pos = new Vector3(0, halfHeight - 1.5f, 0);
                 break;
         }
 
         return pos;
+    }
+
+    private float GetSafeRandomCoord(float min, float max, float avoidCenter, float radius)
+    {
+        float avoidMin = avoidCenter - radius;
+        float avoidMax = avoidCenter + radius;
+
+        // 计算两个安全区段：
+        // 左/下段: [min, avoidMin]
+        // 右/上段: [avoidMax, max]
+
+        bool seg1Valid = avoidMin > min;
+        bool seg2Valid = avoidMax < max;
+
+        if (seg1Valid && seg2Valid)
+        {
+            // 两边都有空间，按长度比例随机选一边
+            float len1 = avoidMin - min;
+            float len2 = max - avoidMax;
+
+            // 扔硬币决定去哪边
+            if (Random.value < (len1 / (len1 + len2)))
+                return Random.Range(min, avoidMin);
+            else
+                return Random.Range(avoidMax, max);
+        }
+        else if (seg1Valid)
+        {
+            // 只有左边有空间 (玩家靠右/上顶死了)
+            return Random.Range(min, avoidMin);
+        }
+        else if (seg2Valid)
+        {
+            // 只有右边有空间
+            return Random.Range(avoidMax, max);
+        }
+        else
+        {
+            return Random.Range(min, max);
+        }
     }
 
     private void ClearAllEnemies()

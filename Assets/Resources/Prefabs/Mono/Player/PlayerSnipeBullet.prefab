@@ -94,7 +94,7 @@ CapsuleCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3724406646315978653}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -143,7 +143,7 @@ TrailRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9596c1a802411234b83dbe43e05146a9, type: 2}
+  - {fileID: 2100000, guid: 145fbf5cbab68f64d83ec2d6587568f7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -251,3 +251,7 @@ MonoBehaviour:
   damage: 4
   lifeTime: 3
   penetrationCount: 2
+  boxSize: {x: 1, y: 0.35}
+  hitLayer:
+    serializedVersion: 2
+    m_Bits: 8

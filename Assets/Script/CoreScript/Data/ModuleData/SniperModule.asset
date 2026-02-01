@@ -25,12 +25,12 @@ MonoBehaviour:
   statUpgrades:
   - statType: 18
     valuePerUpgrade: 1
-    pointCost: 1
+    pointCost: 5
     maxStacks: 5
     upgradeName: "\u72D9\u51FB\u4F24\u5BB3"
     description: "\u63D0\u9AD8\u72D9\u51FB\u4F24\u5BB3"
   - statType: 19
-    valuePerUpgrade: -0.2
+    valuePerUpgrade: -0.1
     pointCost: 2
     maxStacks: 5
     upgradeName: "\u72D9\u51FB\u901F\u5EA6"

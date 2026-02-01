@@ -50,6 +50,16 @@ public class ModuleRuntimeData
         return true;
     }
 
+    public void ResetAllStatLevel()
+    {
+        List<StatType> temp = new List<StatType>(upgradeCounts.Keys);
+
+        foreach (var type in temp)
+        {
+            upgradeCounts[type] = 0;
+        }
+    }
+
     public bool IsMaxLevel(StatType type)
     {
         var def = config.GetUpgradeDefinition(type);

@@ -252,6 +252,39 @@ MonoBehaviour:
       isParallel: 1
       direction: 0
       delayBeforeStart: 0
+    - enemyPrefab: {fileID: 0}
+      count: 5
+      spawnRate: 1
+      isParallel: 0
+      direction: 0
+      delayBeforeStart: 0
+    waveDuration: 0
+  - waveName: Survive
+    groups:
+    - enemyPrefab: {fileID: 5139547480797825135, guid: f129f49cc454a93408b483bdc21d2831, type: 3}
+      count: 100
+      spawnRate: 1
+      isParallel: 0
+      direction: 0
+      delayBeforeStart: 0
+    - enemyPrefab: {fileID: 9023208691173884338, guid: 5836a8f3c5ad3704fafb37f4da5c934c, type: 3}
+      count: 100
+      spawnRate: 1
+      isParallel: 1
+      direction: 0
+      delayBeforeStart: 0
+    - enemyPrefab: {fileID: 4452659823603071457, guid: 8119c42fc89ecaa4ab499225bc459165, type: 3}
+      count: 100
+      spawnRate: 2
+      isParallel: 1
+      direction: 0
+      delayBeforeStart: 0
+    - enemyPrefab: {fileID: 5131009551565671278, guid: 23505cc7beff46b4cb4a04436fb18646, type: 3}
+      count: 100
+      spawnRate: 1
+      isParallel: 1
+      direction: 0
+      delayBeforeStart: 0
     waveDuration: 0
   - waveName: Singer
     groups:

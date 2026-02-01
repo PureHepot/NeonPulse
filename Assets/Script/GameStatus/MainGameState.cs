@@ -52,6 +52,11 @@ public class MainGameState : GameState
         if (Input.GetKeyDown(KeyCode.Tab) && !UIManager.Instance.CheckUIOpen<LevelUpUI>())
         {
             UIManager.Instance.Open<LevelUpUI>();
+            UIManager.Instance.ClosePopup();
+        }
+        else if(Input.GetKeyDown(KeyCode.Tab) && UIManager.Instance.CheckUIOpen<LevelUpUI>())
+        {
+            UIManager.Instance.CloseTopPanel();
         }
     }
 

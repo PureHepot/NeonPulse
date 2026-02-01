@@ -1749,6 +1749,8 @@ MonoBehaviour:
   timeBetweenWaves: 3
   spawnPadding: 1.5
   currentWaveIndex: 0
+  wallProximityCheck: 0.5
+  playerSafetyRadius: 0.5
 --- !u!114 &1357557158
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1841,7 +1843,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8fe534fdc20e150469749223e96f857e, type: 2}
   - {fileID: 11400000, guid: b3bce4be2af46954aa3c96ab8b0dbc95, type: 2}
   - {fileID: 11400000, guid: 3d2f798d7f505a843b0aae7d413ff6c1, type: 2}
-  - {fileID: 11400000, guid: b3bce4be2af46954aa3c96ab8b0dbc95, type: 2}
+  - {fileID: 11400000, guid: 87566234c404c9b449faa63c79c8f52e, type: 2}
   gachaCost: 3
   currentMask: {fileID: 0}
 --- !u!1 &1367779161

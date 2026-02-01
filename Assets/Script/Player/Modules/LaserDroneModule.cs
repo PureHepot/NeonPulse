@@ -172,9 +172,9 @@ public class LaserDroneModule : PlayerModule
 
     private void OnDestroy()
     {
-        for (int i = 0; i < droneTransforms.Count; i++)
+        for (int i = 0; i < droneTransforms?.Count; i++)
         {
-            droneTransforms[i].gameObject.SetActive(false);
+            droneTransforms[i]?.gameObject.SetActive(false);
         }
 
         if (_debrisHolder != null)
@@ -632,18 +632,6 @@ public class LaserDroneModule : PlayerModule
                     detectionRadius = laserRange + 0.2f;
                     break;
             }
-        }
-
-        // 如果升级了数量
-        if (moduleType == ModuleType.LaserDrone && statType == StatType.BeamCount)
-        {
-            droneCount++;
-            if (droneCount > droneTransforms.Count) droneCount = droneTransforms.Count;
-            UpdateActiveDrones();
-        }
-        else if (statType == StatType.BeamRange) // 假设你有 Range 类型
-        {
-            laserRange += 5f;
         }
     }
 

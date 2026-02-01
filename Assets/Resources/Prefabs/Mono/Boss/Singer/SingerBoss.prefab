@@ -141,7 +141,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8afae4b9a88ab99449b248a8a973e09a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHp: 300
+  maxHp: 700
   moveSpeed: 5
   scoreValue: 10
   contactDamage: 1
@@ -696,7 +696,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7712dfcc041935c48a29a59c6e38d5a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  partMaxHp: 300
+  damageChain: 0.5
+  partMaxHp: 700
   passDamageToBoss: 1
   explosionPrefab: {fileID: 0}
   partRenderer: {fileID: 0}

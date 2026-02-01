@@ -81,8 +81,12 @@ public class MaskSystemManager : MonoSingleton<MaskSystemManager>
 
         foreach (var mod in mods)
         {
+            UpgradeManager.Instance.GainUpgradePointByModule(mod);
+            UpgradeManager.Instance.ResetLevel(mod);
             UpgradeManager.Instance.LockModule(mod);
+
         }
+
 
         Debug.Log($"装备面具: {mask.maskName}");
     }

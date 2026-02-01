@@ -50,7 +50,7 @@ MonoBehaviour:
   maxHp: 30
   moveSpeed: 5
   scoreValue: 10
-  contactDamage: 1
+  contactDamage: 3
   enemyExp: 200
   bodyRenderer: {fileID: 0}
   normalColor: {r: 1, g: 0.67976373, b: 0, a: 1}

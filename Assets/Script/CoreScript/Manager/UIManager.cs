@@ -23,6 +23,7 @@ public class UIManager : MonoSingleton<UIManager>
 
     // 状态存储
     private UIBase currentFullScreenUI;
+    private UIBase popupUI;
     private List<UIBase> panelList = new();
 
     public void Awake()
@@ -246,7 +247,16 @@ public class UIManager : MonoSingleton<UIManager>
         {
             ui.OnEnter(args);
         }
+        popupUI = ui;
         return ui;
+    }
+
+    public void ClosePopup()
+    {
+        if (popupUI != null)
+        {
+            popupUI.OnClose();
+        }
     }
 
     public T GetUI<T>() where T : UIBase

@@ -126,6 +126,14 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         }
     }
 
+    public void ResetLevel(ModuleType moduleType)
+    {
+        if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
+        {
+            data.ResetAllStatLevel();
+        }
+    }
+
     public bool ConsumeUpgradePoint(int amount = 1)
     {
         if (UpgradePoints < amount) return false;
@@ -152,6 +160,19 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
             expToLevelUp = GetExpToLevelUp();
             AudioManager.Instance.PlayEffect("LevelUp");
             OnExpChanged?.Invoke(CurrentExp, expToLevelUp, CurrentLevel);
+        }
+    }
+
+    public void GainUpgradePointByModule(ModuleType type)
+    {
+        if(activeModules.TryGetValue(type, out ModuleRuntimeData data))
+        {
+            int amount = 0;
+            foreach (var stat in data.statTypes)
+            {
+                amount += data.GetStatLevel(stat) * data.config.GetUpgradeDefinition(stat).pointCost;
+            }
+            UpgradePoints += amount;
         }
     }
 
