@@ -52,7 +52,7 @@ public class WaveManager : MonoSingleton<WaveManager>
     public Action OnAllWavesCleared; // 通关事件
 
     // --- 运行时状态 ---
-    private int currentWaveIndex = 0;
+    public int currentWaveIndex = 0;
     private int totalEnemiesAlive = 0;
     private int activeSpawnerCount = 0;
     public HashSet<EnemyBase> activeEnemies = new HashSet<EnemyBase>();
@@ -90,9 +90,17 @@ public class WaveManager : MonoSingleton<WaveManager>
             WaveData currentWave = wavesData.allWaves[currentWaveIndex];
 
             //触发 UI 弹窗事件
-            if (currentWave.waveName == "Speed!")
+            if (currentWave.waveName == "Survive")
             {
-                speedLevel++;
+                BackgroundFXController.Instance.SwitchToTheme($"Fast_{currentWaveIndex % 5}");
+            }
+            else if(currentWave.waveName == "AirCraft" || currentWave.waveName == "Singer")
+            {
+                BackgroundFXController.Instance.SwitchToTheme($"Boss");
+            }
+            else
+            {
+                BackgroundFXController.Instance.SwitchToTheme($"Normal_{currentWaveIndex % 5}");
             }
             OnWaveIncoming?.Invoke(currentWaveIndex + 1, currentWave.waveName);
             Debug.Log($"<color=cyan>--- {currentWave.waveName} 即将开始 ---</color>");
@@ -143,14 +151,11 @@ public class WaveManager : MonoSingleton<WaveManager>
             Debug.Log($"<color=green>--- {currentWave.waveName} 完成 ---</color>");
 
             currentWaveIndex++;
-            if(speedLevel == 1)
-                BackgroundFXController.Instance.SwitchToTheme($"Normal_{currentWaveIndex % 5}");
-            else if(speedLevel == 2)
-                BackgroundFXController.Instance.SwitchToTheme($"Fast_{currentWaveIndex % 5}");
         }
 
         // 所有波次结束
         OnAllWavesCleared?.Invoke();
+        UIManager.Instance.Open<EndUI>();
         Debug.Log("所有波次已清空！胜利！");
     }
 

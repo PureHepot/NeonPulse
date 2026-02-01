@@ -7,6 +7,8 @@ using DG.Tweening; // 需要 DoTween 做受击闪烁
 [RequireComponent(typeof(Collider2D))]
 public class BossPart : MonoBehaviour, IDamageable
 {
+    public float damageChain = 0.5f;
+
     [Header("Part Settings")]
     [Tooltip("部位独立血量")]
     public int partMaxHp = 50;
@@ -61,7 +63,7 @@ public class BossPart : MonoBehaviour, IDamageable
 
         if (passDamageToBoss && mainBoss != null)
         {
-            mainBoss.TakeDamage(amount, hitPoint, hitNormal);
+            mainBoss.TakeDamage((int)(amount * damageChain), hitPoint, hitNormal);
         }
 
         if (currentPartHp <= 0)

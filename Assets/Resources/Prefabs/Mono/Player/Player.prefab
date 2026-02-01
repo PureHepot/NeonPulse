@@ -1716,7 +1716,7 @@ MonoBehaviour:
   hitCount: 3
   hitInterval: 0.2
   knockbackForce: 5
-  attackRadiusRatio: 0.95
+  attackRadiusRatio: 1.2
   enemyLayer:
     serializedVersion: 2
     m_Bits: 264

@@ -64,13 +64,13 @@ MonoBehaviour:
       direction: 0
       delayBeforeStart: 20
     - enemyPrefab: {fileID: 5652730276955115373, guid: f11b13a36a7070d4dbe477279a7d48e4, type: 3}
-      count: 3
+      count: 2
       spawnRate: 2
       isParallel: 0
       direction: 1
       delayBeforeStart: 0
     - enemyPrefab: {fileID: 5652730276955115373, guid: f11b13a36a7070d4dbe477279a7d48e4, type: 3}
-      count: 2
+      count: 1
       spawnRate: 2
       isParallel: 1
       direction: 2

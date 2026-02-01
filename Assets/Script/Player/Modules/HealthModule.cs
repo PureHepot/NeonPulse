@@ -39,7 +39,8 @@ public class HealthModule : PlayerModule
         CurrentHp = MaxHp;
 
         int displayHp = CurrentHp <= 0 ? 0 : Mathf.Max(1, Mathf.FloorToInt(CurrentHp));
-        PlayerManager.Instance.SyncHp(displayHp, MaxHp);
+        if(!player.isPreview)
+            PlayerManager.Instance.SyncHp(displayHp, MaxHp);
 
         Debug.Log($"[HealthModule] 初始化 HP={CurrentHp}/{MaxHp} Regen={RegenPerSecond}/s");
     }
@@ -47,6 +48,7 @@ public class HealthModule : PlayerModule
     public override void OnModuleUpdate()
     {
         base.OnModuleUpdate();
+        if (player == null || player.isPreview) return;
         HandleRegen();
     }
 
@@ -151,7 +153,8 @@ public class HealthModule : PlayerModule
         {
             CurrentHp = MaxHp;
         }
-        PlayerManager.Instance.SyncHp(Mathf.RoundToInt(CurrentHp), MaxHp);
+        if(!player.isPreview)
+            PlayerManager.Instance.SyncHp(Mathf.RoundToInt(CurrentHp), MaxHp);
 
         Debug.Log($"[HealthModule] 升级刷新 HP={CurrentHp}/{MaxHp} Regen={RegenPerSecond}/s");
     }
