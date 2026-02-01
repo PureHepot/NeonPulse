@@ -1,19 +1,20 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using DG.Tweening; // ĞèÒª DoTween ×öÊÜ»÷ÉÁË¸
+using DG.Tweening; // éœ€è¦ DoTween åšå—å‡»é—ªçƒ
 
 [RequireComponent(typeof(Collider2D))]
 public class BossPart : MonoBehaviour, IDamageable
 {
     [Header("Part Settings")]
-    [Tooltip("²¿Î»¶ÀÁ¢ÑªÁ¿")]
+    [Tooltip("éƒ¨ä½ç‹¬ç«‹è¡€é‡")]
     public int partMaxHp = 50;
 
-    [Tooltip("ÊÜ»÷Ê±ÊÇ·ñ½«ÉËº¦´«µİ¸øÖ÷Boss£¨¿Û×ÜÑªÁ¿£©")]
+    [Tooltip("å—å‡»æ—¶æ˜¯å¦å°†ä¼¤å®³ä¼ é€’ç»™ä¸»Bossï¼ˆæ‰£æ€»è¡€é‡ï¼‰")]
     public bool passDamageToBoss = true;
 
-    [Tooltip("±¬Õ¨ÌØĞ§Ô¤ÖÆ¼ş")]
+    [Tooltip("çˆ†ç‚¸ç‰¹æ•ˆé¢„åˆ¶ä»¶")]
     public GameObject explosionPrefab;
 
     [Header("Visuals")]
@@ -21,10 +22,14 @@ public class BossPart : MonoBehaviour, IDamageable
     public Color hitColor = Color.red;
     private Color originalColor;
 
-    // ÔËĞĞÊ±Êı¾İ
+    // è¿è¡Œæ—¶æ•°æ®
     private int currentPartHp;
     private EnemyBase mainBoss;
-    private GameObject hitParticlePrefab; // »º´æÊÜ»÷Á£×ÓÔ¤ÖÆ¼ş
+    private GameObject hitParticlePrefab; // ç¼“å­˜å—å‡»ç²’å­é¢„åˆ¶ä»¶
+
+    //éƒ¨ä½ç ´åå›è°ƒ
+    public Action<BossPart> OnPartBroken;
+    public bool IsBroken => currentPartHp <= 0;
 
     private void Awake()
     {
@@ -35,12 +40,12 @@ public class BossPart : MonoBehaviour, IDamageable
 
         mainBoss = GetComponentInParent<EnemyBase>();
 
-        // ¡¾ĞÂÔö¡¿³¢ÊÔ´ÓÖ÷ Boss »ñÈ¡ÊÜ»÷Á£×Ó£¬±£³Ö·ç¸ñÒ»ÖÂ
+        // ã€æ–°å¢ã€‘å°è¯•ä»ä¸» Boss è·å–å—å‡»ç²’å­ï¼Œä¿æŒé£æ ¼ä¸€è‡´
         if (mainBoss != null)
         {
             hitParticlePrefab = mainBoss.hitParticlePrefab;
         }
-        // Èç¹û Boss Ã»Åä£¬¾Í¼ÓÔØÄ¬ÈÏµÄ
+        // å¦‚æœ Boss æ²¡é…ï¼Œå°±åŠ è½½é»˜è®¤çš„
         if (hitParticlePrefab == null)
         {
             hitParticlePrefab = Resources.Load<GameObject>("ParticleSystem/PS_HitSparks");
@@ -49,25 +54,16 @@ public class BossPart : MonoBehaviour, IDamageable
 
     public void TakeDamage(int amount, Vector3 hitPoint, Vector3 hitNormal)
     {
-        // 1. ¿Û³ı²¿Î»×ÔÉíÑªÁ¿
-        currentPartHp -= amount;
+        if (IsBroken) return; // å·²ç»åäº†å°±ä¸å¤„ç†äº†
 
-        // 2. ¡¾ºËĞÄĞŞ¸´¡¿²¥·ÅÊÜ»÷·´À¡ (ÒôĞ§ + ¶¶¶¯ + Á£×Ó)
+        currentPartHp -= amount;
         PlayHitEffect(hitPoint, hitNormal);
 
-        // 3. ´«µİÉËº¦¸øÖ÷ Boss
         if (passDamageToBoss && mainBoss != null)
         {
             mainBoss.TakeDamage(amount, hitPoint, hitNormal);
         }
-        else
-        {
-            // ¡¾ºËĞÄĞŞ¸´¡¿Èç¹û²»´«¸ø Boss£¬ÎÒÃÇ×Ô¼º±ØĞë²¥·ÅÒôĞ§£¡
-            // ·ñÔò´òÉÏÈ¥¾ÍÏñÑÆ»ğÁËÒ»Ñù
-            AudioManager.Instance.PlayEffect("EnemyHit");
-        }
 
-        // 4. ¼ì²é²¿Î»ÊÇ·ñÆÆ»µ
         if (currentPartHp <= 0)
         {
             BreakPart();
@@ -81,7 +77,7 @@ public class BossPart : MonoBehaviour, IDamageable
 
     private void PlayHitEffect(Vector3 pos, Vector3 normal)
     {
-        // --- ÊÓ¾õ·´À¡£ºÉÁË¸ & ¶¶¶¯ ---
+        // --- è§†è§‰åé¦ˆï¼šé—ªçƒ & æŠ–åŠ¨ ---
         if (partRenderer != null)
         {
             partRenderer.DOKill();
@@ -90,28 +86,28 @@ public class BossPart : MonoBehaviour, IDamageable
                 partRenderer.DOColor(originalColor, 0.1f);
             });
 
-            // ¶¶¶¯£ºÔöÇ¿ÁËÁ¦¶È (0.1 -> 0.2)£¬ÈÃĞ¡²¿¼ş¶¶¶¯¸üÃ÷ÏÔ
+            // æŠ–åŠ¨ï¼šå¢å¼ºäº†åŠ›åº¦ (0.1 -> 0.2)ï¼Œè®©å°éƒ¨ä»¶æŠ–åŠ¨æ›´æ˜æ˜¾
             transform.DOKill();
             transform.localScale = Vector3.one;
             transform.DOPunchScale(new Vector3(0.2f, 0.2f, 0), 0.1f);
         }
 
-        // --- ÊÓ¾õ·´À¡£ºÁ£×ÓÌØĞ§ (Ö®Ç°È±ÉÙµÄ) ---
+        // --- è§†è§‰åé¦ˆï¼šç²’å­ç‰¹æ•ˆ (ä¹‹å‰ç¼ºå°‘çš„) ---
         if (hitParticlePrefab != null)
         {
-            // Ê¹ÓÃ¶ÔÏó³ØÉú³É»ğ»¨
-            // ×¢Òâ£ºÕâÀïĞèÒª Quaternion.LookRotation À´ÈÃ»ğ»¨³¯ÏòÕıÈ·µÄ·¨Ïß·½Ïò·É½¦
+            // ä½¿ç”¨å¯¹è±¡æ± ç”Ÿæˆç«èŠ±
+            // æ³¨æ„ï¼šè¿™é‡Œéœ€è¦ Quaternion.LookRotation æ¥è®©ç«èŠ±æœå‘æ­£ç¡®çš„æ³•çº¿æ–¹å‘é£æº…
             Quaternion rot = (normal != Vector3.zero) ? Quaternion.LookRotation(normal) : Quaternion.identity;
 
             GameObject particleObj = ObjectPoolManager.Instance.Get(hitParticlePrefab, pos, rot);
 
-            // 1Ãëºó»ØÊÕ
+            // 1ç§’åå›æ”¶
             Timer.Register(1f, () =>
             {
                 if (particleObj != null) ObjectPoolManager.Instance.Return(particleObj);
             });
 
-            // ²¥·ÅÁ£×Ó
+            // æ’­æ”¾ç²’å­
             ParticleSystem ps = particleObj.GetComponent<ParticleSystem>();
             if (ps != null) ps.Play();
         }
@@ -130,6 +126,12 @@ public class BossPart : MonoBehaviour, IDamageable
             if (defaultExp) Instantiate(defaultExp, transform.position, Quaternion.identity);
         }
 
-        gameObject.SetActive(false);
+        OnPartBroken?.Invoke(this);
+
+        if (partRenderer) partRenderer.enabled = false;
+        var col = GetComponent<Collider2D>();
+        if (col) col.enabled = false;
+
+        //gameObject.SetActive(false);
     }
 }

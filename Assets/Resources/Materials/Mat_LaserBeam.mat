@@ -42,7 +42,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _BeamWidth: 0.5
-    - _GlowPower: 40
+    - _GlowPower: 12.8
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ScrollSpeed: 0.5

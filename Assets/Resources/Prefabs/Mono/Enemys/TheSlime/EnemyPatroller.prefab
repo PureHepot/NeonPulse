@@ -78,7 +78,7 @@ MonoBehaviour:
   moveSpeed: 3
   scoreValue: 10
   contactDamage: 1
-  enemyExp: 10
+  enemyExp: 60
   bodyRenderer: {fileID: 0}
   normalColor: {r: 0.14395644, g: 0.12107503, b: 0.6754716, a: 1}
   hitColor: {r: 1, g: 0, b: 0, a: 1}
@@ -87,6 +87,7 @@ MonoBehaviour:
   canKnockback: 1
   knockbackForce: 8
   knockbackTorque: 20
+  currentHp: 0
   patrolPoints:
   - {fileID: 8426025922963402707, guid: 313495492b4b431448d816f65d0ab30d, type: 3}
   - {fileID: 5148753187261394870, guid: 24ebee2da55f1404386cd5469e2641d9, type: 3}

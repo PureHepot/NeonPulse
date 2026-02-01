@@ -19,7 +19,7 @@ public class MovementModule : PlayerModule
 
     public override void OnModuleUpdate()
     {
-        if (player == null || player.IsStunned || player.IsDead || player.IsDashing) return;
+        if (player == null || player.IsStunned || player.IsDead || player.IsDashing || player.isPreview) return;
 
         float x = InputManager.Instance.GetMoveX();
         float y = InputManager.Instance.GetMoveY();

@@ -95,7 +95,7 @@ GameObject:
   - component: {fileID: 1843522233030542855}
   - component: {fileID: 1001256815806011396}
   - component: {fileID: 6243112717264796445}
-  m_Layer: 3
+  m_Layer: 12
   m_Name: ElectricAura
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -290,6 +290,7 @@ MonoBehaviour:
   canKnockback: 1
   knockbackForce: 8
   knockbackTorque: 20
+  currentHp: 0
   enemyScale: {x: 0.8, y: 0.8, z: 1}
   moveSpeedToCenter: 2
   reachDistance: 0.3
@@ -307,6 +308,10 @@ PrefabInstance:
       propertyPath: m_Intensity
       value: 8.291025
       objectReference: {fileID: 0}
+    - target: {fileID: 496487244642044104, guid: effb650189dc5714e9e9801b1cfb3991, type: 3}
+      propertyPath: m_Layer
+      value: 12
+      objectReference: {fileID: 0}
     - target: {fileID: 496487244642044110, guid: effb650189dc5714e9e9801b1cfb3991, type: 3}
       propertyPath: m_Materials.Array.size
       value: 1
@@ -314,6 +319,14 @@ PrefabInstance:
     - target: {fileID: 496487245117367872, guid: effb650189dc5714e9e9801b1cfb3991, type: 3}
       propertyPath: m_Materials.Array.size
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 496487245117367874, guid: effb650189dc5714e9e9801b1cfb3991, type: 3}
+      propertyPath: m_Layer
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 6566140890059193891, guid: effb650189dc5714e9e9801b1cfb3991, type: 3}
+      propertyPath: m_Layer
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 9027514048236820042, guid: effb650189dc5714e9e9801b1cfb3991, type: 3}
       propertyPath: m_LocalScale.x
@@ -374,6 +387,10 @@ PrefabInstance:
     - target: {fileID: 9027514048236820045, guid: effb650189dc5714e9e9801b1cfb3991, type: 3}
       propertyPath: m_Name
       value: CFXR Electrified 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 9027514048236820045, guid: effb650189dc5714e9e9801b1cfb3991, type: 3}
+      propertyPath: m_Layer
+      value: 12
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

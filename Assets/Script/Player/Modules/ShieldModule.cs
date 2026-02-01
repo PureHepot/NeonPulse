@@ -35,6 +35,8 @@ public class ShieldModule : PlayerModule
 
     public override void OnModuleUpdate()
     {
+        if (player == null || player.IsDead || player.isPreview) return;
+
         HandleRotation();
 
         if (InputManager.Instance.Mouse1())

@@ -46,6 +46,7 @@ public class HealthModule : PlayerModule
 
     public override void OnModuleUpdate()
     {
+        base.OnModuleUpdate();
         HandleRegen();
     }
 
@@ -146,6 +147,10 @@ public class HealthModule : PlayerModule
         RecalculateStats();
 
         CurrentHp = Mathf.Min(CurrentHp, MaxHp);
+        if(statType == StatType.MaxHP)
+        {
+            CurrentHp = MaxHp;
+        }
         PlayerManager.Instance.SyncHp(Mathf.RoundToInt(CurrentHp), MaxHp);
 
         Debug.Log($"[HealthModule] 升级刷新 HP={CurrentHp}/{MaxHp} Regen={RegenPerSecond}/s");
@@ -159,6 +164,8 @@ public class HealthModule : PlayerModule
 
         RegenPerSecond =
             UpgradeManager.Instance.GetStat(ModuleType.Health, StatType.HealthRegen);
+
+        invincibilityDuration = UpgradeManager.Instance.GetStat(ModuleType.Health, StatType.InvinciDuration);
 
         if (MaxHp <= 0) MaxHp = 10;
 

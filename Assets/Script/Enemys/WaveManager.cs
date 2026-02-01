@@ -1,4 +1,3 @@
-using Sirenix.Reflection.Editor;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,6 +13,30 @@ public enum SpawnDirection
     Right,   // 右侧
     TopCenter //
 }
+
+[System.Serializable]
+public class WaveGroup
+{
+    [Header("配置")]
+    public GameObject enemyPrefab; // 怪物的预制体
+    public int count = 5;          // 数量
+    public float spawnRate = 1f;   // 间隔时间(秒)
+    public bool isParallel = false;
+    public SpawnDirection direction = SpawnDirection.Random;
+
+    [Header("延迟")]
+    public float delayBeforeStart = 0f; // 这组怪开始刷之前的等待时间
+}
+
+[System.Serializable]
+
+public class WaveData
+{
+    public string waveName = "Wave ";
+    public List<WaveGroup> groups;
+    public float waveDuration;
+}
+
 public class WaveManager : MonoSingleton<WaveManager>
 {
     [Header("关卡配置")]
@@ -32,6 +55,7 @@ public class WaveManager : MonoSingleton<WaveManager>
     private int currentWaveIndex = 0;
     private int totalEnemiesAlive = 0;
     private int activeSpawnerCount = 0;
+    public HashSet<EnemyBase> activeEnemies = new HashSet<EnemyBase>();
     private int speedLevel = 1;
     private bool isSpawning => activeSpawnerCount > 0;
 
@@ -40,6 +64,7 @@ public class WaveManager : MonoSingleton<WaveManager>
     private float camWidth;
 
     private Coroutine currentWaveSpawnCoroutine;
+    private List<Coroutine> runningGroupRoutines = new List<Coroutine>();
 
     private void Start()
     {
@@ -75,6 +100,7 @@ public class WaveManager : MonoSingleton<WaveManager>
             //波次休息时间
             yield return new WaitForSeconds(timeBetweenWaves);
 
+            runningGroupRoutines.Clear();
             currentWaveSpawnCoroutine = StartCoroutine(SpawnWaveRoutine(currentWave));
 
             float waveTimer = 0f;
@@ -84,10 +110,8 @@ public class WaveManager : MonoSingleton<WaveManager>
             //每帧检查有没有怪，还有就继续循环等下一帧
             while (true)
             {
-                // 1. 胜利条件：怪杀光了 且 不再刷怪了
-                bool allClear = totalEnemiesAlive <= 0 && !isSpawning;
+                bool allClear = activeEnemies.Count == 0 && !isSpawning;
 
-                // 2. 超时条件：是限时波次 且 时间到了
                 bool timeUp = isTimedWave && waveTimer >= currentWave.waveDuration;
 
                 if (allClear)
@@ -99,14 +123,16 @@ public class WaveManager : MonoSingleton<WaveManager>
                 if (timeUp)
                 {
                     Debug.Log("波次结束：时间耗尽，强制进入下一波");
-
                     if (currentWaveSpawnCoroutine != null)
                         StopCoroutine(currentWaveSpawnCoroutine);
 
+                    foreach (var routine in runningGroupRoutines)
+                    {
+                        if (routine != null) StopCoroutine(routine);
+                    }
+                    runningGroupRoutines.Clear();
                     activeSpawnerCount = 0;
-
                     ClearAllEnemies();
-
                     break;
                 }
 
@@ -136,8 +162,8 @@ public class WaveManager : MonoSingleton<WaveManager>
         {
             var currentGroup = wave.groups[i];
 
-            // 启动当前组的刷怪协程
             Coroutine groupRoutine = StartCoroutine(SpawnGroupRoutine(currentGroup));
+            runningGroupRoutines.Add(groupRoutine);
 
             // 检查下一组是否是并行
             bool nextIsParallel = false;
@@ -165,7 +191,6 @@ public class WaveManager : MonoSingleton<WaveManager>
         for (int i = 0; i < group.count; i++)
         {
             SpawnEnemy(group.enemyPrefab, group.direction);
-            totalEnemiesAlive++;
             yield return new WaitForSeconds(group.spawnRate);
         }
 
@@ -225,10 +250,27 @@ public class WaveManager : MonoSingleton<WaveManager>
 
     private void ClearAllEnemies()
     {
-        var enemies = FindObjectsOfType<EnemyBase>();
-        foreach (var enemy in enemies)
+        List<EnemyBase> enemiesToClear = new List<EnemyBase>(activeEnemies);
+        foreach (var enemy in enemiesToClear)
         {
-            enemy.TakeDamage(99999);
+            if (enemy != null && enemy.gameObject.activeInHierarchy)
+                enemy.TakeDamage(99999);
+        }
+    }
+
+    public void RegisterEnemy(EnemyBase enemy)
+    {
+        if (!activeEnemies.Contains(enemy))
+        {
+            activeEnemies.Add(enemy);
+        }
+    }
+
+    public void UnregisterEnemy(EnemyBase enemy)
+    {
+        if (activeEnemies.Contains(enemy))
+        {
+            activeEnemies.Remove(enemy);
         }
     }
 

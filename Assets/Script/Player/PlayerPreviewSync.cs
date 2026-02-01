@@ -73,6 +73,7 @@ public class PlayerPreviewSync : MonoBehaviour
         var controller = obj.GetComponent<PlayerController>();
         if (controller)
         {
+            controller.isPreview = true;
             controller.enabled = false; // 禁止它响应输入
         }
 

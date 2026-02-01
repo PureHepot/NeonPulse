@@ -110,7 +110,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ffee10e459d96af46b413a0a0f501eb3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHp: 6
+  maxHp: 10
   moveSpeed: 3
   scoreValue: 10
   contactDamage: 1
@@ -123,6 +123,7 @@ MonoBehaviour:
   canKnockback: 1
   knockbackForce: 8
   knockbackTorque: 20
+  currentHp: 0
   chaseSpeed: 3
   keepDistance: 4
   followSmooth: 6

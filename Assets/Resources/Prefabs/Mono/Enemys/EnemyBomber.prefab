@@ -194,10 +194,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHp: 4
-  moveSpeed: 2
+  moveSpeed: 2.5
   scoreValue: 10
   contactDamage: 1
-  enemyExp: 100
+  enemyExp: 130
   bodyRenderer: {fileID: 0}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hitColor: {r: 1, g: 0, b: 0, a: 1}
@@ -206,12 +206,13 @@ MonoBehaviour:
   canKnockback: 1
   knockbackForce: 8
   knockbackTorque: 20
-  detectRadius: 1
+  currentHp: 0
+  detectRadius: 2
   playerLayer:
     serializedVersion: 2
     m_Bits: 64
-  warningTime: 0.5
-  explodeRadius: 2
+  warningTime: 0.3
+  explodeRadius: 1.2
   explodeDamage: 2
   blinkSpeed: 15
   explodeFxPrefab: {fileID: 2433282508537954060, guid: 3ef3ae421f71c5c4e97fe12dc2fc6312, type: 3}

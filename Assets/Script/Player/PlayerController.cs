@@ -11,6 +11,9 @@ public class PlayerController : MonoBehaviour
     public PlayerModuleManager Modules { get; private set; }
     public SpriteRenderer BodyRenderer { get; private set; }
 
+    public bool isPreview = false;
+
+
     //硬直状态
     public bool IsStunned { get; set; } = false;
     //冲刺状态

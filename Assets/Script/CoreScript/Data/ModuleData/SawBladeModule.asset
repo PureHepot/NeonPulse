@@ -25,22 +25,19 @@ MonoBehaviour:
   statUpgrades:
   - statType: 25
     valuePerUpgrade: 1
-    pointCost: 1
-    pointCosts: 0200000002000000030000000300000004000000
+    pointCost: 4
     maxStacks: 5
     upgradeName: "\u5200\u7247\u57FA\u7840\u4F24\u5BB3"
     description: "\u957F\u6309\u9F20\u6807\u84C4\u529B\uFF0C\u6EE1\u84C4\u4F24\u5BB3\u6700\u9AD8"
   - statType: 26
     valuePerUpgrade: -0.2
     pointCost: 2
-    pointCosts: 0200000002000000030000000300000004000000
     maxStacks: 5
     upgradeName: "\u5200\u7247\u84C4\u529B\u901F\u5EA6"
     description: "\u5347\u7EA7\u53EF\u4EE5\u589E\u52A0\u84C4\u529B\u901F\u5EA6"
   - statType: 27
     valuePerUpgrade: 1
-    pointCost: 2
-    pointCosts: 0200000002000000030000000300000004000000
+    pointCost: 4
     maxStacks: 5
     upgradeName: "\u653B\u51FB\u6BB5\u6570"
     description: "\u589E\u52A0\u653B\u51FB\u6BB5\u6570"

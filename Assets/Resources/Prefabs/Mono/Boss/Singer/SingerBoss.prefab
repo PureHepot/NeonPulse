@@ -141,7 +141,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8afae4b9a88ab99449b248a8a973e09a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHp: 16
+  maxHp: 300
   moveSpeed: 5
   scoreValue: 10
   contactDamage: 1
@@ -154,6 +154,7 @@ MonoBehaviour:
   canKnockback: 0
   knockbackForce: 8
   knockbackTorque: 20
+  currentHp: 0
   idleForm: {fileID: 2132828519146659970}
   battleForm: {fileID: 8517335042319104078}
   faceAngry: {fileID: 5154460770484023162}
@@ -175,8 +176,8 @@ MonoBehaviour:
   faceHoverAmplitude: 0.3
   faceHoverSpeed: 1
   redBulletPrefab: {fileID: 9117579508844990411, guid: 0a72b1a97123c5b46b95d93aaabbf510, type: 3}
-  p1AttackInterval: 3.5
-  roundsPerAttack: 10
+  p1AttackInterval: 4
+  roundsPerAttack: 12
   pointStaggerDelay: 0.1
   showerSpreadAngle: 80
   bulletSpeedRange: {x: 2, y: 4}
@@ -695,7 +696,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7712dfcc041935c48a29a59c6e38d5a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  partMaxHp: 50
+  partMaxHp: 300
   passDamageToBoss: 1
   explosionPrefab: {fileID: 0}
   partRenderer: {fileID: 0}

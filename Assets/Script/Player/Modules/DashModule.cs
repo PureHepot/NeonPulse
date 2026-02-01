@@ -46,7 +46,7 @@ public class DashModule : PlayerModule
 
     public override void OnModuleUpdate()
     {
-        if (player.IsDead || player.IsStunned || player.IsDashing) return;
+        if (player == null || player.IsDead || player.IsStunned || player.IsDashing || player.isPreview) return;
 
         if (InputManager.Instance.Space() && IsReady())
         {

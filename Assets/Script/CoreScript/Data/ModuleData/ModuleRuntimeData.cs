@@ -50,6 +50,16 @@ public class ModuleRuntimeData
         return true;
     }
 
+    public bool IsMaxLevel(StatType type)
+    {
+        var def = config.GetUpgradeDefinition(type);
+        if (def.maxStacks != -1 && upgradeCounts[type] >= def.maxStacks)
+        {
+            return true;
+        }
+        return false;
+    }
+
     /// <summary>
     /// 获取当前最终值
     /// </summary>

@@ -135,7 +135,7 @@ MonoBehaviour:
   moveSpeed: 3
   scoreValue: 10
   contactDamage: 1
-  enemyExp: 100
+  enemyExp: 50
   bodyRenderer: {fileID: 0}
   normalColor: {r: 3.962264, g: 2.5473373, b: 0, a: 1}
   hitColor: {r: 0.9433962, g: 0.9433962, b: 0.9433962, a: 1}
@@ -144,6 +144,7 @@ MonoBehaviour:
   canKnockback: 1
   knockbackForce: 8
   knockbackTorque: 20
+  currentHp: 0
   rotateSpeed: 200
   waveFrequency: 2
   waveMagnitude: 2

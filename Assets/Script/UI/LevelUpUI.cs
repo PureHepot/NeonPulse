@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.U2D.IK;
 using UnityEngine.UI;
 
 public class LevelUpUI : UIBase
@@ -65,6 +66,8 @@ public class LevelUpUI : UIBase
                 detailItem.Find("LevelNum").GetComponent<Text>().text = currentLevel.ToString();
                 string description = UpgradeManager.Instance.GetConfig(modules[i].moduleType).GetDescription(statType);
                 detailItem.Find("Description").GetComponent<Text>().text = description;
+                detailItem.Find("CostPoint").GetComponent<Text>().text =
+                    UpgradeManager.Instance.GetCost(modules[i].moduleType, statType).ToString();
                 detailItem.Find("DesBg").GetComponent<Image>().color = moduleColor * 0.8f;
                 detailItem.Find("UpgradeBtn").GetComponent<Image>().color = moduleColor * 0.8f;
                 detailItem.Find("UpgradeBtn").GetComponent<Button>().onClick.SetListener(() =>

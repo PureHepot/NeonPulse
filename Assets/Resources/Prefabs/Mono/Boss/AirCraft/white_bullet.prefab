@@ -164,6 +164,10 @@ MonoBehaviour:
   speed: 15
   damage: 1
   lifeTime: 3
-  obstacleLayer:
+  hitLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
+  enableReflection: 0
+  maxBounces: 2
+  reflectionTag: Reflector
+  reflectionHomingBias: 0.3

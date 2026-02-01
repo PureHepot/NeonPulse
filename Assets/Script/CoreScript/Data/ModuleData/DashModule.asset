@@ -19,19 +19,17 @@ MonoBehaviour:
     value: 2
   - type: 17
     value: 20
-  unlockLevel: 3
+  unlockLevel: 1
   statUpgrades:
   - statType: 16
-    valuePerUpgrade: -0.1
-    pointCost: 1
-    pointCosts: 0200000002000000020000000300000003000000
-    maxStacks: 5
+    valuePerUpgrade: -0.2
+    pointCost: 2
+    maxStacks: 8
     upgradeName: "\u7A81\u8FDB\u51B7\u5374"
     description: "\u51CF\u5C11\u7A81\u8FDB\u51B7\u5374"
   - statType: 17
     valuePerUpgrade: 10
-    pointCost: 1
-    pointCosts: 000000000000000000000000
+    pointCost: 3
     maxStacks: 3
     upgradeName: "\u95EA\u907F\u8DDD\u79BB"
     description: "\u589E\u52A0\u95EA\u907F\u7684\u8DDD\u79BB"

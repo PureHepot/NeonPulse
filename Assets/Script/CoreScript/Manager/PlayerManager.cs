@@ -63,10 +63,7 @@ public class PlayerManager : MonoSingleton<PlayerManager>
 
         Debug.Log("<color=green>Player Generated</color>");
 
-        this.PlayerPreview = GameObject.Find("PlayerModelCamera").GetComponent<PlayerPreview>();
-
         UpgradeManager.Instance.ApplyModulesToPlayer();
-        //UpgradeManager.Instance.ApplyModulesToPlayer(this.PlayerPreview.CurrentModel.GetComponent<PlayerModuleManager>());
 
         CurrentModules.Initialize?.Invoke();
 

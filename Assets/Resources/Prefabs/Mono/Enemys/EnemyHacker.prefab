@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7411415424301511421}
   - component: {fileID: 5152580488460564296}
   - component: {fileID: 2899752964709179989}
-  m_Layer: 3
+  m_Layer: 12
   m_Name: DisturbRange
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -199,7 +199,7 @@ MonoBehaviour:
   moveSpeed: 2
   scoreValue: 10
   contactDamage: 1
-  enemyExp: 100
+  enemyExp: 120
   bodyRenderer: {fileID: 0}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hitColor: {r: 1, g: 0, b: 0, a: 1}
@@ -208,6 +208,7 @@ MonoBehaviour:
   canKnockback: 1
   knockbackForce: 8
   knockbackTorque: 20
+  currentHp: 0
   keepDistance: 1
   adjustSpeed: 1
   waveFrequency: 1.5

@@ -166,6 +166,14 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
     //注意，判定成功后会直接扣费  
     public bool CanUpgrade(ModuleType moduleType, StatType statType)
     {
+        if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
+        {
+            if(data.IsStatMaxed(statType))
+            {
+                return false;
+            }   
+        }
+
         return ConsumeUpgradePoint(GetCost(moduleType, statType));
     }
 

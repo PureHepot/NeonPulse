@@ -42,16 +42,21 @@ public class SawBladeModule : PlayerModule
     private Vector3 dashDirection;
     private float currentDashSpeed;
 
-    // 记录冲刺期间碰到的敌人 (去重)
-    private HashSet<EnemyBase> hitTargets = new HashSet<EnemyBase>();
+    private HashSet<Collider2D> hitTargets = new HashSet<Collider2D>();
 
     private HealthModule healthModule;
+
+    private int playerLayerID;
+    private int enemyLayerID;
 
     public override void Initialize(PlayerController _player)
     {
         base.Initialize(_player);
 
         healthModule = _player.Modules.GetModule<HealthModule>(ModuleType.Health);
+
+        playerLayerID = LayerMask.NameToLayer("Player");
+        enemyLayerID = LayerMask.NameToLayer("Enemy");
 
         if (bladeVisual)
         {
@@ -72,7 +77,7 @@ public class SawBladeModule : PlayerModule
 
     public override void OnModuleUpdate()
     {
-        if (player.IsDead) return;
+        if (player == null || player.IsDead || player.isPreview) return;
 
         // 只要不是 Idle，刀片都在转
         if (currentState != State.Idle && bladeVisual)
@@ -142,8 +147,6 @@ public class SawBladeModule : PlayerModule
                 bladeVisual.DOKill(true); // 杀掉之前的动画
                 bladeVisual.localScale = Vector3.one * targetScale;
                 bladeVisual.DOPunchScale(Vector3.one * 0.4f, 0.3f, 10, 1);
-                // 这里可以播放 "ChargeUp" 音效
-                // AudioManager.Instance.PlayEffect("ChargeUp");
             }
         }
 
@@ -209,6 +212,8 @@ public class SawBladeModule : PlayerModule
         if (healthModule) healthModule.IsInvincible = true;
         if (dashTrail) dashTrail.emitting = true;
 
+        Physics2D.IgnoreLayerCollision(playerLayerID, enemyLayerID, true);
+
         CameraManager.Instance.Shake("Blade");
 
         StartCoroutine(DashRoutine());
@@ -222,18 +227,30 @@ public class SawBladeModule : PlayerModule
         EndDash();
     }
 
+    float GetCurrentStageScale()
+    {
+        switch (currentStage)
+        {
+            case 3: return scaleStage3;
+            case 2: return scaleStage2;
+            case 1: return scaleStage1;
+            default: return scaleStage1 * 0.5f;
+        }
+    }
+
     void DetectEnemies()
     {
-        // 判定范围比视觉稍大
-        float detectRadius = (bladeVisual ? bladeVisual.localScale.x : 1f) * attackRadius * 0.5f * attackRadiusRatio;
+        float currentScale = GetCurrentStageScale();
+
+        float detectRadius = currentScale * attackRadius * attackRadiusRatio;
 
         Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, detectRadius, enemyLayer);
         foreach (var hit in hits)
         {
-            EnemyBase enemy = hit.GetComponent<EnemyBase>();
-            if (enemy != null && !enemy.IsDead())
+            IDamageable damageable = hit.GetComponent<IDamageable>();
+            if (damageable != null)
             {
-                hitTargets.Add(enemy);
+                hitTargets.Add(hit);
             }
         }
     }
@@ -244,7 +261,7 @@ public class SawBladeModule : PlayerModule
         if (healthModule) healthModule.IsInvincible = false;
         if (dashTrail) dashTrail.emitting = false;
 
-        // 保留一点惯性
+        Physics2D.IgnoreLayerCollision(playerLayerID, enemyLayerID, false);
         player.Rigid2d.velocity = dashDirection * (currentDashSpeed * 0.2f);
 
         // 进入结算阶段
@@ -255,38 +272,50 @@ public class SawBladeModule : PlayerModule
     {
         currentState = State.Settling;
 
-        // 复制一份列表，防止协程执行时 modify
-        List<EnemyBase> targets = new List<EnemyBase>(hitTargets);
+        // 复制列表防止修改
+        List<Collider2D> targets = new List<Collider2D>(hitTargets);
 
-        // 计算最终参数
         int finalDamage = Mathf.RoundToInt(baseDamage * currentStage);
         float finalKnockback = knockbackForce * currentStage;
 
-        // 多段攻击循环
         for (int i = 0; i < hitCount; i++)
         {
             bool isLastHit = (i == hitCount - 1);
 
-            foreach (var enemy in targets)
+            foreach (var col in targets)
             {
-                if (enemy == null || enemy.gameObject == null) continue; // 敌人可能已经死了
+                // 判空 (可能怪已经死了被 Destroy 了)
+                if (col == null || col.gameObject == null) continue;
 
-                // 只有最后一击才带强力击退
-                float force = isLastHit ? finalKnockback : 0f;
-                // 击退方向：从玩家推向敌人
-                Vector3 dir = (enemy.transform.position - player.transform.position).normalized;
+                // 计算击退方向
+                Vector3 dir = (col.transform.position - player.transform.position).normalized;
 
-                // 调用我们在 EnemyBase 新加的重载方法
-                enemy.TakeDamage(finalDamage, enemy.transform.position, dir, force);
+                // 【修改 6】伤害类型分流处理
+                EnemyBase enemy = col.GetComponent<EnemyBase>();
 
-                // 每一击都震一点屏，增加打击感
+                if (enemy != null)
+                {
+                    // A. 如果是 EnemyBase (小怪/本体)，使用带击退的高级伤害
+                    float force = isLastHit ? finalKnockback : 0f;
+                    enemy.TakeDamage(finalDamage, col.transform.position, dir, force);
+                }
+                else
+                {
+                    // B. 如果只是 IDamageable (比如 BossPart)，使用普通伤害接口
+                    IDamageable part = col.GetComponent<IDamageable>();
+                    if (part != null)
+                    {
+                        // 普通受击（通常 Boss 部位不吃物理击退）
+                        part.TakeDamage(finalDamage, col.transform.position, dir);
+                    }
+                }
+
                 if (i > 0) CameraManager.Instance.Shake("BladeLight");
             }
 
             yield return new WaitForSeconds(hitInterval);
         }
 
-        // 结算完毕，检查输入进行连招
         CheckInputAndReset();
     }
 
@@ -322,6 +351,7 @@ public class SawBladeModule : PlayerModule
         base.OnDeactivate();
         if (healthModule) healthModule.IsInvincible = false;
         if (bladeVisual) bladeVisual.gameObject.SetActive(false);
+        Physics2D.IgnoreLayerCollision(playerLayerID, enemyLayerID, false);
     }
 
     public override void UpgradeModule(ModuleType moduleType, StatType statType)
@@ -341,14 +371,53 @@ public class SawBladeModule : PlayerModule
 
         maxDashSpeed = UpgradeManager.Instance.GetStat(ModuleType.Movement, StatType.MoveSpeed) + 5f;
     }
+
+    private void OnDrawGizmosSelected()
+    {
+        // 如果判定参数还没设置，就不画
+        if (attackRadius <= 0) return;
+
+        Vector3 center = transform.position;
+
+        // 1. 绘制基础参考圆 (白色) - 这是 attackRadius 的原始大小
+        // Gizmos.color = new Color(1, 1, 1, 0.2f);
+        // Gizmos.DrawWireSphere(center, attackRadius);
+
+        // 2. 预计算各个阶段的实际判定半径
+        // 公式必须与 DetectEnemies 保持完全一致: scale * attackRadius * attackRadiusRatio
+        float r1 = scaleStage1 * attackRadius * attackRadiusRatio;
+        float r2 = scaleStage2 * attackRadius * attackRadiusRatio;
+        float r3 = scaleStage3 * attackRadius * attackRadiusRatio;
+
+        // 3. 绘制 Stage 1 (绿色 - 最小判定)
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(center, r1);
+
+        // 4. 绘制 Stage 2 (黄色 - 中等判定)
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(center, r2);
+
+        // 5. 绘制 Stage 3 (红色 - 最大判定)
+        Gizmos.color = new Color(1f, 0.3f, 0.3f); // 浅红
+        Gizmos.DrawWireSphere(center, r3);
+
+        // 6. [运行时] 绘制当前生效的判定范围
+        if (Application.isPlaying)
+        {
+            float currentR = GetCurrentStageScale() * attackRadius * attackRadiusRatio;
+            Gizmos.color = Color.cyan;
+
+            // 稍微画粗一点 (多画几圈)
+            Gizmos.DrawWireSphere(center, currentR);
+            Gizmos.DrawWireSphere(center, currentR * 0.99f);
+        }
+    }
 }
 
 public static class EnemyExtensions
 {
     public static bool IsDead(this EnemyBase enemy)
     {
-        // 根据你的 EnemyBase 逻辑判断，这里假设 currentHp > 0
-        // 或者 EnemyBase 应该公开一个 IsDead 属性
         return enemy == null || !enemy.gameObject.activeSelf;
     }
 }

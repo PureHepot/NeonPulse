@@ -34,6 +34,7 @@ public abstract class PlayerModule : MonoBehaviour
     public virtual void OnModuleUpdate()
     {
         // 子类重写此方法来实现每帧逻辑
+        
     }
 
     public virtual void OnActivate()

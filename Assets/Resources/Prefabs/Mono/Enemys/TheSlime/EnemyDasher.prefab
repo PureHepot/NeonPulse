@@ -51,7 +51,7 @@ MonoBehaviour:
   moveSpeed: 0.5
   scoreValue: 10
   contactDamage: 1
-  enemyExp: 100
+  enemyExp: 50
   bodyRenderer: {fileID: 0}
   normalColor: {r: 0, g: 0.7490197, b: 0, a: 1}
   hitColor: {r: 1, g: 1, b: 1, a: 1}
@@ -60,6 +60,7 @@ MonoBehaviour:
   canKnockback: 1
   knockbackForce: 8
   knockbackTorque: 20
+  currentHp: 0
   orbitDistance: 5
   distanceCorrectionSpeed: 2
   dashInterval: 3

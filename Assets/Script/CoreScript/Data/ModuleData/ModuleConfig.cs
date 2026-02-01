@@ -52,6 +52,8 @@ public enum StatType
     BladeChargeTime,
     BladeHitCount,
 
+    InvinciDuration,
+
 
     //诸如此类
 }

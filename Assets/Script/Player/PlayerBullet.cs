@@ -8,13 +8,16 @@ public class PlayerBullet : MonoBehaviour, IPoolable
     public float speed = 20f;
     public int damage = 2;
     public float lifeTime = 2f;
-
+    public LayerMask hitLayer;
     private float timer;
+
+    private float moveDistance;
 
     public void OnSpawn()
     {
         timer = 0f;
         GetComponent<TrailRenderer>()?.Clear();
+        transform.SetPositionZ(1f);
     }
 
     public void OnDespawn()
@@ -24,7 +27,19 @@ public class PlayerBullet : MonoBehaviour, IPoolable
 
     void Update()
     {
-        transform.Translate(Vector3.right * speed * Time.deltaTime);
+        moveDistance = speed * Time.deltaTime;
+
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, transform.right, moveDistance, hitLayer);
+
+        if (hit.collider != null)
+        {
+            OnHitObject(hit.collider, hit.point, hit.normal);
+        }
+        else
+        {
+            transform.Translate(Vector3.right * moveDistance);
+        }
+
 
         timer += Time.deltaTime;
         if (timer >= lifeTime)
@@ -33,21 +48,15 @@ public class PlayerBullet : MonoBehaviour, IPoolable
         }
     }
 
-    void OnTriggerEnter2D(Collider2D other)
+    void OnHitObject(Collider2D other, Vector2 hitPoint, Vector2 hitNormal)
     {
-        if (other.CompareTag("Enemy"))
+        IDamageable target = other.GetComponent<IDamageable>();
+
+        if (target != null)
         {
-            IDamageable target = other.GetComponent<IDamageable>();
-            if (target != null)
-            {
-                Vector3 hitPoint = other.ClosestPoint(transform.position);
-
-                Vector3 hitNormal = transform.right;
-
-                target.TakeDamage(damage, hitPoint, hitNormal);
-
-                ObjectPoolManager.Instance.Return(this.gameObject);
-            }
+            target.TakeDamage(damage, hitPoint, transform.right);
+            ObjectPoolManager.Instance.Return(this.gameObject);
         }
     }
+
 }

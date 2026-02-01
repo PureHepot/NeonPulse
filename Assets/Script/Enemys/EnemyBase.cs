@@ -25,7 +25,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     public float knockbackForce = 8f;
     public float knockbackTorque = 20f;
 
-    protected float currentHp;
+    public float currentHp;
     protected Rigidbody2D rb;
     protected Transform playerTransform;
     protected bool isDead = false;
@@ -49,6 +49,11 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         if (playerObj != null) playerTransform = playerObj.transform;
 
         rb.simulated = true;
+
+        if (WaveManager.Instance != null)
+        {
+            WaveManager.Instance.RegisterEnemy(this);
+        }
     }
 
     public virtual void OnDespawn()
@@ -58,6 +63,11 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         if (bodyRenderer != null) bodyRenderer.DOKill();
 
         rb.velocity = Vector2.zero;
+
+        if (WaveManager.Instance != null)
+        {
+            WaveManager.Instance.UnregisterEnemy(this);
+        }
     }
 
     private void FixedUpdate()
@@ -132,7 +142,10 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
             UpgradeManager.Instance.AddExperience(enemyExp);
         }
 
-        WaveManager.Instance.RegisterEnemyDeath();
+        if (WaveManager.Instance != null)
+        {
+            WaveManager.Instance.UnregisterEnemy(this);
+        }
         ObjectPoolManager.Instance.Return(this.gameObject);
     }
 

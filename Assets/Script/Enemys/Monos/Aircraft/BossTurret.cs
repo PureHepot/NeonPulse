@@ -7,57 +7,66 @@ using UnityEngine;
 public class BossTurret : MonoBehaviour
 {
     [Header("References")]
-    [Tooltip("ÍÏÈë¹ÒÔØÁË EnemyProjectile µÄ×Óµ¯Ô¤ÖÆ¼ş")]
     public GameObject bulletPrefab;
-
-    [Tooltip("ÍÏÈë towerPoint (×Óµ¯Éú³Éµã)")]
     public Transform firePoint;
 
-    [Header("Fire Settings")]
-    [Tooltip("Á½²¨µ¯Ä»Ö®¼äµÄ´ó¼ä¸ô (Ãë)")]
-    public float fireInterval = 3.0f;
+    [Header("Standard Fire Settings")]
+    public float fireInterval = 3.0f;//å°„å‡»é—´éš”
+    public int burstCount = 10;//å­å¼¹æ•°é‡
+    public float burstRate = 0.1f;//è¿ç»­å°„å‡»çš„æœ€å°æ—¶é—´
 
-    [Tooltip("Ê×´ÎÉä»÷ÑÓ³Ù (Ãë)")]
-    public float startDelay = 1.0f;
+    [Header("Wild Mode Settings")]
+    public float wildFireRate = 0.1f;
+    public float wildSpreadRadius = 3.0f;
 
-    [Header("Burst Settings (×Óµ¯Á´)")]
-    [Tooltip("Ã¿´ÎÁ¬Éä·¢ÉäµÄ×Óµ¯ÊıÁ¿")]
-    public int burstCount = 10;
+    private bool isWildMode = false;
+    private Coroutine currentRoutine;
 
-    [Tooltip("Á¬ÉäÊ±ÏàÁÚ×Óµ¯µÄÎ¢Ğ¡¼ä¸ô (Ãë)£¬Ô½Ğ¡Á¬µÃÔ½½ô")]
-    public float burstRate = 0.1f;
 
-    // ÄÚ²¿±äÁ¿
+    // å†…éƒ¨å˜é‡
     private float timer;
-    private bool isShooting = false; // ·ÀÖ¹ÔÚ´ó¼ä¸ôµ¹¼ÆÊ±ÖĞÖØ¸´´¥·¢
+    private bool isShooting = false; // é˜²æ­¢åœ¨å¤§é—´éš”å€’è®¡æ—¶ä¸­é‡å¤è§¦å‘
 
-    private void Start()
+    public void FireBurst()
     {
-        timer = startDelay;
+        if (!gameObject.activeInHierarchy || isWildMode) return;
+        if (currentRoutine != null) StopCoroutine(currentRoutine);
+        currentRoutine = StartCoroutine(ShootBurstRoutine());
     }
 
-    private void Update()
+    public void SetWildMode(bool active)
     {
-        // 1. ¼ì²éÍæ¼ÒÊÇ·ñ´æÔÚÇÒ´æ»î
-        if (PlayerManager.Instance == null || !PlayerManager.Instance.IsPlayerAlive)
-            return;
+        if (!gameObject.activeInHierarchy) return;
+        isWildMode = active;
 
-        // 2. Èç¹ûÕıÔÚÁ¬ÉäÖĞ£¬ÔİÍ£´ó¼ä¸ôµ¹¼ÆÊ±
-        if (isShooting) return;
+        if (currentRoutine != null) StopCoroutine(currentRoutine);
 
-        // 3. µ¹¼ÆÊ±Âß¼­
-        timer -= Time.deltaTime;
-
-        if (timer <= 0f)
+        if (isWildMode)
         {
-            // Æô¶¯Á¬ÉäĞ­³Ì
-            StartCoroutine(ShootBurstRoutine());
-            timer = fireInterval;
+            currentRoutine = StartCoroutine(WildFireRoutine());
+        }
+    }
+
+
+    IEnumerator WildFireRoutine()
+    {
+        while (true)
+        {
+            if (PlayerManager.Instance != null && PlayerManager.Instance.IsPlayerAlive)
+            {
+                // åœ¨ç©å®¶å‘¨å›´éšæœºé€‰ç‚¹
+                Vector3 targetPos = PlayerManager.Instance.PlayerPosition;
+                Vector2 randomOffset = Random.insideUnitCircle * wildSpreadRadius;
+                targetPos += (Vector3)randomOffset;
+
+                FireBullet(targetPos);
+            }
+            yield return new WaitForSeconds(wildFireRate); // æå¿«å°„é€Ÿ
         }
     }
 
     /// <summary>
-    /// Á¬ÉäĞ­³Ì£ºÏñ»úÇ¹Ò»ÑùÍ»Í»Í»
+    /// è¿å°„åç¨‹ï¼šåƒæœºæªä¸€æ ·çªçªçª
     /// </summary>
     IEnumerator ShootBurstRoutine()
     {
@@ -65,39 +74,21 @@ public class BossTurret : MonoBehaviour
 
         for (int i = 0; i < burstCount; i++)
         {
-            // ÔÚÁ¬Éä¹ı³ÌÖĞ£¬ÔÙ´Î¼ì²éÍæ¼ÒÊÇ·ñ´æ»î£¨·ÀÖ¹Íæ¼ÒËÀºó±ŞÊ¬£©
             if (PlayerManager.Instance != null && PlayerManager.Instance.IsPlayerAlive)
             {
-                FireOneBullet();
+                FireBullet(PlayerManager.Instance.PlayerPosition);
             }
-
-            // µÈ´ı¼«¶ÌµÄÊ±¼ä£¬ĞÎ³ÉÁ´Ìõ¸Ğ
             yield return new WaitForSeconds(burstRate);
         }
 
         isShooting = false;
     }
 
-    private void FireOneBullet()
+    private void FireBullet(Vector3 targetPos)
     {
         if (bulletPrefab == null || firePoint == null) return;
-
-        // »ñÈ¡Íæ¼Òµ±Ç°Î»ÖÃ
-        // ×¢Òâ£ºÃ¿´Î·¢Éä¶¼ÖØĞÂ»ñÈ¡Î»ÖÃ£¬ÕâÑù×Óµ¯Á´»á¡°É¨Éä¡±¸úËæÍæ¼Ò
-        // Èç¹ûÏë×ö¡°ËÀ°åµÄÒ»ÌõÏß¡±£¬¾Í°ÑÕâĞĞ´úÂëÒÆµ½ for Ñ­»·ÍâÃæÈ¥
-        Vector3 targetPos = PlayerManager.Instance.PlayerPosition;
-
-        // ¼ÆËã·½Ïò
         Vector2 direction = (targetPos - firePoint.position).normalized;
-
-        // Éú³É×Óµ¯
-        GameObject bulletObj = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
-
-        // ³õÊ¼»¯×Óµ¯
-        EnemyProjectile projectile = bulletObj.GetComponent<EnemyProjectile>();
-        if (projectile != null)
-        {
-            projectile.Initialize(direction);
-        }
+        GameObject bulletObj = ObjectPoolManager.Instance.Get(bulletPrefab, firePoint.position, Quaternion.identity);
+        bulletObj.GetComponent<EnemyProjectile>()?.Initialize(direction);
     }
 }

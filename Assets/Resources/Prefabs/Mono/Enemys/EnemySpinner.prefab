@@ -74,11 +74,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e415213b11e14a348b5b56f586691d15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHp: 4
+  maxHp: 10
   moveSpeed: 3
   scoreValue: 10
   contactDamage: 2
-  enemyExp: 100
+  enemyExp: 150
   bodyRenderer: {fileID: 0}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
   hitColor: {r: 1, g: 0, b: 0, a: 1}
@@ -87,8 +87,13 @@ MonoBehaviour:
   canKnockback: 1
   knockbackForce: 8
   knockbackTorque: 20
+  currentHp: 0
   rotateSpeed: 360
   followSmooth: 6
+  separationDistance: 1.5
+  separationStrength: 2
+  waveFrequency: 2
+  waveMagnitude: 0.5
 --- !u!58 &5350510307176217691
 CircleCollider2D:
   m_ObjectHideFlags: 0

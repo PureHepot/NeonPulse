@@ -109,11 +109,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8785c996bfcc78c4a8d3b5d688f87f3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHp: 6
+  maxHp: 10
   moveSpeed: 5
   scoreValue: 10
   contactDamage: 1
-  enemyExp: 100
+  enemyExp: 120
   bodyRenderer: {fileID: 0}
   normalColor: {r: 0.8867924, g: 0, b: 0.8153662, a: 1}
   hitColor: {r: 1, g: 0, b: 0, a: 1}
@@ -122,7 +122,8 @@ MonoBehaviour:
   canKnockback: 1
   knockbackForce: 8
   knockbackTorque: 20
-  summonPrefab: {fileID: 5687499291434305790, guid: 706a79fa4b565b747bd409464879a084, type: 3}
+  currentHp: 0
+  summonPrefab: {fileID: 2559620815044795701, guid: 0565c5dd0e594194c936a8e3a1a62198, type: 3}
   summonCD: 5
   maxSummonCount: 4
   enemyScale: {x: 0.8, y: 0.8, z: 1}
