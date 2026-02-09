@@ -131,8 +131,8 @@ public class BossPhase4State : SingerBossBaseState
 
     void SpawnLoudspeakers()
     {
-        Vector3 leftPos = new Vector3(-7, 4, 0);
-        Vector3 rightPos = new Vector3(7, 4, 0);
+        Vector3 leftPos = new Vector3(-8.3f, 4, 0);
+        Vector3 rightPos = new Vector3(8.3f, 4, 0);
         if (boss.loudspeakerLeftPrefab) p4SpeakerLeft = Object.Instantiate(boss.loudspeakerLeftPrefab, leftPos, Quaternion.identity);
         if (boss.loudspeakerRightPrefab) p4SpeakerRight = Object.Instantiate(boss.loudspeakerRightPrefab, rightPos, Quaternion.identity);
     }

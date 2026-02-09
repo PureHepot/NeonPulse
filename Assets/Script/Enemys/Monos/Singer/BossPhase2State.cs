@@ -4,198 +4,126 @@ using UnityEngine;
 
 public class BossPhase2State : SingerBossBaseState
 {
+    private enum SubState { LaserAttack, BarrageAndDisturb }
+    private SubState currentSubState;
+    private float stateTimer;
+
     private GameObject activeLevelHair;
     private GameObject activeVerticalHair;
-
-    // 大阶段控制
-    private enum StageState { Entering, Looping, Exiting }
-    private StageState currentStage;
-    private float stageTimer;
-
-    // 攻击循环控制 (在 Looping 阶段使用)
-    private enum AttackCycle { Teleporting, Stabilizing, Firing, Recovering }
-    private AttackCycle currentCycle;
-    private float cycleTimer;
+    private float laserCycleTimer;
+    private bool laserFiring = false;
+    private float barrageTimer;
 
     public BossPhase2State(BossSinger boss) : base(boss) { }
 
     public override void Enter()
     {
         base.Enter();
-        Debug.Log(">>> 进入 Phase 2流程");
+        Debug.Log(">>> 进入 Phase 2: 激光起手 (无敌) -> 弹幕+干扰 (可受伤)");
 
-        // 1. 隐藏 P1 部件
         boss.SetPhase1PartsActive(false);
-
-        // 2. 清理全屏弹幕
         boss.ClearAllBullets();
 
-        // 3. 进入 "Entering" 缓冲阶段
-        currentStage = StageState.Entering;
-        stageTimer = boss.p2EnterDelay; // 等待缓冲时间
+        currentSubState = SubState.LaserAttack;
+        stateTimer = boss.p2LaserDuration;
+
+        SpawnHairs();
+        laserCycleTimer = 0f;
     }
 
     public override void Update()
     {
         base.Update();
 
-        switch (currentStage)
+        // 如果 Boss 正在转场，停止逻辑
+        if (boss.isTransitioning) return;
+
+        // 判定转阶段: Total - P1 - P2
+        if (!boss.hasFinishedPhase3)
         {
-            // === 阶段 A: 进场缓冲 ===
-            case StageState.Entering:
-                stageTimer -= Time.deltaTime;
-                if (stageTimer <= 0)
-                {
-                    // 缓冲结束，生成头发，开始攻击循环
-                    SpawnHairs();
-                    StartTeleport(); // 第一次瞬移
+            float p2Threshold = boss.MaxTotalHp - boss.hpPhase1 - boss.hpPhase2;
 
-                    currentStage = StageState.Looping;
+            if (boss.CurrentTotalHp <= p2Threshold)
+            {
+                Debug.Log($">>> P2 结束 (TotalHP: {boss.CurrentTotalHp}) -> 转 P3");
 
-                    // 【修正点】使用 p2TotalDuration (之前报错是因为写成了 p2AttackDuration)
-                    stageTimer = boss.p2TotalDuration;
-                }
-                break;
+                // 【核心修复】在触发转场特效前，立即强制回正屏幕！
+                // 防止在白屏震动期间屏幕保持颠倒，导致观感错误或逻辑卡死
+                boss.StopScreenDisturb();
 
-            // === 阶段 B: 攻击循环 ===
-            case StageState.Looping:
-                // 1. 检查总时间
-                stageTimer -= Time.deltaTime;
-                if (stageTimer <= 0)
-                {
-                    // 时间到，进入退场阶段
-                    PrepareExit();
-                    return;
-                }
-
-                // 2. 执行瞬移射击循环
-                UpdateAttackCycle();
-                break;
-
-            // === 阶段 C: 退场缓冲 ===
-            case StageState.Exiting:
-                stageTimer -= Time.deltaTime;
-                if (stageTimer <= 0)
-                {
-                    // 彻底结束
-                    CleanUpHairs();
-                    boss.hasFinishedPhase2 = true;
-
-                    // P2 结束，回到 P1 时，开启屏幕干扰！
-                    boss.StartScreenDisturb();
-
-                    boss.TransitionToState(boss.Phase1);
-                }
-                break;
+                boss.TriggerPhaseTransition(boss.Phase3);
+                return;
+            }
         }
-    }
 
-    // --- 攻击循环逻辑 ---
-    void UpdateAttackCycle()
-    {
-        cycleTimer -= Time.deltaTime;
-
-        switch (currentCycle)
+        if (currentSubState == SubState.LaserAttack)
         {
-            case AttackCycle.Teleporting:
-                // 瞬移已在 StartTeleport 执行，直接切到稳定状态
-                currentCycle = AttackCycle.Stabilizing;
-                cycleTimer = boss.p2StabilizeTime; // 停顿
-                break;
+            stateTimer -= Time.deltaTime;
+            laserCycleTimer -= Time.deltaTime;
 
-            case AttackCycle.Stabilizing:
-                if (cycleTimer <= 0)
+            if (laserCycleTimer <= 0)
+            {
+                if (!laserFiring)
+                {
+                    StartTeleport();
+                    laserFiring = true;
+                    laserCycleTimer = boss.p2StabilizeTime;
+                }
+                else
                 {
                     FireLasers();
-                    currentCycle = AttackCycle.Firing;
-                    // 等待激光生命周期 (假设预警+伤害 约 1.5s)
-                    cycleTimer = 1.6f;
+                    laserFiring = false;
+                    laserCycleTimer = boss.p2PostFireDelay + 1.0f;
                 }
-                break;
+            }
 
-            case AttackCycle.Firing:
-                if (cycleTimer <= 0)
-                {
-                    currentCycle = AttackCycle.Recovering;
-                    cycleTimer = boss.p2PostFireDelay; // 射完歇一会儿
-                }
-                break;
+            if (stateTimer <= 0) SwitchToBarrageMode();
+        }
+        else if (currentSubState == SubState.BarrageAndDisturb)
+        {
+            boss.HandlePhase1HairMovement();
+            boss.HandleFaceHover();
 
-            case AttackCycle.Recovering:
-                if (cycleTimer <= 0)
-                {
-                    StartTeleport(); // 下一次循环
-                }
-                break;
+            barrageTimer -= Time.deltaTime;
+            if (barrageTimer <= 0)
+            {
+                boss.StartCoroutine(boss.FirePhase1Barrage());
+                barrageTimer = boss.p1AttackInterval;
+            }
         }
     }
 
-    // --- 辅助方法 ---
-
-    void PrepareExit()
+    void SwitchToBarrageMode()
     {
-        Debug.Log("P2 攻击结束，进入退场缓冲...");
-        currentStage = StageState.Exiting;
-        stageTimer = boss.p2ExitDelay;
-        // 此时我们不销毁头发，等退场缓冲结束再销毁
-    }
-
-    void CleanUpHairs()
-    {
-        if (activeLevelHair) Object.Destroy(activeLevelHair);
-        if (activeVerticalHair) Object.Destroy(activeVerticalHair);
+        currentSubState = SubState.BarrageAndDisturb;
+        CleanUpHairs();
+        boss.SetPhase1PartsActive(true);
+        boss.StartScreenDisturb(); // 开始干扰
+        boss.ResetHairMovementTime();
+        barrageTimer = 1.0f;
     }
 
     public override void Exit()
     {
+        boss.StopPhase1Attack();
+        boss.ClearAllBullets();
+
+        // 再次调用以防万一（StopScreenDisturb 内部有空检查，多次调用没问题）
+        boss.StopScreenDisturb();
+
         CleanUpHairs();
+        boss.SetPhase1PartsActive(false);
+
+        boss.hasFinishedPhase2 = true;
     }
 
+    void CleanUpHairs() { if (activeLevelHair) Object.Destroy(activeLevelHair); if (activeVerticalHair) Object.Destroy(activeVerticalHair); }
     void SpawnHairs()
     {
-        if (boss.levelHairPrefab) activeLevelHair = Object.Instantiate(boss.levelHairPrefab, boss.transform.position, Quaternion.identity);
-        if (boss.verticalHairPrefab) activeVerticalHair = Object.Instantiate(boss.verticalHairPrefab, boss.transform.position, Quaternion.identity);
+        if (boss.levelHairPrefab) { activeLevelHair = Object.Instantiate(boss.levelHairPrefab, boss.transform.position, Quaternion.identity); activeLevelHair.transform.SetParent(boss.transform); }
+        if (boss.verticalHairPrefab) { activeVerticalHair = Object.Instantiate(boss.verticalHairPrefab, boss.transform.position, Quaternion.identity); activeVerticalHair.transform.SetParent(boss.transform); }
     }
-
-    void StartTeleport()
-    {
-        currentCycle = AttackCycle.Teleporting;
-
-        if (activeLevelHair)
-        {
-            float x = Random.Range(boss.levelHairXRange.x, boss.levelHairXRange.y);
-            activeLevelHair.transform.position = new Vector3(x, boss.levelHairY, 0);
-        }
-        if (activeVerticalHair)
-        {
-            float y = Random.Range(boss.verticalHairYRange.x, boss.verticalHairYRange.y);
-            activeVerticalHair.transform.position = new Vector3(boss.verticalHairX, y, 0);
-        }
-    }
-
-    void FireLasers()
-    {
-        Shoot(activeLevelHair, Vector3.down);
-        Shoot(activeVerticalHair, Vector3.right);
-    }
-
-    void Shoot(GameObject hair, Vector3 dir)
-    {
-        if (!hair || !boss.laserBeamPrefab) return;
-
-        Transform fp = hair.transform.Find("RayPoint");
-        if (!fp) fp = hair.transform.GetComponentInChildren<Transform>().Find("RayPoint");
-
-        if (fp)
-        {
-            GameObject l = Object.Instantiate(boss.laserBeamPrefab, fp.position, Quaternion.identity);
-            LaserBeam beam = l.GetComponent<LaserBeam>();
-            if (beam != null)
-            {
-                // 应用 P2 宽度
-                beam.laserWidth = boss.p2LaserWidth;
-                beam.Fire(fp.position, dir);
-            }
-        }
-    }
+    void StartTeleport() { if (activeLevelHair) { float x = Random.Range(boss.levelHairXRange.x, boss.levelHairXRange.y); activeLevelHair.transform.position = new Vector3(x, boss.levelHairY, 0); } if (activeVerticalHair) { float y = Random.Range(boss.verticalHairYRange.x, boss.verticalHairYRange.y); activeVerticalHair.transform.position = new Vector3(boss.verticalHairX, y, 0); } }
+    void FireLasers() { Shoot(activeLevelHair, Vector3.down); Shoot(activeVerticalHair, Vector3.right); }
+    void Shoot(GameObject hair, Vector3 dir) { if (!hair || !boss.laserBeamPrefab) return; Transform fp = hair.transform.Find("RayPoint"); if (!fp) fp = hair.transform.GetComponentInChildren<Transform>().Find("RayPoint"); if (fp) { GameObject l = Object.Instantiate(boss.laserBeamPrefab, fp.position, Quaternion.identity); LaserBeam beam = l.GetComponent<LaserBeam>(); if (beam != null) { beam.laserWidth = boss.p2LaserWidth; beam.Fire(fp.position, dir); } } }
 }

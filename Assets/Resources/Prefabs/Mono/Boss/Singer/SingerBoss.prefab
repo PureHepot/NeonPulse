@@ -141,7 +141,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8afae4b9a88ab99449b248a8a973e09a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHp: 700
+  maxHp: 30
   moveSpeed: 5
   scoreValue: 10
   contactDamage: 1
@@ -155,6 +155,15 @@ MonoBehaviour:
   knockbackForce: 8
   knockbackTorque: 20
   currentHp: 0
+  hpPhase1: 10
+  hpPhase2: 10
+  hpPhase3: 10
+  currentHpP1: 0
+  currentHpP2: 0
+  currentHpP3: 0
+  p4Duration: 15
+  loudspeakerLeftPrefab: {fileID: 5714290308572369967, guid: 18b7f8b0390edc847bc23d9375e4e1be, type: 3}
+  loudspeakerRightPrefab: {fileID: 3452198228268981416, guid: fa98af2ae493d2941b4c82d427250dae, type: 3}
   idleForm: {fileID: 2132828519146659970}
   battleForm: {fileID: 8517335042319104078}
   faceAngry: {fileID: 5154460770484023162}
@@ -170,56 +179,51 @@ MonoBehaviour:
   deployDuration: 1
   hairLeftTargetRot: {x: 0, y: 0, z: 26}
   hairRightTargetRot: {x: 0, y: 0, z: -26}
-  hairMoveSpeed: 2
+  hairMoveSpeed: 5
   hairTopY: 2
   hairBottomY: -4
   faceHoverAmplitude: 0.3
   faceHoverSpeed: 1
   redBulletPrefab: {fileID: 9117579508844990411, guid: 0a72b1a97123c5b46b95d93aaabbf510, type: 3}
-  p1AttackInterval: 4
-  roundsPerAttack: 12
+  p1AttackInterval: 2
+  roundsPerAttack: 20
   pointStaggerDelay: 0.1
-  showerSpreadAngle: 80
-  bulletSpeedRange: {x: 2, y: 4}
+  showerSpreadAngle: 70
+  bulletSpeedRange: {x: 5, y: 8}
   maxSearchIndex: 5
   levelHairPrefab: {fileID: 871012854855183420, guid: b32d7c77b885bb74bb6003ec8dadd61f, type: 3}
   verticalHairPrefab: {fileID: 3095085354146746073, guid: 9b50e2ae26c67be46995489b9749ba4e, type: 3}
   laserBeamPrefab: {fileID: 6355293803146212029, guid: 5e63621bdd71e294fa0aaa6b9b3962a9, type: 3}
-  p2TotalDuration: 15
+  p2LaserDuration: 5
+  p2StabilizeTime: 0.005
+  p2PostFireDelay: 0.001
+  p2LaserWidth: 24
   p2EnterDelay: 1.5
   p2ExitDelay: 1.5
-  p2StabilizeTime: 0.05
-  p2PostFireDelay: 0.01
-  p2LaserWidth: 20
+  p2TotalDuration: 15
   levelHairY: 4.8
   levelHairXRange: {x: -7.5, y: 7.5}
   verticalHairX: -8.7
   verticalHairYRange: {x: -3.6, y: 3.6}
-  hasFinishedPhase2: 0
   shortLevelHairPrefab: {fileID: 6379288650308501210, guid: 1a48a9a6bd5965d48ab633cfa23c9303, type: 3}
   shortVerticalHairPrefab: {fileID: 5831703780168401137, guid: c7eb8ebd53c10a9429dd4be31d4385e9, type: 3}
-  p3ShootInterval: 0.8
-  p3AimTime: 0.4
+  p3ShootInterval: 0.4
+  p3AimTime: 0.3
   p3LaserActiveTime: 0.2
   p3LaserWidth: 12.5
   p3LevelY: 4.5
   p3VerticalX: 8.5
-  hasFinishedPhase3: 0
-  p3ChargeAimTime: 1.5
-  p3ChargeSpeed: 20
-  p3BrakeDuration: 1.5
-  p4Duration: 5
-  loudspeakerLeftPrefab: {fileID: 5714290308572369967, guid: 18b7f8b0390edc847bc23d9375e4e1be, type: 3}
-  loudspeakerRightPrefab: {fileID: 3452198228268981416, guid: fa98af2ae493d2941b4c82d427250dae, type: 3}
+  p3ChargeAimTime: 0.5
+  p3ChargeSpeed: 40
+  p3BrakeDuration: 0.8
   screenRotator: {fileID: 0}
-  rotateInterval: 5
+  rotateInterval: 3
   flipChance: 0.2
   whiteScreenEffect: {fileID: 0}
   transShakeDuration: 1.5
   transFadeInDuration: 0.5
   transHoldDuration: 0.5
   transFadeOutDuration: 0.5
-  currentStateName: 
   leftBulletPoints: []
   rightBulletPoints: []
   savedHairLeftX: 0
@@ -228,6 +232,8 @@ MonoBehaviour:
   savedHairRightZ: 0
   isTransitioning: 0
   isInFinalPhase: 0
+  hasFinishedPhase2: 0
+  hasFinishedPhase3: 0
 --- !u!1 &4508080106568002918
 GameObject:
   m_ObjectHideFlags: 0
@@ -465,7 +471,7 @@ PrefabInstance:
       addedObject: {fileID: 5175127425762133601}
     - targetCorrespondingSourceObject: {fileID: 6329054739993545663, guid: 351660e2bfa9c824abfaea92a7e6790d, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8428063013628937450}
+      addedObject: {fileID: 7812650065951986292}
     - targetCorrespondingSourceObject: {fileID: 1568889903977956848, guid: 351660e2bfa9c824abfaea92a7e6790d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1313409599445138104}
@@ -684,7 +690,7 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 1.09
---- !u!114 &8428063013628937450
+--- !u!114 &7812650065951986292
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -693,14 +699,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 4049805120438369634}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7712dfcc041935c48a29a59c6e38d5a0, type: 3}
+  m_Script: {fileID: 11500000, guid: 26b1b57b9f96d514c8a88df976f4656d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damageChain: 0.5
-  partMaxHp: 700
-  passDamageToBoss: 1
-  explosionPrefab: {fileID: 0}
-  partRenderer: {fileID: 0}
+  mainBoss: {fileID: 4596107738252210282}
+  faceRenderer: {fileID: 0}
   hitColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1 &4288410365742391068 stripped
 GameObject:

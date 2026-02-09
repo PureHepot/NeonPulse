@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9081042976640929218}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: RayPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -42,9 +42,9 @@ GameObject:
   - component: {fileID: 2634354680301923914}
   - component: {fileID: 7391517099045319470}
   - component: {fileID: -8843123459067795503}
-  m_Layer: 0
+  m_Layer: 14
   m_Name: longbar_vertical
-  m_TagString: Untagged
+  m_TagString: Reflector
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
