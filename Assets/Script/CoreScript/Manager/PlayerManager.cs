@@ -12,7 +12,7 @@ public class PlayerManager : MonoSingleton<PlayerManager>
     public GameObject playerPrefab;
     public Transform spawnPoint;
     public GameObject CurrentPlayerObj { get; private set; }
-    public PlayerModuleManager CurrentModules { get; private set; }
+    public ModuleManager CurrentModules { get; private set; }
     public PlayerPreview PlayerPreview { get; private set; }
 
     public bool IsPlayerAlive => CurrentPlayerObj != null;
@@ -54,7 +54,7 @@ public class PlayerManager : MonoSingleton<PlayerManager>
 
         CurrentPlayerObj = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
 
-        CurrentModules = CurrentPlayerObj.GetComponent<PlayerModuleManager>();
+        CurrentModules = CurrentPlayerObj.GetComponent<ModuleManager>();
 
         if (bodyRenderer == null) bodyRenderer = CurrentPlayerObj.GetComponentInChildren<SpriteRenderer>();
 
@@ -64,8 +64,6 @@ public class PlayerManager : MonoSingleton<PlayerManager>
         Debug.Log("<color=green>Player Generated</color>");
 
         UpgradeManager.Instance.ApplyModulesToPlayer();
-
-        CurrentModules.Initialize?.Invoke();
 
         MaskSystemManager.Instance?.ApplyCurrentMaskVisuals();
 

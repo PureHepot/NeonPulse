@@ -9,7 +9,7 @@ public class PlayerPreviewSync : MonoBehaviour
     public string uiLayerName = "UI_Model"; // UI 专用 Layer
 
     private GameObject dummyPlayer;
-    private PlayerModuleManager dummyModules;
+    private ModuleManager dummyModules;
     private SpriteRenderer dummyRenderer;
 
     private void OnEnable()
@@ -47,7 +47,7 @@ public class PlayerPreviewSync : MonoBehaviour
         SetLayerRecursively(dummyPlayer, LayerMask.NameToLayer(uiLayerName));
 
         // 获取组件引用
-        dummyModules = dummyPlayer.GetComponent<PlayerModuleManager>();
+        dummyModules = dummyPlayer.GetComponent<ModuleManager>();
         dummyRenderer = dummyPlayer.GetComponentInChildren<SpriteRenderer>();
 
         if (dummyModules != null)

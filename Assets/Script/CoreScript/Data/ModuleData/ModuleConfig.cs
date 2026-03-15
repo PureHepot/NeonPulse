@@ -86,6 +86,10 @@ public class ModuleConfig : ScriptableObject
     public ModuleType moduleType;
     //public Sprite icon;
 
+    [Header("Module Prefab")]
+    [Tooltip("该模块对应的预制体，根节点需挂有 PlayerModule 组件")]
+    public GameObject prefab;
+
     [Header("Base Stats")]
     public List<StatData> baseStats;
 

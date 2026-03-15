@@ -1,9 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
+using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 
-public class PlayerModuleManager : MonoBehaviour
+public class ModuleManager : MonoBehaviour
 {
     private PlayerController playerController;
 
@@ -16,25 +19,27 @@ public class PlayerModuleManager : MonoBehaviour
     void Awake()
     {
         playerController = GetComponent<PlayerController>();
-        PlayerModule[] modules = GetComponentsInChildren<PlayerModule>(true);
-        foreach (var module in modules)
-        {
-            if (!moduleDict.ContainsKey(module.moduleType))
-            {
-                moduleDict.Add(module.moduleType, module);
-            }
-        }
 
-        Initialize = () =>
-        {
-            PlayerModule[] modules = GetComponentsInChildren<PlayerModule>(true);
+       
 
-            foreach (var module in modules)
-            {
-                module.Initialize(playerController);
-            }
-        };
+       
     }
+
+    /// <summary>
+    /// 注册一个模块实例到管理器（由 LoadModule 调用）
+    /// </summary>
+    /*public void RegisterModule(PlayerModule module)
+    {
+        if (module == null) return;
+        if (!moduleDict.ContainsKey(module.moduleType))
+        {
+            moduleDict.Add(module.moduleType, module);
+        }
+        else
+        {
+            Debug.LogWarning($"模块已存在，跳过注册: {module.moduleType}");
+        }
+    }*/
 
     void Update()
     {
@@ -57,7 +62,17 @@ public class PlayerModuleManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"找不到模块: {type}，请检查是否挂载了对应脚本并设置了Type");
+            ModuleConfig config=UpgradeManager.Instance.GetConfig(type);
+            if(config)
+            {
+                Transform modulesRoot = transform.Find("Modules") ?? transform;
+                GameObject instance = Instantiate(config.prefab, modulesRoot);
+                PlayerModule module1=instance.GetComponent<PlayerModule>();
+                module1.OnActivate();
+                activeModules.Add(module1);
+                moduleDict.Add(config.moduleType, module1);
+                module1.Initialize(playerController);
+            }
         }
     }
 
@@ -81,8 +96,7 @@ public class PlayerModuleManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 禁用模块
+    /// <summary>                   /// 禁用模块
     /// </summary>
     public void DisableModule(ModuleType type)
     {

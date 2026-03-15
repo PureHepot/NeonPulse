@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moduleName: HealthModule
   moduleType: 1
+  playerModule: {fileID: 7067713784367103175, guid: 142a2546d2871ba498c4e8f5e356f7f5, type: 3}
+  prefab: {fileID: 7912777684067947577, guid: 142a2546d2871ba498c4e8f5e356f7f5, type: 3}
   baseStats:
   - type: 1
     value: 10

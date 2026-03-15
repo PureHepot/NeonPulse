@@ -597,7 +597,8 @@ public class LaserDroneModule : PlayerModule
     {
         base.OnActivate();
         transform.gameObject.SetActive(true);
-        droneCount = 1;
+        if(droneCount<=0) droneCount = 1;
+        droneCount=Mathf.Clamp(droneCount, 1, droneTransforms.Count);
         currentState = DroneState.Idle;
         UpdateActiveDrones();
     }
@@ -633,6 +634,7 @@ public class LaserDroneModule : PlayerModule
                     break;
             }
         }
+        UpdateActiveDrones();
     }
 
     private void OnDrawGizmosSelected()

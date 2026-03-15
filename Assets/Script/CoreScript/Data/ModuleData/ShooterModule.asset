@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moduleName: ShooterModule
   moduleType: 2
+  playerModule: {fileID: 8269306269037289636, guid: d6ecab39b607bec49b40316767da8f0b, type: 3}
+  prefab: {fileID: 1289084884220203822, guid: d6ecab39b607bec49b40316767da8f0b, type: 3}
   baseStats:
   - type: 8
     value: 1

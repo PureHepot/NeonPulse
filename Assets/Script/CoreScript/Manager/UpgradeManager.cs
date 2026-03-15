@@ -83,7 +83,7 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         }
     }
 
-    public void ApplyModulesToPlayer(PlayerModuleManager modules)
+    public void ApplyModulesToPlayer(ModuleManager modules)
     {
         foreach (var module in startingModules)
         {
