@@ -4,9 +4,9 @@ using UnityEngine.UI;
 
 public class GameOverUI : UIBase
 {
-    [Header("°´Å¥×é¼þ")]
-    public Button restartButton;   // ÖØÐÂ¿ªÊ¼
-    public Button quitButton;      // ÍË³öÓÎÏ·
+    [Header("ï¿½ï¿½Å¥ï¿½ï¿½ï¿½")]
+    public Button restartButton;   // ï¿½ï¿½ï¿½Â¿ï¿½Ê¼
+    public Button quitButton;      // ï¿½Ë³ï¿½ï¿½ï¿½Ï·
 
     public override void OnEnter(object args)
     {
@@ -15,11 +15,11 @@ public class GameOverUI : UIBase
 
         if (restartButton == null || quitButton == null)
         {
-            Debug.LogError("GameOverUI£ºÇëÔÚInspectorÖÐÎªrestartButtonºÍquitButton¸³Öµ");
+            Debug.LogError("GameOverUIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Inspectorï¿½ï¿½ÎªrestartButtonï¿½ï¿½quitButtonï¿½ï¿½Öµ");
             return;
         }
 
-        // ÇåÀí¾É¼àÌý
+        // ï¿½ï¿½ï¿½ï¿½ï¿½É¼ï¿½ï¿½ï¿½
         restartButton.onClick.RemoveAllListeners();
         quitButton.onClick.RemoveAllListeners();
 
@@ -38,6 +38,10 @@ public class GameOverUI : UIBase
 
     private void OnClickRestart()
     {
+        // ç»“ç®—æœ¬å±€ï¼šæ­»äº¡ï¼Œè®°å½•åˆ°è¾¾çš„æ³¢æ¬¡
+        int waveReached = WaveManager.Instance.currentWaveIndex;
+        DataManager.Instance.EndRun(false, waveReached);
+
         Time.timeScale = 1f;
         UIManager.Instance.CloseUI(this);
 
@@ -49,7 +53,9 @@ public class GameOverUI : UIBase
 
     private void OnClickQuit()
     {
-        // Ö±½ÓÍË³öÓÎÏ·
+        int waveReached = WaveManager.Instance.currentWaveIndex;
+        DataManager.Instance.EndRun(false, waveReached);
+        // Ö±ï¿½ï¿½ï¿½Ë³ï¿½ï¿½ï¿½Ï·
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else

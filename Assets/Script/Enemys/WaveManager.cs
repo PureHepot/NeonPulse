@@ -82,6 +82,26 @@ public class WaveManager : MonoSingleton<WaveManager>
         camWidth = camHeight * mainCam.aspect;
     }
 
+    /// <summary>
+    /// 从存档恢复波次索引
+    /// </summary>
+    public void InitFromSaveData()
+    {
+        var run = DataManager.Instance.Run;
+        if (run == null) return;
+        currentWaveIndex = run.wave.currentWaveIndex;
+    }
+
+    /// <summary>
+    /// 将当前波次状态写入 DataManager
+    /// </summary>
+    public void SyncToSaveData()
+    {
+        var run = DataManager.Instance.Run;
+        if (run == null) return;
+        run.wave.currentWaveIndex = currentWaveIndex;
+    }
+
     // --- 核心游戏循环 ---
     //在GameManager的MainGameState状态里调用此协程启动游戏循环
     public IEnumerator GameLoopRoutine()
@@ -155,6 +175,7 @@ public class WaveManager : MonoSingleton<WaveManager>
             Debug.Log($"<color=green>--- {currentWave.waveName} 完成 ---</color>");
 
             currentWaveIndex++;
+            SyncToSaveData();
         }
 
         // 所有波次结束

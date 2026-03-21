@@ -5,27 +5,43 @@ using UnityEngine.SceneManagement;
 
 public class MainGameState : GameState
 {
-    private bool isSettingOpen = false;
-    private bool isModuleSelectOpen = false;
-    private bool isLevelUpOpen = false;
+    private readonly bool isContinue;
 
-    private LevelUpUI levelUpUI;
+    public MainGameState(bool isContinue = false)
+    {
+        this.isContinue = isContinue;
+    }
 
     public override void OnEnter()
     {
         Time.timeScale = 1f;
         AudioManager.Instance.PlayBGM("FightBGM_2");
+
+        if (isContinue)
+        {
+            // 继续游戏：从存档恢复各 Manager 状态
+            UpgradeManager.Instance.InitFromSaveData();
+            WaveManager.Instance.InitFromSaveData();
+            MaskSystemManager.Instance.InitFromSaveData();
+        }
+        else
+        {
+            // 新游戏：创建新 Run
+            int seed = UnityEngine.Random.Range(0, int.MaxValue);
+            var startingModules = UpgradeManager.Instance.startingModules;
+            DataManager.Instance.StartNewRun(seed, startingModules);
+            UpgradeManager.Instance.InitNewRun();
+        }
+
         StartGame();
         UIManager.Instance.OpenFullScreen<HUDUI>();
     }
 
     public override void OnExit()
     {
-        // 清理事件
-        if (ModuleSelectManager.Instance != null)
-        {
-            ModuleSelectManager.Instance.OnShowAbilitySelectUI -= HandleShowAbilityUI;
-        }
+        // 存档：退出战斗状态前保存一次
+        SaveAll();
+
         EventManager.RemoveListener<ModuleType, StatType>(GameEvent.ModuleUpgrade, OnModuleUpgrade);
         Time.timeScale = 1f;
     }
@@ -41,6 +57,8 @@ public class MainGameState : GameState
         {
             if (UIManager.Instance.CheckUIListEmpty())
             {
+                // 暂停时存档
+                SaveAll();
                 UIManager.Instance.Open<PauseUI>();
             }
             else
@@ -54,135 +72,57 @@ public class MainGameState : GameState
             UIManager.Instance.Open<LevelUpUI>();
             UIManager.Instance.ClosePopup();
         }
-        else if(Input.GetKeyDown(KeyCode.Tab) && UIManager.Instance.CheckUIOpen<LevelUpUI>())
+        else if (Input.GetKeyDown(KeyCode.Tab) && UIManager.Instance.CheckUIOpen<LevelUpUI>())
         {
             UIManager.Instance.CloseTopPanel();
         }
     }
-
 
     private void StartGame()
     {
         PlayerManager.Instance.SpawnPlayer();
         EventManager.AddListener<ModuleType, StatType>(GameEvent.ModuleUpgrade, OnModuleUpgrade);
 
-        WaveManager.Instance.OnWaveIncoming += (level, txt) =>
-        {
-            if (txt != "")
-            {
-                MessageUIArg arg = new MessageUIArg(level, txt);
-                UIManager.Instance.OpenPopup<MessageUI>(arg);
-            }
-        };
+        WaveManager.Instance.OnWaveIncoming += OnWaveIncoming;
+        WaveManager.Instance.OnAllWavesCleared += OnVictory;
 
-        //UpgradeManager.Instance.SyncWithPlayerManager();
-        ModuleSelectManager.Instance.OnShowAbilitySelectUI += HandleShowAbilityUI;
         GameManager.Instance.StartCoroutine(WaveManager.Instance.GameLoopRoutine());
     }
 
-    private void HandleShowAbilityUI(int level, List<UpgradeOption> candidates)
+    private void OnWaveIncoming(int level, string txt)
     {
-        var uiArgs = Tuple.Create(level, candidates);
-        if (!isModuleSelectOpen)
-        {
-            UIManager.Instance.OpenPopup<ModuleSelectUI>(uiArgs);
-        }
-        isModuleSelectOpen = true;
-    }
+        // 每次新波次开始时存档（上一波结束）
+        SaveAll();
 
-    private void ToggleLevelUpPanel()
-    {
-        if (isSettingOpen) return;
-        if (!isLevelUpOpen)
+        if (txt != "")
         {
-            levelUpUI = UIManager.Instance.Open<LevelUpUI>();
-            Time.timeScale = 0f;
-            isLevelUpOpen = true;
-        }
-        else
-        {
-            UIManager.Instance.CloseUI(levelUpUI);
-            Time.timeScale = 1f;
-            isLevelUpOpen = false;
+            MessageUIArg arg = new MessageUIArg(level, txt);
+            UIManager.Instance.OpenPopup<MessageUI>(arg);
         }
     }
 
-    //private void ToggleModuleSelectPanel()
-    //{
-    //    if (isSettingOpen) return;
-
-    //    if (!isModuleSelectOpen)
-    //    {
-    //        if (UpgradeManager.Instance.UpgradePoints <= 0)
-    //        {
-    //            Debug.LogWarning("没有可用的升级点数！");
-    //            return;
-    //        }
-
-    //        var options = ModuleSelectManager.Instance.GetOrCreateOptions();
-    //        ModuleSelectManager.Instance.OnShowAbilitySelectUI?.Invoke(
-    //            UpgradeManager.Instance.CurrentLevel,
-    //            options
-    //        );
-
-    //        Time.timeScale = 0f;
-    //        isModuleSelectOpen = true;
-    //    }
-    //    else
-    //    {
-    //        ModuleSelectUI moduleSelectUI = FindModuleSelectUIInPopupLayer();
-    //        if (moduleSelectUI != null)
-    //        {
-    //            UIManager.Instance.CloseUI(moduleSelectUI);
-    //        }
-
-    //        Time.timeScale = 1f;
-    //        isModuleSelectOpen = false;
-    //    }
-    //}
-
-
-    //private ModuleSelectUI FindModuleSelectUIInPopupLayer()
-    //{
-    //    GameObject canvasObj = GameObject.Find("Canvas");
-    //    if (canvasObj == null) return null;
-
-    //    Transform layerPopup = canvasObj.transform.Find("Layer_Popup");
-    //    if (layerPopup == null) return null;
-
-    //    foreach (Transform child in layerPopup)
-    //    {
-    //        ModuleSelectUI ui = child.GetComponent<ModuleSelectUI>();
-    //        if (ui != null)
-    //        {
-    //            return ui;
-    //        }
-    //    }
-
-    //    return null;
-    //}
-
-    private bool isPauseOpen = false;
-
-    private void TogglePausePanel()
+    private void OnVictory()
     {
-        if (!isPauseOpen)
-        {
-            UIManager.Instance.Open<PauseUI>();
-            Time.timeScale = 0f;
-            isPauseOpen = true;
-        }
-        else
-        {
-            UIManager.Instance.CloseTopPanel();
-            Time.timeScale = 1f;
-            isPauseOpen = false;
-        }
+        int waveReached = WaveManager.Instance.currentWaveIndex;
+        DataManager.Instance.EndRun(true, waveReached);
     }
 
     private void OnModuleUpgrade(ModuleType moduleType, StatType statType)
     {
         Debug.Log($"模块升级: {moduleType}, 属性: {statType}");
         PlayerManager.Instance.CurrentModules.GetModule<PlayerModule>(moduleType).UpgradeModule(moduleType, statType);
+    }
+
+    /// <summary>
+    /// 统一存档：收集所有 Manager 状态后写入磁盘
+    /// </summary>
+    private void SaveAll()
+    {
+        if (!DataManager.Instance.HasActiveRun) return;
+
+        PlayerManager.Instance.SavePlayerState();
+        UpgradeManager.Instance.SyncToSaveData();
+        WaveManager.Instance.SyncToSaveData();
+        DataManager.Instance.Save();
     }
 }

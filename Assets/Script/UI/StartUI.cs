@@ -1,36 +1,49 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+
 public class StartUI : UIBase
 {
+    private bool hasSave;
+
     public override void OnEnter(object args)
     {
         base.OnEnter(args);
+        hasSave = args is bool b && b;
         InitBtn();
     }
 
     private void InitBtn()
     {
+        // 继续游戏按钮（有存档时显示）
+        var continueBtn = Get<Button>("Continue");
+        if (continueBtn != null)
+        {
+            continueBtn.gameObject.SetActive(hasSave);
+            continueBtn.onClick.SetListener(() =>
+            {
+                Debug.Log("继续游戏");
+                Action action = () =>
+                {
+                    GameManager.Instance.ChangeState(new MainGameState(isContinue: true));
+                };
+                UIManager.Instance.Open<LoadingUI>(action);
+            });
+        }
+
         Get<Button>("Start").onClick.SetListener(() =>
         {
-           // 开始游戏逻辑
             Debug.Log("开始游戏");
-
             Action action = () =>
             {
-                // 在加载完成后切换游戏状态
-                GameManager.Instance.ChangeState(new MainGameState());
-            };  
-
+                GameManager.Instance.ChangeState(new MainGameState(isContinue: false));
+            };
             UIManager.Instance.Open<LoadingUI>(action);
         });
 
         Get<Button>("Setting").onClick.SetListener(() =>
         {
-            // 打开设置界面逻辑
             Debug.Log("打开设置界面");
             UIManager.Instance.Open<SetVolumeUI>();
         });
@@ -50,7 +63,6 @@ public class StartUI : UIBase
             .SetEase(Ease.Linear)
             .SetUpdate(true);
     }
-
 
     public override void OnClose()
     {

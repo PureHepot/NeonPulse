@@ -1249,9 +1249,9 @@ CircleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.0011202395, y: 0}
+  m_Offset: {x: 0.0009751767, y: 0}
   serializedVersion: 2
-  m_Radius: 0.19572964
+  m_Radius: 0.12378751
 --- !u!50 &142812933114081023
 Rigidbody2D:
   serializedVersion: 4
@@ -1669,7 +1669,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &7280041295073249344
 Transform:
   m_ObjectHideFlags: 0
@@ -1720,6 +1720,7 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 264
+  currentDashSpeed: 0
 --- !u!1 &8696754055382307428
 GameObject:
   m_ObjectHideFlags: 0

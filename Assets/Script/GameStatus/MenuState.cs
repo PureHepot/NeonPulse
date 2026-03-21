@@ -5,8 +5,8 @@ public class MenuState : GameState
     private UIBase startUI;
     public override void OnEnter()
     {
-        // UIManager.Instance.PushPanel<MainMenuPanel>(); 
-        startUI = UIManager.Instance.Open<StartUI>();
+        bool hasSave = DataManager.Instance.HasActiveRun;
+        startUI = UIManager.Instance.Open<StartUI>(hasSave);
 
         AudioManager.Instance.PlayBGM("MainTheme");
         PlayerManager.Instance.spawnPoint.gameObject.SetActive(false);
@@ -15,19 +15,14 @@ public class MenuState : GameState
 
     public override void OnUpdate()
     {
-        if (InputManager.Instance.Esc()) // 假设空格开始
+        if (InputManager.Instance.Esc())
         {
-            //manager.ChangeState(new GameplayState(manager));
         }
     }
 
     public override void OnExit()
     {
-        // 关闭主菜单UI
-        // UIManager.Instance.PopPanel();
-        //UIManager.Instance.CloseAllPanels();
         UIManager.Instance.CloseUI(startUI);
-        //更改摄像机模式
         GameObject.Find("StartScene").SetActive(false);
         Camera.main.orthographic = true;
     }
