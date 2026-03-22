@@ -42,9 +42,32 @@ public class MaskSystemManager : MonoSingleton<MaskSystemManager>
         return result;
     }
 
+    /// <summary>
+    /// 从存档恢复面具（根据名称匹配）
+    /// </summary>
+    public void InitFromSaveData()
+    {
+        var run = DataManager.Instance.Run;
+        if (run == null || string.IsNullOrEmpty(run.build.currentMaskName)) return;
+
+        foreach (var mask in maskPool)
+        {
+            if (mask.maskName == run.build.currentMaskName)
+            {
+                currentMask = mask;
+                return;
+            }
+        }
+    }
+
     private void EquipMask(MaskConfig mask)
     {
         currentMask = mask;
+
+        // 同步到存档
+        var run = DataManager.Instance.Run;
+        if (run != null)
+            run.build.currentMaskName = mask.maskName;
 
         // 应用外观
         ApplyCurrentMaskVisuals();
