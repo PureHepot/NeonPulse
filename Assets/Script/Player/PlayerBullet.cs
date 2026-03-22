@@ -13,6 +13,9 @@ public class PlayerBullet : MonoBehaviour, IPoolable
 
     private float moveDistance;
 
+    [Header("反弹设置")]
+    public LayerMask WallLayer;
+
     public void OnSpawn()
     {
         timer = 0f;
@@ -35,10 +38,9 @@ public class PlayerBullet : MonoBehaviour, IPoolable
         {
             OnHitObject(hit.collider, hit.point, hit.normal);
         }
-        else
-        {
+        
             transform.Translate(Vector3.right * moveDistance);
-        }
+        
 
 
         timer += Time.deltaTime;
@@ -56,6 +58,13 @@ public class PlayerBullet : MonoBehaviour, IPoolable
         {
             target.TakeDamage(damage, hitPoint, transform.right);
             ObjectPoolManager.Instance.Return(this.gameObject);
+        }
+        if (((1 << other.gameObject.layer) & WallLayer) != 0)
+        {
+            // 计算反弹方向
+            Vector2 reflectDir = Vector2.Reflect(transform.right, hitNormal);
+            transform.right = reflectDir;
+            transform.position = hitPoint;
         }
     }
 

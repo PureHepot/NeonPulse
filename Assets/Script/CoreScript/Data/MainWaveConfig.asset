@@ -16,11 +16,13 @@ MonoBehaviour:
   - waveName: Hey!
     enemies:
     - {fileID: 2559620815044795701, guid: 0565c5dd0e594194c936a8e3a1a62198, type: 3}
+    - {fileID: 3862104991398879297, guid: f837404300d7da240a1f98c5a0dea4e1, type: 3}
+    - {fileID: 5131009551565671278, guid: 23505cc7beff46b4cb4a04436fb18646, type: 3}
     groups:
-    - enemyIndex: 00000000
+    - enemyIndex: 01000000
       spawnRate:
       - 1
-      groupDuration: 10
+      groupDuration: 5
       direction: 0
     waveDuration: 0
   - waveName: Tab to upgrade
