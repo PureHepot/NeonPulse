@@ -14,6 +14,13 @@ public class BattleFieldLimit : MonoBehaviour
     private Transform _playerTransform;
     private Rigidbody2D _playerRb;
 
+    public GameObject leftWall;
+    public GameObject rightWall;
+    public GameObject topWall;
+    public GameObject bottomWall;
+    public GameObject ArenaTrap;
+    private float wallThickness = 1f;
+
     private void Awake()
     {
         _mainCam = Camera.main;
@@ -22,6 +29,7 @@ public class BattleFieldLimit : MonoBehaviour
         camHalfWidth = camWidth / 2f;
         camHalfHeight = camHeight / 2f;
         UpdateBounds();
+        
     }
 
     private void FixedUpdate()
@@ -29,6 +37,8 @@ public class BattleFieldLimit : MonoBehaviour
         UpdateBounds(); // 实时更新边界
         FindPlayer();   // 查找玩家
         ClampPlayerPos(); // 限制玩家位置
+        UpdateAllWalls();//更新墙体位置
+        UpdateArenaTrap(ArenaTrap);
     }
 
     /// <summary>
@@ -88,5 +98,49 @@ public class BattleFieldLimit : MonoBehaviour
 
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(_mainCam.transform.position, new Vector3(maxX - minX, maxY - minY, 0));
+    }
+    private void UpdateAllWalls()
+    {
+        // 只有拖入了墙才更新
+        if (leftWall != null) UpdateWall(leftWall, WallSide.Left);
+        if (rightWall != null) UpdateWall(rightWall, WallSide.Right);
+        if (topWall != null) UpdateWall(topWall, WallSide.Top);
+        if (bottomWall != null) UpdateWall(bottomWall, WallSide.Bottom);
+    }
+
+    private enum WallSide { Left, Right, Top, Bottom }
+
+    private void UpdateWall(GameObject wall, WallSide side)
+    {
+        BoxCollider2D col = wall.GetComponent<BoxCollider2D>();
+
+        switch (side)
+        {
+            case WallSide.Left:
+                wall.transform.position = new Vector3(_minX - wallThickness/2 , _mainCam.transform.position.y, 0);
+                if (col != null) col.size = new Vector2(wallThickness, _maxY-_minY);
+                break;
+
+            case WallSide.Right:
+                wall.transform.position = new Vector3(_maxX + wallThickness/2 , _mainCam.transform.position.y, 0);
+                if (col != null) col.size = new Vector2(wallThickness, _maxY - _minY);
+                break;
+
+            case WallSide.Top:
+                wall.transform.position = new Vector3(_mainCam.transform.position.x, _maxY + wallThickness/2 , 0);
+                if (col != null) col.size = new Vector2(wallThickness, camHalfWidth * 2);
+                break;
+
+            case WallSide.Bottom:
+                wall.transform.position = new Vector3(_mainCam.transform.position.x, _minY - wallThickness/2 , 0);
+                if (col != null) col.size = new Vector2(wallThickness,camHalfWidth * 2);
+                break;
+        }
+    }
+    private void UpdateArenaTrap(GameObject trap)
+    {
+        BoxCollider2D box=trap.GetComponent<BoxCollider2D>();
+        box.transform.position = new Vector3(_mainCam.transform.position.x, _mainCam.transform.position.y, 0);
+        box.size = new Vector2(_maxX - _minX, _maxY - _minY);
     }
 }

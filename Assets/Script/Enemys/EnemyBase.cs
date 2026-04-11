@@ -30,10 +30,13 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     protected Transform playerTransform;
     protected bool isDead = false;
 
+    public bool isInScene;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         if (bodyRenderer == null) bodyRenderer = GetComponentInChildren<SpriteRenderer>();
+        isInScene = false;
     }
 
     public virtual void OnSpawn()
@@ -54,6 +57,10 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         {
             WaveManager.Instance.RegisterEnemy(this);
         }
+        if (EnemyManager.Instance != null)
+        {
+            EnemyManager.Instance.RegisterEnemy(this);
+        }
     }
 
     public virtual void OnDespawn()
@@ -68,12 +75,17 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         {
             WaveManager.Instance.UnregisterEnemy(this);
         }
+        if (EnemyManager.Instance != null)
+        {
+            EnemyManager.Instance.UnRegisterEnemy(this);
+        }
     }
 
     private void FixedUpdate()
     {
         if (isDead || isKnockbacking) return;
         MoveBehavior();
+        CheckOutView();
     }
 
     protected abstract void MoveBehavior();
@@ -269,4 +281,13 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
             }
         }
     }
+    
+    
+    private void CheckOutView()
+    {
+        Vector2 p = Camera.main.WorldToViewportPoint(transform.position);
+        isInScene = !(p.x < 0 || p.x > 1 || p.y < 0 || p.y > 1);
+    }
+
+  
 }

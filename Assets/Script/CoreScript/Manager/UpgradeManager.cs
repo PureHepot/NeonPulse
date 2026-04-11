@@ -19,59 +19,129 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
     public float expScale = 1.5f;
     public int pointsPerLevel = 2;
 
-    public int UpgradePoints { get; private set; } = 0;
+    [Header("Default Loadout")]
+    public List<ModuleType> startingModules;
 
+    // 运行时缓存（不序列化，从 DataManager 重建）
     private HashSet<ModuleType> unlockedModuleTypes = new HashSet<ModuleType>();
     public HashSet<ModuleType> UnlockedModuleTypes => unlockedModuleTypes;
 
     private Dictionary<ModuleType, ModuleRuntimeData> activeModules =
         new Dictionary<ModuleType, ModuleRuntimeData>();
 
-    [Header("Default Loadout")]
-    public List<ModuleType> startingModules;
-
-    public int CurrentLevel { get; private set; } = 1;
-    public int CurrentExp { get; private set; } = 0;
-
     public Action<int, int, int> OnExpChanged;
     public Action<int> OnUpgradePointsChanged;
 
-    // 本轮升级面板排重池（核心）
+    // 本轮升级面板排重池
     private HashSet<string> roundExclude = new();
 
-    private void Shuffle<T>(List<T> list)
+    // ==================== 数据代理（通过 DataManager）====================
+
+    public int CurrentLevel
     {
-        for (int i = list.Count - 1; i > 0; i--)
+        get => DataManager.Instance.Run != null ? DataManager.Instance.Run.progression.level : 1;
+        private set { if (DataManager.Instance.Run != null) DataManager.Instance.Run.progression.level = value; }
+    }
+
+    public int CurrentExp
+    {
+        get => DataManager.Instance.Run != null ? DataManager.Instance.Run.progression.exp : 0;
+        private set { if (DataManager.Instance.Run != null) DataManager.Instance.Run.progression.exp = value; }
+    }
+
+    public int UpgradePoints
+    {
+        get => DataManager.Instance.Run != null ? DataManager.Instance.Run.progression.upgradePoints : 0;
+        private set { if (DataManager.Instance.Run != null) DataManager.Instance.Run.progression.upgradePoints = value; }
+    }
+
+    // ==================== 存档 ↔ 运行时 同步 ====================
+
+    /// <summary>
+    /// 从 DataManager 的 Run.build.ownedModules 重建运行时缓存
+    /// 用于继续游戏（读档）
+    /// </summary>
+    public void InitFromSaveData()
+    {
+        unlockedModuleTypes.Clear();
+        activeModules.Clear();
+
+        var run = DataManager.Instance.Run;
+        if (run == null) return;
+
+        foreach (var owned in run.build.ownedModules)
         {
-            int j = UnityEngine.Random.Range(0, i + 1);
-            (list[i], list[j]) = (list[j], list[i]);
+            unlockedModuleTypes.Add(owned.moduleType);
+
+            ModuleConfig config = GetConfig(owned.moduleType);
+            if (config == null) continue;
+
+            var runtime = new ModuleRuntimeData(config);
+            // 恢复每个 stat 的升级层数
+            foreach (var sl in owned.statLevels)
+            {
+                for (int i = 0; i < sl.level; i++)
+                    runtime.AddStatUpgrade(sl.statType);
+            }
+            activeModules[owned.moduleType] = runtime;
         }
     }
 
     /// <summary>
-    /// 每次打开升级面板前调用，清空排重池
+    /// 将当前运行时缓存写回 DataManager 的 Run.build
+    /// 用于存档前调用
     /// </summary>
+    public void SyncToSaveData()
+    {
+        var run = DataManager.Instance.Run;
+        if (run == null) return;
+
+        run.build.ownedModules.Clear();
+        foreach (var kvp in activeModules)
+        {
+            var owned = new OwnedModuleRunData
+            {
+                moduleType = kvp.Key,
+                statLevels = new List<StatLevelData>()
+            };
+
+            var runtime = kvp.Value;
+            foreach (var statType in runtime.statTypes)
+            {
+                int level = runtime.GetStatLevel(statType);
+                if (level > 0)
+                {
+                    owned.statLevels.Add(new StatLevelData
+                    {
+                        statType = statType,
+                        level = level
+                    });
+                }
+            }
+
+            run.build.ownedModules.Add(owned);
+        }
+    }
+
+    /// <summary>
+    /// 新局开始时初始化：清空缓存，写入 startingModules
+    /// </summary>
+    public void InitNewRun()
+    {
+        unlockedModuleTypes.Clear();
+        activeModules.Clear();
+        roundExclude.Clear();
+    }
+
+    // ==================== 原有逻辑 ====================
+
     public void ClearRoundExclude()
     {
         roundExclude.Clear();
     }
 
-    private string GetKey(UpgradeOption opt)
-    {
-        return $"{opt.moduleType}_{opt.statType}";
-    }
 
-    public void SyncWithPlayerManager()
-    {
-        foreach (var config in allModuleConfigs)
-        {
-            if (IsModuleUnlocked(config.moduleType))
-            {
-                InitializeRuntimeData(config);
-            }
-        }
-    }
-
+    #region 模块操作
     public void ApplyModulesToPlayer()
     {
         var playerModules = PlayerManager.Instance.CurrentModules;
@@ -93,7 +163,6 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         modules.Initialize?.Invoke();
     }
 
-
     public void UnlockModule(ModuleType type)
     {
         if (!unlockedModuleTypes.Contains(type))
@@ -110,6 +179,8 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
             {
                 PlayerManager.Instance.CurrentModules.UnlockModule(type);
             }
+
+            SyncToSaveData();
         }
     }
 
@@ -118,11 +189,12 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         if (unlockedModuleTypes.Contains(type))
         {
             unlockedModuleTypes.Remove(type);
-            //activeModules.Remove(type);
             if (PlayerManager.Instance.CurrentModules != null)
             {
                 PlayerManager.Instance.CurrentModules.DisableModule(type);
             }
+
+            SyncToSaveData();
         }
     }
 
@@ -131,6 +203,7 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
         {
             data.ResetAllStatLevel();
+            SyncToSaveData();
         }
     }
 
@@ -140,8 +213,6 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         UpgradePoints -= amount;
         return true;
     }
-
-    public bool IsModuleUnlocked(ModuleType type) => unlockedModuleTypes.Contains(type);
 
     public void AddExperience(int amount)
     {
@@ -163,9 +234,31 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         }
     }
 
+    private int GetExpToLevelUp()
+    {
+        return Mathf.RoundToInt(baseExpToLevelUp * Mathf.Pow(expScale, CurrentLevel - 1));
+    }
+
+
+    public void UpgradeModuleStat(ModuleType moduleType, StatType statType)
+    {
+        if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
+        {
+            if (data.AddStatUpgrade(statType))
+            {
+                SyncToSaveData();
+                EventManager.Broadcast<ModuleType, StatType>(GameEvent.ModuleUpgrade, moduleType, statType);
+            }
+        }
+    }
+
+    #endregion
+
+    #region 获取数据的接口
+    public bool IsModuleUnlocked(ModuleType type) => unlockedModuleTypes.Contains(type);
     public void GainUpgradePointByModule(ModuleType type)
     {
-        if(activeModules.TryGetValue(type, out ModuleRuntimeData data))
+        if (activeModules.TryGetValue(type, out ModuleRuntimeData data))
         {
             int amount = 0;
             foreach (var stat in data.statTypes)
@@ -176,59 +269,17 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         }
     }
 
-    public bool ConsumeUpgradePoint()
-    {
-        if (UpgradePoints <= 0) return false;
-        UpgradePoints--;
-        OnUpgradePointsChanged?.Invoke(UpgradePoints);
-        return true;
-    }
-
-    //注意，判定成功后会直接扣费  
     public bool CanUpgrade(ModuleType moduleType, StatType statType)
     {
         if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
         {
-            if(data.IsStatMaxed(statType))
+            if (data.IsStatMaxed(statType))
             {
                 return false;
-            }   
+            }
         }
 
         return ConsumeUpgradePoint(GetCost(moduleType, statType));
-    }
-
-    private int GetExpToLevelUp()
-    {
-        return Mathf.RoundToInt(baseExpToLevelUp * Mathf.Pow(expScale, CurrentLevel - 1));
-    }
-
-    //public void UnlockModule(ModuleType type)
-    //{
-    //    ModuleConfig config = GetConfig(type);
-    //    if (config == null) return;
-
-    //    if (activeModules.ContainsKey(type)) return;
-
-    //    PlayerManager.Instance.UnlockModuleData(type);
-    //    InitializeRuntimeData(config);
-    //}
-
-    public void UpgradeModuleStat(ModuleType moduleType, StatType statType)
-    {
-        if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
-        {
-            if(data.AddStatUpgrade(statType))
-                EventManager.Broadcast<ModuleType, StatType>(GameEvent.ModuleUpgrade, moduleType, statType);
-        }
-    }
-
-    private void InitializeRuntimeData(ModuleConfig config)
-    {
-        if (!activeModules.ContainsKey(config.moduleType))
-        {
-            activeModules.Add(config.moduleType, new ModuleRuntimeData(config));
-        }
     }
 
     public float GetStat(ModuleType moduleType, StatType statType, float defaultValue = 0f)
@@ -267,90 +318,6 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         return -1;
     }
 
-    /// <summary>
-    /// 升级选项获取逻辑
-    /// </summary>
-    public List<UpgradeOption> GetUpgradeOptions(int count)
-    {
-        List<UpgradeOption> forcePool = new();
-        List<UpgradeOption> normalPool = new();
-
-        foreach (var config in allModuleConfigs)
-        {
-            bool unlocked = IsModuleUnlocked(config.moduleType);
-
-            if (CurrentLevel < config.unlockLevel)
-                continue;
-
-            // 强制解锁
-            if (!unlocked && config.unlockLevel == CurrentLevel)
-            {
-                forcePool.Add(new UpgradeOption
-                {
-                    moduleType = config.moduleType,
-                    statType = StatType.None
-                });
-                continue;
-            }
-
-            if (!unlocked)
-            {
-                normalPool.Add(new UpgradeOption
-                {
-                    moduleType = config.moduleType,
-                    statType = StatType.None
-                });
-            }
-            else
-            {
-                if (activeModules.TryGetValue(config.moduleType, out var runtime))
-                {
-                    foreach (var stat in config.statUpgrades)
-                    {
-                        if (runtime.IsStatMaxed(stat.statType))
-                            continue;
-
-                        normalPool.Add(new UpgradeOption
-                        {
-                            moduleType = config.moduleType,
-                            statType = stat.statType
-                        });
-                    }
-                }
-            }
-        }
-
-        Shuffle(normalPool);
-
-        List<UpgradeOption> result = new();
-
-        // 先塞强制池
-        foreach (var opt in forcePool)
-        {
-            string key = GetKey(opt);
-            if (roundExclude.Contains(key)) continue;
-
-            roundExclude.Add(key);
-            result.Add(opt);
-
-            if (result.Count >= count) return result;
-        }
-
-        // 再塞普通池
-        foreach (var opt in normalPool)
-        {
-            if (result.Count >= count) break;
-
-            string key = GetKey(opt);
-            if (roundExclude.Contains(key)) continue;
-
-            roundExclude.Add(key);
-            result.Add(opt);
-        }
-
-        return result;
-    }
-
     public ModuleConfig GetConfig(ModuleType type)
     {
         foreach (var config in allModuleConfigs)
@@ -360,6 +327,8 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         }
         return null;
     }
+
+    #endregion
 
     private void OnDestroy()
     {

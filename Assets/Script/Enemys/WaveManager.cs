@@ -18,14 +18,10 @@ public enum SpawnDirection
 public class WaveGroup
 {
     [Header("配置")]
-    public GameObject enemyPrefab; // 怪物的预制体
-    public int count = 5;          // 数量
-    public float spawnRate = 1f;   // 间隔时间(秒)
-    public bool isParallel = false;
+    public List<int> enemyIndex; // 怪物的预制体
+    public List<float> spawnRate;   // 间隔时间(秒)
+    public float groupDuration;
     public SpawnDirection direction = SpawnDirection.Random;
-
-    [Header("延迟")]
-    public float delayBeforeStart = 0f; // 这组怪开始刷之前的等待时间
 }
 
 [System.Serializable]
@@ -33,6 +29,7 @@ public class WaveGroup
 public class WaveData
 {
     public string waveName = "Wave ";
+    public List<GameObject> enemies;
     public List<WaveGroup> groups;
     public float waveDuration;
 }
@@ -80,6 +77,26 @@ public class WaveManager : MonoSingleton<WaveManager>
     {
         camHeight = 2f * mainCam.orthographicSize;
         camWidth = camHeight * mainCam.aspect;
+    }
+
+    /// <summary>
+    /// 从存档恢复波次索引
+    /// </summary>
+    public void InitFromSaveData()
+    {
+        var run = DataManager.Instance.Run;
+        if (run == null) return;
+        currentWaveIndex = run.wave.currentWaveIndex;
+    }
+
+    /// <summary>
+    /// 将当前波次状态写入 DataManager
+    /// </summary>
+    public void SyncToSaveData()
+    {
+        var run = DataManager.Instance.Run;
+        if (run == null) return;
+        run.wave.currentWaveIndex = currentWaveIndex;
     }
 
     // --- 核心游戏循环 ---
@@ -155,6 +172,7 @@ public class WaveManager : MonoSingleton<WaveManager>
             Debug.Log($"<color=green>--- {currentWave.waveName} 完成 ---</color>");
 
             currentWaveIndex++;
+            SyncToSaveData();
         }
 
         // 所有波次结束
@@ -170,37 +188,30 @@ public class WaveManager : MonoSingleton<WaveManager>
         for (int i = 0; i < wave.groups.Count; i++)
         {
             var currentGroup = wave.groups[i];
-
-            Coroutine groupRoutine = StartCoroutine(SpawnGroupRoutine(currentGroup));
-            runningGroupRoutines.Add(groupRoutine);
-
-            // 检查下一组是否是并行
-            bool nextIsParallel = false;
-            if (i + 1 < wave.groups.Count)
+            for(int j = 0; j < currentGroup.enemyIndex.Count; j++)
             {
-                nextIsParallel = wave.groups[i + 1].isParallel;
+                runningGroupRoutines.Add(StartCoroutine(SpawnGroupRoutine(wave, currentGroup,j)));
             }
 
-            if (!nextIsParallel)
+            foreach (var routine in runningGroupRoutines)
             {
-                yield return groupRoutine;
+                if (routine != null) yield return routine;
             }
+            runningGroupRoutines.Clear();
         }
 
     }
 
-    IEnumerator SpawnGroupRoutine(WaveGroup group)
+    IEnumerator SpawnGroupRoutine(WaveData wave,WaveGroup group,int index)
     {
         activeSpawnerCount++; // 标记有一个刷怪进程开始
 
-        // 处理组延迟
-        if (group.delayBeforeStart > 0)
-            yield return new WaitForSeconds(group.delayBeforeStart);
-
-        for (int i = 0; i < group.count; i++)
+        float timer=0;
+        while (timer < group.groupDuration)
         {
-            SpawnEnemy(group.enemyPrefab, group.direction);
-            yield return new WaitForSeconds(group.spawnRate);
+            SpawnEnemy(wave.enemies[group.enemyIndex[index]], group.direction);
+            yield return new WaitForSeconds(group.spawnRate[index]);
+            timer+= group.spawnRate[index];
         }
 
         activeSpawnerCount--; // 标记这个刷怪进程结束

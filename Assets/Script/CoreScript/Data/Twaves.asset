@@ -14,11 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   allWaves:
   - waveName: 'Wave '
+    enemies: []
     groups:
-    - enemyPrefab: {fileID: 2604878067555025342, guid: 337a5153cb2ff5c4f83eb1d3023f177b, type: 3}
-      count: 1
-      spawnRate: 1
-      isParallel: 0
+    - enemyIndex: 
+      spawnRate: []
+      groupDuration: 0
       direction: 5
-      delayBeforeStart: 0
     waveDuration: 0

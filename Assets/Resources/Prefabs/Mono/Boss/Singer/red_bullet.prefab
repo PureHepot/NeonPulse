@@ -163,10 +163,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 15
   damage: 1
-  lifeTime: 10
+  lifeTime: 20
   hitLayers:
     serializedVersion: 2
     m_Bits: 16448
   enableReflection: 1
   maxBounces: 2
   reflectionTag: Reflector
+  reflectionHomingBias: 0.3

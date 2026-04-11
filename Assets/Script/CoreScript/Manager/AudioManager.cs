@@ -23,19 +23,21 @@ public class AudioManager : MonoSingleton<AudioManager>
     private readonly List<AudioSource> effectSourcesPool = new();
 
     // 资源缓存
-    private readonly Dictionary<string, AudioClip> clipCache = new ();
-    private float globalBgmVolume = 1f;
-    public float GlobalBgmVolume => globalBgmVolume;
-    private float globalEffectVolume = 1f;
-    public float GlobalEffectVolume => globalEffectVolume;
+    private readonly Dictionary<string, AudioClip> clipCache = new();
 
-    //静音变量
-    public bool IsSoundMuted; // BGM静音
-    public bool IsEffectMuted; // 音效静音
+    // ==================== 音量/静音 → DataManager.Settings ====================
+
+    private SettingsData S => DataManager.Instance.Settings;
+
+    public float GlobalBgmVolume => S.bgmVolume;
+    public float GlobalEffectVolume => S.effectVolume;
+    public bool IsBgmMuted => S.isBgmMuted;
+    public bool IsEffectMuted => S.isEffectMuted;
 
     protected void Awake()
     {
         InitComponents();
+        ApplySettingsToMixer();
     }
 
     private void InitComponents()
@@ -51,7 +53,6 @@ public class AudioManager : MonoSingleton<AudioManager>
         var mixer = Resources.Load<AudioMixer>(MIXER_PATH);
         if (mixer != null)
         {
-            // 需确保Mixer中有名为 "Effect" 和 "BGM" 的 Group
             var bgmGroups = mixer.FindMatchingGroups("BGM");
             var effectGroups = mixer.FindMatchingGroups("Effect");
 
@@ -72,11 +73,17 @@ public class AudioManager : MonoSingleton<AudioManager>
         }
     }
 
-    #region BGM Control 
-
     /// <summary>
-    /// 播放背景音乐
+    /// 从 Settings 恢复音量到 Mixer / Source
     /// </summary>
+    private void ApplySettingsToMixer()
+    {
+        SetBGMVolume(S.bgmVolume);
+        SetEffectVolume(S.effectVolume);
+    }
+
+    #region BGM Control
+
     public void PlayBGM(string name, float fadeDuration = 1.0f)
     {
         if (string.IsNullOrEmpty(name)) return;
@@ -84,7 +91,6 @@ public class AudioManager : MonoSingleton<AudioManager>
         var clip = LoadClip(name, true);
         if (clip == null) return;
 
-        // 如果是同一首，不重播
         if (bgmSource.clip == clip && bgmSource.isPlaying) return;
 
         StartCoroutine(FadeSwitchBGM(clip, fadeDuration));
@@ -92,10 +98,8 @@ public class AudioManager : MonoSingleton<AudioManager>
 
     private IEnumerator FadeSwitchBGM(AudioClip newClip, float duration)
     {
-        // 目标音量：如果有Mixer，Source只需要负责淡入到1；如果没有Mixer，Source需要淡入到 globalBgmVolume
-        var targetVolume = (bgmMixerGroup != null) ? 1f : globalBgmVolume;
+        var targetVolume = (bgmMixerGroup != null) ? 1f : S.bgmVolume;
 
-        // 淡出
         if (bgmSource.isPlaying && duration > 0)
         {
             var startVol = bgmSource.volume;
@@ -111,7 +115,6 @@ public class AudioManager : MonoSingleton<AudioManager>
         bgmSource.volume = 0;
         bgmSource.Play();
 
-        // 淡入
         if (duration > 0)
         {
             for (var t = 0f; t < duration; t += Time.deltaTime)
@@ -154,21 +157,17 @@ public class AudioManager : MonoSingleton<AudioManager>
         }
         else
         {
-            source.volume = globalEffectVolume * volumeScale;
+            source.volume = S.effectVolume * volumeScale;
         }
 
         source.Play();
     }
 
-    /// <summary>
-    /// 快捷播放音效：带有微小随机音调
-    /// </summary>
     public void PlayEffectRandom(string name)
     {
         PlayEffect(name, 1f, Random.Range(0.9f, 1.1f));
     }
 
-    // 从池中获取闲置 Source
     private AudioSource GetAvailableSource()
     {
         foreach (var source in effectSourcesPool)
@@ -176,7 +175,7 @@ public class AudioManager : MonoSingleton<AudioManager>
             if (!source.isPlaying) return source;
         }
         var newSource = gameObject.AddComponent<AudioSource>();
-        newSource.outputAudioMixerGroup = effectMixerGroup; // 自动应用 Mixer
+        newSource.outputAudioMixerGroup = effectMixerGroup;
         newSource.playOnAwake = false;
         effectSourcesPool.Add(newSource);
 
@@ -187,13 +186,6 @@ public class AudioManager : MonoSingleton<AudioManager>
 
     #region 3D Effect Control (空间音效)
 
-    /// <summary>
-    /// 在指定位置播放3D音效
-    /// </summary>
-    /// <param name="name">音效文件名</param>
-    /// <param name="position">世界坐标</param>
-    /// <param name="prefab">【可选】包含AudioSource配置的预制体。如果为null，将代码生成一个默认3D源。</param>
-    /// <param name="volumeScale">音量</param>
     public void PlayEffectAt(string name, Vector3 position, GameObject prefab = null, float volumeScale = 1f)
     {
         if (IsEffectMuted) return;
@@ -203,13 +195,6 @@ public class AudioManager : MonoSingleton<AudioManager>
         CreateAndPlay3DSource(clip, position, null, prefab, volumeScale);
     }
 
-    /// <summary>
-    /// 在指定物体上播放3D音效（跟随移动）
-    /// </summary>
-    /// <param name="name">音效文件名</param>
-    /// <param name="target">跟随的目标Transform</param>
-    /// <param name="prefab">【可选】预制体</param>
-    /// <param name="volumeScale">音量</param>
     public void PlayEffectFollow(string name, Transform target, GameObject prefab = null, float volumeScale = 1f)
     {
         if (IsEffectMuted) return;
@@ -219,9 +204,6 @@ public class AudioManager : MonoSingleton<AudioManager>
         CreateAndPlay3DSource(clip, target.position, target, prefab, volumeScale);
     }
 
-    /// <summary>
-    /// 创建临时的3D音效对象
-    /// </summary>
     private void CreateAndPlay3DSource(AudioClip clip, Vector3 pos, Transform parent, GameObject prefab, float volume)
     {
         GameObject audioObj;
@@ -243,11 +225,10 @@ public class AudioManager : MonoSingleton<AudioManager>
             audioObj.transform.position = pos;
             source = audioObj.AddComponent<AudioSource>();
 
-            // 默认3D设置 (如果没传prefab)
-            source.spatialBlend = 1.0f; // 1.0是完全3D，0.0是2D
-            source.minDistance = 2f;    // 最小衰减距离
-            source.maxDistance = 20f;   // 最大听到距离
-            source.rolloffMode = AudioRolloffMode.Logarithmic; // 对数衰减
+            source.spatialBlend = 1.0f;
+            source.minDistance = 2f;
+            source.maxDistance = 20f;
+            source.rolloffMode = AudioRolloffMode.Logarithmic;
         }
 
         if (parent != null)
@@ -259,14 +240,13 @@ public class AudioManager : MonoSingleton<AudioManager>
         source.clip = clip;
         source.outputAudioMixerGroup = effectMixerGroup;
 
-        // 修正音量逻辑
         if (effectMixerGroup != null)
         {
-            source.volume = volume; // 仅应用传入的局部音量
+            source.volume = volume;
         }
         else
         {
-            source.volume = globalEffectVolume * volume; // 应用全局 * 局部
+            source.volume = S.effectVolume * volume;
         }
 
         source.Play();
@@ -278,7 +258,6 @@ public class AudioManager : MonoSingleton<AudioManager>
 
     #region Resource Management
 
-    // 统一资源加载与缓存逻辑
     private AudioClip LoadClip(string name, bool isBgm)
     {
         if (clipCache.TryGetValue(name, out var cachedClip))
@@ -299,9 +278,6 @@ public class AudioManager : MonoSingleton<AudioManager>
         return clip;
     }
 
-    /// <summary>
-    /// 切换场景时调用，清理不再需要的内存
-    /// </summary>
     public void ClearCache()
     {
         clipCache.Clear();
@@ -311,30 +287,25 @@ public class AudioManager : MonoSingleton<AudioManager>
 
     #region Volume Control
 
-    // 设置 BGM 音量
     public void SetBGMVolume(float volume)
     {
-        globalBgmVolume = volume;
+        S.bgmVolume = volume;
 
         if (bgmMixerGroup != null)
         {
-            // 转换为分贝，增加 0 的保护
             var db = volume <= 0.0001f ? -80f : Mathf.Log10(volume) * 20;
-            // 增加 SetFloat 的返回值检查（可选，用于Debug）
             bool result = bgmMixerGroup.audioMixer.SetFloat("BGMVolume", db);
             if (!result) Debug.LogWarning("请确保AudioMixer中已Expose名为'BGMVolume'的参数");
         }
         else
         {
-            // 如果没有Mixer，直接修改Source
             bgmSource.volume = volume;
         }
     }
 
-    // 设置音效音量
     public void SetEffectVolume(float volume)
     {
-        globalEffectVolume = volume; // 记录值
+        S.effectVolume = volume;
 
         if (effectMixerGroup != null)
         {
@@ -343,12 +314,22 @@ public class AudioManager : MonoSingleton<AudioManager>
         }
         else
         {
-            // 更新池中所有 Source (包括正在播放的和闲置的)
             foreach (var s in effectSourcesPool)
             {
                 s.volume = volume;
             }
         }
+    }
+
+    public void SetBgmMuted(bool muted)
+    {
+        S.isBgmMuted = muted;
+        bgmSource.mute = muted;
+    }
+
+    public void SetEffectMuted(bool muted)
+    {
+        S.isEffectMuted = muted;
     }
 
     #endregion

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2104355646697587455}
   - component: {fileID: 8234553666177884431}
   - component: {fileID: 4106554276265722918}
+  - component: {fileID: 7485866261256049872}
   m_Layer: 3
   m_Name: EnemyDasher
   m_TagString: Enemy
@@ -61,6 +62,7 @@ MonoBehaviour:
   knockbackForce: 8
   knockbackTorque: 20
   currentHp: 0
+  isInScene: 0
   orbitDistance: 5
   distanceCorrectionSpeed: 2
   dashInterval: 3
@@ -138,6 +140,19 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!114 &7485866261256049872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3862104991398879297}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0127be84f7abf64d863eb776603ed06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isFirstTimeEntering: 1
 --- !u!1 &6997276993736926571
 GameObject:
   m_ObjectHideFlags: 0
