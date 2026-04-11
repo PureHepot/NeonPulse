@@ -11,6 +11,7 @@ public class PlayerPreviewSync : MonoBehaviour
     private GameObject dummyPlayer;
     private ModuleManager dummyModules;
     private SpriteRenderer dummyRenderer;
+    private Dictionary<ModuleType, GameObject> activePreviewModules = new Dictionary<ModuleType, GameObject>();
 
     private void OnEnable()
     {
@@ -152,6 +153,35 @@ public class PlayerPreviewSync : MonoBehaviour
         {
             SetLayerRecursively(child.gameObject, newLayer);
         }
+    }
+    public void UnlockModulePreview(ModuleType type)
+    {
+        // 获取模块配置
+        var config = UpgradeManager.Instance.GetConfig(type); 
+        if (config == null || !config.hasVisualEffectInUI)
+        {
+        // 没有 UI 表现，什么都不做
+            return;
+        }
+
+        // 如果已存在，先销毁（适用于升级替换）
+        if (activePreviewModules.ContainsKey(type))
+        {
+            Destroy(activePreviewModules[type]);
+            activePreviewModules.Remove(type);
+        }
+
+        // 实例化 UI 预览物体
+        GameObject previewObj = Instantiate(config.uiPreviewPrefab, dummyPlayer.transform);
+    
+        // 关键：设置为 UI 层
+        SetLayerRecursively(previewObj, LayerMask.NameToLayer(uiLayerName));
+
+        // 可选：禁用物理、碰撞（通常 prefab 已处理）
+        NeutralizeComponents(previewObj);
+
+        // 记录
+        activePreviewModules[type] = previewObj;
     }
 
     // 让模型在 UI 里自转，增加动感

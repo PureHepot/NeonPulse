@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moduleName: LaserDroneModule
   moduleType: 5
-  playerModule: {fileID: 3539222659300347212, guid: f93698e0820b1034e9edf7f1bec68f9b, type: 3}
   prefab: {fileID: 5236248493996019757, guid: f93698e0820b1034e9edf7f1bec68f9b, type: 3}
+  uiPreviewPrefab: {fileID: 5236248493996019757, guid: f93698e0820b1034e9edf7f1bec68f9b, type: 3}
   baseStats:
   - type: 13
     value: 1

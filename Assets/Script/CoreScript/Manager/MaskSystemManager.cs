@@ -45,20 +45,19 @@ public class MaskSystemManager : MonoSingleton<MaskSystemManager>
     private void EquipMask(MaskConfig mask)
     {
         currentMask = mask;
-
+        UpgradeManager.Instance.ClearRoundExclude();
         // 应用外观
         ApplyCurrentMaskVisuals();
-
         EventManager.Broadcast(GameEvent.PlayerSkinChanged);
-
+        
         // 解锁模块
         foreach (var mod in mask.guaranteedModules)
         {
             UpgradeManager.Instance.UnlockModule(mod);
             //PlayrPreview的模块同步解锁
             EventManager.Broadcast(GameEvent.PlayerUIModelUnlock, mod);
-        }
 
+        }
         //将不是面具带来的模块禁用
         mods.Clear();
         foreach (var mod in UpgradeManager.Instance.UnlockedModuleTypes)
@@ -66,7 +65,7 @@ public class MaskSystemManager : MonoSingleton<MaskSystemManager>
             bool isFromMask = false;
             foreach(var m in mask.guaranteedModules)
             {
-                if(mod == m)
+                 if(mod == m)
                 {
                     isFromMask = true;
                     break;
@@ -78,13 +77,14 @@ public class MaskSystemManager : MonoSingleton<MaskSystemManager>
                 EventManager.Broadcast(GameEvent.PlayerUIModelLock, mod);
             }
         }
+        
 
         foreach (var mod in mods)
         {
             UpgradeManager.Instance.GainUpgradePointByModule(mod);
             UpgradeManager.Instance.ResetLevel(mod);
             UpgradeManager.Instance.LockModule(mod);
-
+            Debug.Log($"回收模块: {mod}");
         }
 
 

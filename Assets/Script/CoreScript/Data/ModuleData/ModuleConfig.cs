@@ -89,6 +89,8 @@ public class ModuleConfig : ScriptableObject
     [Header("Module Prefab")]
     [Tooltip("该模块对应的预制体，根节点需挂有 PlayerModule 组件")]
     public GameObject prefab;
+    public GameObject uiPreviewPrefab; // 可选：用于 UI 预览的附加物体（如无人机）
+    public bool hasVisualEffectInUI => uiPreviewPrefab != null;
 
     [Header("Base Stats")]
     public List<StatData> baseStats;

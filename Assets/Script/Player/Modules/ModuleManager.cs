@@ -43,6 +43,16 @@ public class ModuleManager : MonoBehaviour
 
     void Update()
     {
+        float delta = Time.deltaTime;  
+        // 这里添加层级检查，确保只有玩家对象或UI模型对象的模块更新被执行,同时UI_Model不受时间缩放影响
+        if(transform.gameObject.layer==LayerMask.NameToLayer("Player")) 
+        {
+            delta = Time.timeScale;
+        }
+        if(transform.gameObject.layer==LayerMask.NameToLayer("UI_Model")) 
+        {
+            delta = Time.unscaledDeltaTime;
+        }
         for (int i = 0; i < activeModules.Count; i++)
         {
             activeModules[i].OnModuleUpdate();
