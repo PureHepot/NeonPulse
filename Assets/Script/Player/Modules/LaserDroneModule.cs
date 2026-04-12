@@ -95,7 +95,7 @@ public class LaserDroneModule : PlayerModule
     public override void Initialize(PlayerController _player)
     {
         base.Initialize(_player);
-
+        
         if (_debrisHolder != null) Destroy(_debrisHolder);
         _debrisHolder = new GameObject($"[{player.name}]_DroneHolder");
 
@@ -158,6 +158,10 @@ public class LaserDroneModule : PlayerModule
         }
 
         UpdateActiveDrones();
+        if (transform.parent.gameObject.layer == LayerMask.NameToLayer("UI_Model"))
+        {
+            PreviewManager.Instance.SetLayerRecursively(_debrisHolder, LayerMask.NameToLayer("UI_Model"));
+        }
     }
 
 
