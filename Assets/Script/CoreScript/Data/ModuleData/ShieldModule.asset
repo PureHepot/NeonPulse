@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moduleName: ShieldModule
   moduleType: 3
+  playerModule: {fileID: -3104412164907961016, guid: 088dae57238296d44be81bdda7fd4226, type: 3}
+  prefab: {fileID: 1341279604334608228, guid: 088dae57238296d44be81bdda7fd4226, type: 3}
   baseStats:
   - type: 4
     value: 200

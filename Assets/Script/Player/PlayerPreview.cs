@@ -29,7 +29,7 @@ public class PlayerPreview : MonoBehaviour
         if (controller) Destroy(controller);
         var rb = currentModel.GetComponent<Rigidbody2D>();
         if (rb) Destroy(rb);
-        currentModel.GetComponent<PlayerModuleManager>().RemoveModule(ModuleType.Movement);
+        currentModel.GetComponent<ModuleManager>().RemoveModule(ModuleType.Movement);
 
         SetLayerRecursively(currentModel, LayerMask.NameToLayer(uiLayerName));
         currentModel.tag = "Untagged";
@@ -41,21 +41,21 @@ public class PlayerPreview : MonoBehaviour
 
     private void UnLockUIModule(ModuleType moduleType)
     {
-        currentModel.GetComponent<PlayerModuleManager>().UnlockModule(moduleType);
+        currentModel.GetComponent<ModuleManager>().UnlockModule(moduleType);
     }
 
     private void InitUIModule()
     {
-        currentModel.GetComponent<PlayerModuleManager>().Initialize?.Invoke();
+        currentModel.GetComponent<ModuleManager>().Initialize?.Invoke();
     }
     private void UpgradeUIModule(ModuleType moduleType, StatType statType)
     {
-        currentModel.GetComponent<PlayerModuleManager>().UpgradeModule(moduleType, statType);
+        currentModel.GetComponent<ModuleManager>().UpgradeModule(moduleType, statType);
     }
 
     private void LockUIModule(ModuleType type)
     {
-        currentModel.GetComponent<PlayerModuleManager>().DisableModule(type);
+        currentModel.GetComponent<ModuleManager>().DisableModule(type);
     }
 
     void Update()

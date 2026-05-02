@@ -95,7 +95,7 @@ public class LaserDroneModule : PlayerModule
     public override void Initialize(PlayerController _player)
     {
         base.Initialize(_player);
-
+        
         if (_debrisHolder != null) Destroy(_debrisHolder);
         _debrisHolder = new GameObject($"[{player.name}]_DroneHolder");
 
@@ -158,6 +158,10 @@ public class LaserDroneModule : PlayerModule
         }
 
         UpdateActiveDrones();
+        if (transform.parent.gameObject.layer == LayerMask.NameToLayer("UI_Model"))
+        {
+            PreviewManager.Instance.SetLayerRecursively(_debrisHolder, LayerMask.NameToLayer("UI_Model"));
+        }
     }
 
 
@@ -312,25 +316,98 @@ public class LaserDroneModule : PlayerModule
             return d1.CompareTo(d2);
         });
 
-        //取模来分配目标
-        for (int i = 0; i < droneCount; i++)
-        {
-            currentTargets[i] = enemies[i % enemies.Count];
-        }
+        // 分配目标：尽量保证每个无人机有唯一目标
+    // AssignUniqueTargets(enemies); // 已废弃，改为每个无人机独立锁定目标
 
         return true;
     }
 
+    // 将 enemies 列表分配给当前的无人机，使得每个无人机的目标尽量不重复
+    // 新版：每个无人机锁定最近的敌人，锁定后只要目标未死亡且未超出范围就不切换
+    // 若目标死亡或超出范围，才重新锁定最近的敌人
+    // 没有目标时 currentTargets[i]=null
+    void UpdateDroneTarget(int i, HashSet<Transform> used)
+    {
+        Transform drone = droneTransforms[i];
+        Transform curTarget = currentTargets[i];
+        float maxLockDist = detectionRadius * 1.2f;
+        float maxSwitchAngle = 120f;
+        Collider2D[] hits = Physics2D.OverlapCircleAll(drone.position, detectionRadius, enemyLayer);
+        if(hits.Length > 0&&hits.Length<=droneCount)
+        {
+            List<Transform> candidates = new List<Transform>();
+            foreach (var h in hits)
+            {
+                var t = h.transform;
+                if (t == null || !t.gameObject.activeInHierarchy) continue;
+                if (used.Contains(t)) continue;
+                candidates.Add(t);
+            }
+            // 按距离排序
+            candidates.Sort((a, b) =>
+            {
+                float d1 = (a.position - drone.position).sqrMagnitude;
+                float d2 = (b.position - drone.position).sqrMagnitude;
+                return d1.CompareTo(d2);
+            });
+            currentTargets[i]=candidates[0];
+            return;
+        }
+        // 1. 当前目标无效（死亡/隐藏/超出范围/被其他无人机占用）
+        bool needSwitch = false;
+        if (curTarget == null || !curTarget.gameObject.activeInHierarchy ||
+            Vector3.Distance(drone.position, curTarget.position) > maxLockDist || used.Contains(curTarget))
+        {
+            needSwitch = true;
+        }
+
+        if (needSwitch)
+        {
+            // 重新锁定最近的未被占用的敌人，且角度限制
+            List<Transform> candidates = new List<Transform>();
+            foreach (var h in hits)
+            {
+                var t = h.transform;
+                if (t == null || !t.gameObject.activeInHierarchy) continue;
+                if (used.Contains(t)) continue;
+                candidates.Add(t);
+            }
+            // 按距离排序
+            candidates.Sort((a, b) =>
+            {
+                float d1 = (a.position - drone.position).sqrMagnitude;
+                float d2 = (b.position - drone.position).sqrMagnitude;
+                return d1.CompareTo(d2);
+            });
+
+            Transform chosen = null;
+            Vector3 forward = drone.right;
+            foreach (var t in candidates)
+            {
+                Vector3 dir = (t.position - drone.position).normalized;
+                float angle = Vector3.Angle(forward, dir);
+                if (angle <= maxSwitchAngle)
+                {
+                    chosen = t;
+                    break;
+                }
+            }
+            currentTargets[i] = chosen;
+        }
+        // 2. 否则保持原目标
+        if (currentTargets[i] != null)
+        {
+            used.Add(currentTargets[i]);
+        }
+    }
+
     void UpdateTargets()
     {
+        // 先统计已被分配的目标，保证无人机间目标不重复
+        HashSet<Transform> used = new HashSet<Transform>();
         for (int i = 0; i < droneCount; i++)
         {
-            // 如果目标不存在或已失活
-            if (currentTargets[i] == null || !currentTargets[i].gameObject.activeInHierarchy)
-            {
-                // 尝试重新找一个最近的
-                currentTargets[i] = GetNearestEnemy(droneTransforms[i].position);
-            }
+            UpdateDroneTarget(i, used);
         }
     }
 
@@ -597,7 +674,8 @@ public class LaserDroneModule : PlayerModule
     {
         base.OnActivate();
         transform.gameObject.SetActive(true);
-        droneCount = 1;
+        if(droneCount<=0) droneCount = 1;
+        droneCount=Mathf.Clamp(droneCount, 1, droneTransforms.Count);
         currentState = DroneState.Idle;
         UpdateActiveDrones();
     }
@@ -633,6 +711,7 @@ public class LaserDroneModule : PlayerModule
                     break;
             }
         }
+        UpdateActiveDrones();
     }
 
     private void OnDrawGizmosSelected()

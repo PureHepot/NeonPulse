@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moduleName: MovementModule
   moduleType: 0
+  playerModule: {fileID: 6839693602601240403, guid: ca5d0eb2616ef3f41981109d1b00277d, type: 3}
+  prefab: {fileID: 950323459775795189, guid: ca5d0eb2616ef3f41981109d1b00277d, type: 3}
   baseStats:
   - type: 3
     value: 4
