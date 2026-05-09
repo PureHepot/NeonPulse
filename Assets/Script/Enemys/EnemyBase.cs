@@ -25,16 +25,26 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     public float knockbackForce = 8f;
     public float knockbackTorque = 20f;
 
+    [Header("Physics Motion")]
+    public float locomotionResponse = 10f;
+    public float angularDamping = 12f;
+
     public float currentHp;
     protected Rigidbody2D rb;
     protected Transform playerTransform;
     protected bool isDead = false;
+    protected ContinuousPhysicsMotor2D motionMotor;
 
     public bool isInScene;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        motionMotor = GetComponent<ContinuousPhysicsMotor2D>();
+        if (motionMotor == null)
+            motionMotor = gameObject.AddComponent<ContinuousPhysicsMotor2D>();
+
+        motionMotor.Configure(locomotionResponse, angularDamping);
         if (bodyRenderer == null) bodyRenderer = GetComponentInChildren<SpriteRenderer>();
         isInScene = false;
     }
@@ -52,6 +62,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         if (playerObj != null) playerTransform = playerObj.transform;
 
         rb.simulated = true;
+        motionMotor?.ResetMotion();
 
         if (WaveManager.Instance != null)
         {
@@ -65,11 +76,14 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
 
     public virtual void OnDespawn()
     {
-        Debug.Log("我被OnDespawn了");
+
         transform.DOKill();
         if (bodyRenderer != null) bodyRenderer.DOKill();
 
-        rb.velocity = Vector2.zero;
+        if (motionMotor != null)
+            motionMotor.ResetMotion();
+        else
+            rb.velocity = Vector2.zero;
 
         if (WaveManager.Instance != null)
         {
@@ -113,7 +127,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
                 bodyRenderer.DOColor(normalColor, 0.1f);
             });
 
-            // 简单的受击缩放（Q弹的感觉）
+            // 绠€鍗曠殑鍙楀嚮缂╂斁锛圦寮圭殑鎰熻锛?
             transform.DOPunchScale(new Vector3(0.2f, 0.2f, 0), 0.1f);
         }
     }
@@ -148,11 +162,6 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         }
 
         BackgroundFXController.Instance.TriggerDistortion(transform.position);
-
-        if (UpgradeManager.Instance != null)
-        {
-            UpgradeManager.Instance.AddExperience(enemyExp);
-        }
 
         if (WaveManager.Instance != null)
         {
@@ -197,11 +206,10 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     {
         isKnockbacking = true;
 
-        rb.velocity = Vector2.zero;
+        StopMovementDrive();
 
         Vector2 forceDir = hitNormal.normalized;
-        rb.AddForce(forceDir * knockbackForce, ForceMode2D.Impulse);
-        rb.AddTorque(Random.Range(-knockbackTorque, knockbackTorque), ForceMode2D.Impulse);
+        ApplyImpulse(forceDir * knockbackForce, Random.Range(-knockbackTorque, knockbackTorque));
 
         Timer.Register(0.2f, () =>
         {
@@ -211,28 +219,36 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
 
     public void TakeDamage(int amount, Vector3 hitPoint, Vector3 knockbackDir, float customForce)
     {
+        TakeDamage(amount, hitPoint, knockbackDir, customForce, float.NaN);
+    }
+
+    public void TakeDamage(int amount, Vector3 hitPoint, Vector3 knockbackDir, float customForce, float customTorque)
+    {
         if (isDead) return;
 
         currentHp -= amount;
 
-        PlayHitEffect(hitPoint, knockbackDir); // 播放特效
+        PlayHitEffect(hitPoint, knockbackDir); // 鎾斁鐗规晥
 
         if (canKnockback && customForce > 0)
         {
-            ApplyCustomKnockback(knockbackDir, customForce);
+            ApplyCustomKnockback(knockbackDir, customForce, customTorque);
         }
 
         if (currentHp <= 0) Die();
         else AudioManager.Instance.PlayEffect("EnemyHit1");
     }
 
-    protected virtual void ApplyCustomKnockback(Vector3 forceDir, float force)
+    protected virtual void ApplyCustomKnockback(Vector3 forceDir, float force, float customTorque = float.NaN)
     {
         isKnockbacking = true;
-        rb.velocity = Vector2.zero; // 清空当前速度，保证击退瞬间爆发力
+        StopMovementDrive();
 
-        rb.AddForce(forceDir * force, ForceMode2D.Impulse);
-        rb.AddTorque(Random.Range(-knockbackTorque, knockbackTorque), ForceMode2D.Impulse);
+        float torque = float.IsNaN(customTorque)
+            ? Random.Range(-knockbackTorque, knockbackTorque)
+            : customTorque;
+
+        ApplyImpulse(forceDir * force, torque);
 
         Timer.Register(0.2f, () =>
         {
@@ -246,7 +262,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     {
         if (bodyRenderer != null)
         {
-            // 假设我们在Shader里定义了 "_HitFlashStrength"
+            // 鍋囪鎴戜滑鍦⊿hader閲屽畾涔変簡 "_HitFlashStrength"
             bodyRenderer.material.DOKill();
             bodyRenderer.material.SetFloat("_HitFlashStrength", 2f);
             bodyRenderer.material.DOFloat(0.1f, "_HitFlashStrength", 0.8f);
@@ -287,6 +303,42 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     {
         Vector2 p = Camera.main.WorldToViewportPoint(transform.position);
         isInScene = !(p.x < 0 || p.x > 1 || p.y < 0 || p.y > 1);
+    }
+
+    protected void DriveVelocity(Vector2 velocity, float responseScale = 1f)
+    {
+        if (motionMotor != null)
+            motionMotor.SetDesiredVelocity(velocity, responseScale);
+        else
+            rb.velocity = velocity;
+    }
+
+    protected void StopMovementDrive(bool immediate = false)
+    {
+        if (motionMotor != null)
+            motionMotor.StopDriving(immediate);
+        else if (immediate)
+            rb.velocity = Vector2.zero;
+    }
+
+    protected void SnapVelocity(Vector2 velocity)
+    {
+        if (motionMotor != null)
+            motionMotor.SnapVelocity(velocity);
+        else
+            rb.velocity = velocity;
+    }
+
+    protected void ApplyImpulse(Vector2 impulse, float angularImpulse = 0f)
+    {
+        if (motionMotor != null)
+            motionMotor.AddImpulse(impulse, angularImpulse);
+        else
+        {
+            rb.AddForce(impulse, ForceMode2D.Impulse);
+            if (!Mathf.Approximately(angularImpulse, 0f))
+                rb.AddTorque(angularImpulse, ForceMode2D.Impulse);
+        }
     }
 
   

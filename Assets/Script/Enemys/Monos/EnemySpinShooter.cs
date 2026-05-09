@@ -42,12 +42,12 @@ public class EnemySpinShooter : EnemyBase
     {
         if (playerTransform == null) return;
 
-        // ×ÔĞı
+        // è‡ªæ—‹
         transform.Rotate(Vector3.forward, spinSpeed * Time.deltaTime);
 
-        // Æ½»¬×·×Ù+ÓëÍ¬Àà±£³Ö¾àÀë
+        // å¹³æ»‘è¿½è¸ª+ä¸åŒç±»ä¿æŒè·ç¦»
         Vector2 desiredVel = GetDesiredVelocity();
-        rb.velocity = Vector2.Lerp(rb.velocity, desiredVel, Time.deltaTime * followSmooth);
+        DriveVelocity(desiredVel, followSmooth / 4f);
 
         HandleShoot();
 

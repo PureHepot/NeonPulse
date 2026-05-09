@@ -1,7 +1,7 @@
 public class HUDUI : UIBase
 {
     public HpBarUI hpBar;
-    public ExpBarUI expBar;
+    //public ExpBarUI expBar;
 
     public override void OnEnter(object args)
     {
@@ -9,8 +9,5 @@ public class HUDUI : UIBase
 
         if (hpBar != null)
             hpBar.OnEnter(null);
-
-        if (expBar != null)
-            expBar.OnEnter(null);
     }
 }

@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2938850d4485ee45954e75922bd383a, type: 3}
+  m_Name: Defence_Spike
+  m_EditorClassIdentifier: 
+  moduleId: defense_module_spike
+  moduleName: "\u5C16\u523A"
+  moduleType: 3
+  description: "\u53EF\u4EE5\u5C06\u4F24\u5BB3\u53CD\u5F39\u7ED9\u63A5\u89E6\u653B\u51FB\u7684\u654C\u4EBA"
+  icon: {fileID: 21300000, guid: 7b04aacc83bfcb447bcf6afada8c017b, type: 3}
+  categories: 16
+  statSchema: {fileID: 11400000, guid: f95c5b5f2457187459497a1f242753c3, type: 2}
+  defaultRarity: 0
+  rarityProfiles:
+  - rarity: 0
+    baseStats:
+    - statDefinition: {fileID: 11400000, guid: b4f9713909a601d4aa70573e336a21ff, type: 2}
+      value: 90
+    - statDefinition: {fileID: 11400000, guid: a005521775b5db34a980b3fb0e844d00, type: 2}
+      value: 20
+    maxPluginSlots: 1
+    loadCost: 1
+  coreSlotCount: 1
+  themeColor: {r: 1, g: 0.57323545, b: 0, a: 1}
+  runtimePrefab: {fileID: 8664554218016078908, guid: c361252e9b6ce8f4cbc16a2fba7fb324, type: 3}
+  previewPrefab: {fileID: 8664554218016078908, guid: c361252e9b6ce8f4cbc16a2fba7fb324, type: 3}
+  unlockCost: 0

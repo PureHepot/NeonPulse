@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class BattleFieldLimit : MonoBehaviour
 {
-    [Header("ÅäÖÃ")]
+    [Header("ç©å®¶")]
     private string playerTag = "Player";
     public Vector2 margin = new Vector2(0.5f, 0.5f); 
 
@@ -34,15 +34,15 @@ public class BattleFieldLimit : MonoBehaviour
 
     private void FixedUpdate()
     {
-        UpdateBounds(); // ÊµÊ±¸üĞÂ±ß½ç
-        FindPlayer();   // ²éÕÒÍæ¼Ò
-        ClampPlayerPos(); // ÏŞÖÆÍæ¼ÒÎ»ÖÃ
-        UpdateAllWalls();//¸üĞÂÇ½ÌåÎ»ÖÃ
+        UpdateBounds(); 
+        FindPlayer();   
+        ClampPlayerPos(); 
+        UpdateAllWalls();
         UpdateArenaTrap(ArenaTrap);
     }
 
     /// <summary>
-    /// ¼ÆËãÏà»ú±ß½ç
+    /// æ›´æ–°è¾¹ç¼˜
     /// </summary>
     private void UpdateBounds()
     {
@@ -53,7 +53,7 @@ public class BattleFieldLimit : MonoBehaviour
     }
 
     /// <summary>
-    /// Í¨¹ıTag²éÕÒÍæ¼Ò
+    /// æ‰¾åˆ°ç©å®¶
     /// </summary>
     private void FindPlayer()
     {
@@ -69,7 +69,7 @@ public class BattleFieldLimit : MonoBehaviour
     }
 
     /// <summary>
-    /// ÏŞÖÆÍæ¼ÒÎ»ÖÃÔÚ±ß½çÄÚ
+    /// å¹³æ»‘ç§»åŠ¨ç©å®¶çš„ä½ç½®
     /// </summary>
     private void ClampPlayerPos()
     {
@@ -81,7 +81,7 @@ public class BattleFieldLimit : MonoBehaviour
         _playerRb.position = new Vector2(clampedX, clampedY);
     }
 
-    // »æÖÆ±ß½ç
+    // è°ƒè¯•ä½¿ç”¨
     private void OnDrawGizmos()
     {
         if (_mainCam == null) _mainCam = Camera.main;
@@ -101,7 +101,6 @@ public class BattleFieldLimit : MonoBehaviour
     }
     private void UpdateAllWalls()
     {
-        // Ö»ÓĞÍÏÈëÁËÇ½²Å¸üĞÂ
         if (leftWall != null) UpdateWall(leftWall, WallSide.Left);
         if (rightWall != null) UpdateWall(rightWall, WallSide.Right);
         if (topWall != null) UpdateWall(topWall, WallSide.Top);

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,6 +14,15 @@ public static class MUtils
 
     public static int RandomPulseFunc()
     {
-        return Random.Range(0, 2) <= 0 ? -1 : 1;
+        return UnityEngine.Random.Range(0, 2) <= 0 ? -1 : 1;
     }
+
+    public static void DestroyChildren(this Transform parent)
+    {
+        for (int i = parent.childCount - 1; i >= 0; i--)
+        {
+            GameObject.Destroy(parent.GetChild(i).gameObject);
+        }
+    }
+
 }

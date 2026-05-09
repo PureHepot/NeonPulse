@@ -3,6 +3,15 @@ using UnityEngine;
 
 public class DataManager : MonoSingleton<DataManager>
 {
+    private const string DefaultFrameId = "BaseFrame";
+    private static readonly string[] DefaultModuleIds =
+    {
+        "base_move_module",
+        "base_health_module",
+        "base_shooter_module",
+        "defense_module_base"
+    };
+
     private SaveRoot saveRoot;
 
     // ==================== 快捷访问器 ====================
@@ -12,12 +21,15 @@ public class DataManager : MonoSingleton<DataManager>
     public SettingsData Settings => saveRoot.settings;
     public bool HasActiveRun => Run != null && Run.hasActiveRun;
 
+    /// <summary> 当前单局的装配数据快捷访问 </summary>
+    public RunLoadoutData CurrentLoadout => Run?.loadout;
+
     // ==================== 生命周期 ====================
 
     private void Awake()
     {
-        //DontDestroyOnLoad(gameObject);
         saveRoot = SaveService.Load() ?? new SaveRoot();
+        EnsureDefaultUnlocks();
     }
 
     // ==================== Run 生命周期 ====================
@@ -25,7 +37,7 @@ public class DataManager : MonoSingleton<DataManager>
     /// <summary>
     /// 开始新一局游戏
     /// </summary>
-    public void StartNewRun(int seed, List<ModuleType> startingModules)
+    public void StartNewRun(int seed, string frameId)
     {
         saveRoot.currentRun = new RunSaveData
         {
@@ -33,16 +45,19 @@ public class DataManager : MonoSingleton<DataManager>
             runSeed = seed,
             player = new PlayerRunData(),
             progression = new ProgressionRunData { level = 1 },
-            build = new BuildRunData
-            {
-                startingModules = new List<ModuleType>(startingModules)
-            },
+            loadout = BuildRunLoadout(frameId),
             wave = new WaveRunData(),
             world = new WorldRunData()
         };
 
+        Meta.SetSelectedFrame(frameId);
         Meta.totalRunsPlayed++;
         Save();
+    }
+
+    public string GetPreferredFrameId()
+    {
+        return Meta.GetSelectedFrameId();
     }
 
     /// <summary>
@@ -52,16 +67,22 @@ public class DataManager : MonoSingleton<DataManager>
     {
         if (Run == null) return;
 
-        // 结算货币：基于波次给奖励，胜利额外加成
         int reward = waveReached * 10;
         if (victory) reward *= 2;
         Meta.softCurrency += reward;
 
-        // 更新最高波次记录
         if (waveReached > Meta.bestWaveReached)
             Meta.bestWaveReached = waveReached;
 
-        // 清除当前 Run
+        saveRoot.currentRun = null;
+        Save();
+    }
+
+    public void ClearActiveRun()
+    {
+        if (saveRoot.currentRun == null)
+            return;
+
         saveRoot.currentRun = null;
         Save();
     }
@@ -119,5 +140,100 @@ public class DataManager : MonoSingleton<DataManager>
     private void OnApplicationQuit()
     {
         Save();
+    }
+
+    private void EnsureDefaultUnlocks()
+    {
+        bool changed = false;
+        var database = GameConfigDatabase.Instance;
+
+        if (saveRoot.meta.unlockedFrameIds.Count == 0)
+        {
+            saveRoot.meta.UnlockFrame(DefaultFrameId);
+            changed = true;
+        }
+
+        if (string.IsNullOrEmpty(saveRoot.meta.GetSelectedFrameId()))
+        {
+            saveRoot.meta.SetSelectedFrame(DefaultFrameId);
+            changed = true;
+        }
+
+        if (saveRoot.meta.MigrateLegacyUnlockedModules(database))
+        {
+            changed = true;
+        }
+
+        if (saveRoot.meta.unlockedModuleIds.Count == 0)
+        {
+            foreach (var moduleId in DefaultModuleIds)
+                saveRoot.meta.UnlockModule(moduleId);
+
+            changed = true;
+        }
+
+        if (changed)
+            Save();
+    }
+
+    private RunLoadoutData BuildRunLoadout(string frameId)
+    {
+        var runLoadout = new RunLoadoutData { frameId = frameId };
+        if (string.IsNullOrEmpty(frameId))
+            return runLoadout;
+
+        var source = Meta.GetOrInitFrameLoadout(frameId);
+        var modulesById = new Dictionary<string, ModuleConfig>();
+        var modulesByType = new Dictionary<ModuleType, ModuleConfig>();
+        var db = GameConfigDatabase.Instance;
+
+        if (db != null && db.allModules != null)
+        {
+            foreach (var module in db.allModules)
+            {
+                modulesById[module.ModuleId] = module;
+                if (!modulesByType.ContainsKey(module.moduleType))
+                    modulesByType[module.moduleType] = module;
+            }
+        }
+
+        foreach (var slot in source.slots)
+        {
+            var module = ResolveModule(slot.moduleId, slot.moduleType, modulesById, modulesByType);
+            var moduleId = module != null ? module.ModuleId : slot.moduleId;
+            var moduleType = module != null ? module.moduleType : slot.moduleType;
+            var moduleRarity = slot.moduleRarity;
+
+            if (module != null && string.IsNullOrEmpty(moduleId))
+                moduleId = module.ModuleId;
+
+            if (module != null && string.IsNullOrEmpty(slot.moduleId))
+                moduleRarity = module.defaultRarity;
+
+            runLoadout.slots.Add(new SlotRuntimeSaveData
+            {
+                slotId = slot.slotId,
+                moduleId = moduleId,
+                moduleType = moduleType,
+                moduleRarity = moduleRarity,
+                coreId = slot.coreId,
+                plugins = new List<PluginInstanceSaveData>(slot.plugins ?? new List<PluginInstanceSaveData>())
+            });
+        }
+
+        return runLoadout;
+    }
+
+    private ModuleConfig ResolveModule(
+        string moduleId,
+        ModuleType moduleType,
+        Dictionary<string, ModuleConfig> modulesById,
+        Dictionary<ModuleType, ModuleConfig> modulesByType)
+    {
+        if (!string.IsNullOrEmpty(moduleId) && modulesById.TryGetValue(moduleId, out var moduleById))
+            return moduleById;
+
+        modulesByType.TryGetValue(moduleType, out var moduleByType);
+        return moduleByType;
     }
 }

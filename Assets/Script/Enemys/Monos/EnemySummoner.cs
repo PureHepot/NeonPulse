@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-// ÕÙ»½ĞÍµĞÈË
+// å¬å”¤å‹æ•Œäºº
 public class EnemySummoner : EnemyBase
 {
     [Header("Summoner Settings")]
@@ -10,17 +10,17 @@ public class EnemySummoner : EnemyBase
     public int maxSummonCount = 2;
     public Vector3 enemyScale = new Vector3(0.8f, 0.8f, 1f);
 
-    [Header("ÒÆ¶¯²ÎÊı")]
+    [Header("ç§»åŠ¨å‚æ•°")]
     public float moveSpeedToCenter = 2f;
     public float reachDistance = 4f;
     public float centerStayOffset = 4f;
 
     private List<EnemyBase> summonedEnemies = new List<EnemyBase>();
-    private float summonTimer; // ÕÙ»½¼ÆÊ±Æ÷
+    private float summonTimer; // å¬å”¤è®¡æ—¶å™¨
     private float camHalfWidth;
     private float camHalfHeight;
 
-    // ÒÆ¶¯µ½ÖĞĞÄÏà¹Ø
+    // ç§»åŠ¨åˆ°ä¸­å¿ƒç›¸å…³
     private Vector3 targetCenterPos;
     private bool isReachCenter = false;
 
@@ -28,12 +28,12 @@ public class EnemySummoner : EnemyBase
     {
         base.OnSpawn();
         transform.localScale = enemyScale;
-        rb.velocity = Vector2.zero;
+        StopMovementDrive(true);
         summonedEnemies.Clear();
         summonTimer = 0;
         isReachCenter = false;
 
-        // ³õÊ¼»¯Ïà»ú±ß½ç
+        // åˆå§‹åŒ–ç›¸æœºè¾¹ç•Œ
         InitCameraBounds();
         CalculateTargetCenterPos();
     }
@@ -46,12 +46,12 @@ public class EnemySummoner : EnemyBase
         }
     }
 
-    // ÏÈÏòÖĞĞÄÒÆ¶¯£¬µ½´ïºó¾²Ö¹²¢ÕÙ»½
+    // å…ˆå‘ä¸­å¿ƒç§»åŠ¨ï¼Œåˆ°è¾¾åé™æ­¢å¹¶å¬å”¤
     protected override void MoveBehavior()
     {
         if (isDead)
         {
-            rb.velocity = Vector2.zero;
+            StopMovementDrive();
             return;
         }
 
@@ -61,7 +61,7 @@ public class EnemySummoner : EnemyBase
             return;
         }
 
-        rb.velocity = Vector2.zero;
+        StopMovementDrive(true);
         summonTimer += Time.deltaTime;
         if (summonTimer >= summonCD)
         {
@@ -86,23 +86,23 @@ public class EnemySummoner : EnemyBase
         targetCenterPos = new Vector3(randomX, randomY, 0);
     }
 
-    // ÏòÖĞĞÄÒÆ¶¯Âß¼­
+    // å‘ä¸­å¿ƒç§»åŠ¨é€»è¾‘
     private void MoveToCenter()
     {
         Vector2 direction = (targetCenterPos - transform.position).normalized;
-        rb.velocity = direction * moveSpeedToCenter;
+        DriveVelocity(direction * moveSpeedToCenter, 1.2f);
 
-        // ¼ì²âÊÇ·ñµ½´ïÖĞĞÄ
+        // æ£€æµ‹æ˜¯å¦åˆ°è¾¾ä¸­å¿ƒ
         float distanceToCenter = Vector2.Distance(transform.position, targetCenterPos);
         if (distanceToCenter < reachDistance)
         {
             isReachCenter = true;
-            rb.velocity = Vector2.zero; // µ½´ïºóÁ¢¼´¾²Ö¹
+            StopMovementDrive(true); // åˆ°è¾¾åç«‹å³é™æ­¢
             transform.position = targetCenterPos;
         }
     }
 
-    // ÕÙ»½Âß¼­
+    // å¬å”¤é€»è¾‘
     private void TrySummonEnemy()
     {
         if (summonPrefab == null || summonedEnemies.Count >= maxSummonCount)
@@ -121,12 +121,12 @@ public class EnemySummoner : EnemyBase
         }
         else
         {
-            Debug.LogWarning("ÕÙ»½Ô¤ÖÆÌåÎ´¹ÒÔØEnemyBase");
+            Debug.LogWarning("å¬å”¤é¢„åˆ¶ä½“æœªæŒ‚è½½EnemyBase");
             ObjectPoolManager.Instance.Return(enemyObj);
         }
     }
 
-    // ÇåÀí¿ÕµÄÕÙ»½Îï
+    // æ¸…ç†ç©ºçš„å¬å”¤ç‰©
     private void CleanNullSummonedEnemies()
     {
         for (int i = summonedEnemies.Count - 1; i >= 0; i--)
@@ -150,7 +150,7 @@ public class EnemySummoner : EnemyBase
     public override void OnDespawn()
     {
         base.OnDespawn();
-        rb.velocity = Vector2.zero;
+        StopMovementDrive(true);
         summonedEnemies.Clear();
         summonTimer = 0;
         isReachCenter = false;

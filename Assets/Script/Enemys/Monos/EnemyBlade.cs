@@ -6,32 +6,32 @@ using DG.Tweening;
 public class EnemyBlade : EnemyBase
 {
     [Header("Blade Settings")]
-    public float rotationSpeedIdle = 180f; // 正常自转速度
-    public float rotationSpeedAttack = 720f; // 攻击自转速度
-    public float aggroRange = 1.0f; // 索敌范围
+    public float rotationSpeedIdle = 180f; // 姝ｅ父鑷浆閫熷害
+    public float rotationSpeedAttack = 720f; // 鏀诲嚮鑷浆閫熷害
+    public float aggroRange = 1.0f; // 绱㈡晫鑼冨洿
 
     [Header("Movement")]
     public float enterSpeed = 3f;
-    public Vector2 centerAreaSize = new Vector2(10, 6); // 屏幕中心区域大小
+    public Vector2 centerAreaSize = new Vector2(10, 6); // 灞忓箷涓績鍖哄煙澶у皬
 
     [Header("Attack Stats")]
-    public float slashSpeed = 25f; // 冲刺速度
-    public float turnRate = 5f;    // 转向率 (弧线弯曲程度)
-    public float attackDuration = 1.5f; // 单次冲锋最大持续时间
-    public float missRecoveryTime = 1.0f; // 未命中的迟缓时间
-    public int attacksPerRound = 3; // 一轮攻击冲几次
+    public float slashSpeed = 25f; // 鍐插埡閫熷害
+    public float turnRate = 5f;    // 杞悜鐜?(寮х嚎寮洸绋嬪害)
+    public float attackDuration = 1.5f; // 鍗曟鍐查攱鏈€澶ф寔缁椂闂?
+    public float missRecoveryTime = 1.0f; // 鏈懡涓殑杩熺紦鏃堕棿
+    public int attacksPerRound = 3; // 涓€杞敾鍑诲啿鍑犳
 
     [Header("Colors (HDR)")]
-    [ColorUsage(true, true)] public Color aggroColor = new Color(1, 0, 0.2f) * 4f; // 攻击色 (红色高亮)
+    [ColorUsage(true, true)] public Color aggroColor = new Color(1, 0, 0.2f) * 4f; // 鏀诲嚮鑹?(绾㈣壊楂樹寒)
 
-    // 内部状态
+    // 鍐呴儴鐘舵€?
     private enum State { Entering, Prowling, AggroTrans, Slashing, Recovering, Bouncing }
     private State currentState;
     private float stateTimer;
     private int currentAttackCount;
     private Vector2 targetDir;
 
-    // 引用
+    // 寮曠敤
     private TrailRenderer trail;
 
     public override void OnSpawn()
@@ -48,7 +48,7 @@ public class EnemyBlade : EnemyBase
             trail.emitting = false;
         }
 
-        // 随机一个屏幕中心的目标点作为入场终点
+        // 闅忔満涓€涓睆骞曚腑蹇冪殑鐩爣鐐逛綔涓哄叆鍦虹粓鐐?
         Vector2 randomCenter = new Vector2(
             Random.Range(-centerAreaSize.x / 2, centerAreaSize.x / 2),
             Random.Range(-centerAreaSize.y / 2, centerAreaSize.y / 2)
@@ -58,12 +58,12 @@ public class EnemyBlade : EnemyBase
 
     protected override void MoveBehavior()
     {
-        // 持续自转 (根据状态改变速度)
+        // 鎸佺画鑷浆 (鏍规嵁鐘舵€佹敼鍙橀€熷害)
         float currentRotSpeed = (currentState == State.Slashing || currentState == State.Bouncing)
                                 ? rotationSpeedAttack : rotationSpeedIdle;
         transform.Rotate(0, 0, -currentRotSpeed * Time.deltaTime);
 
-        // 状态机
+        // 鐘舵€佹満
         switch (currentState)
         {
             case State.Entering:
@@ -81,7 +81,7 @@ public class EnemyBlade : EnemyBase
                 HandleRecovering();
                 break;
             case State.Bouncing:
-                // 物理反弹中，仅等待速度衰减
+                // 鐗╃悊鍙嶅脊涓紝浠呯瓑寰呴€熷害琛板噺
                 if (rb.velocity.magnitude < 5f)
                 {
                     StartNextAttackOrReset();
@@ -92,20 +92,20 @@ public class EnemyBlade : EnemyBase
 
     void HandleEntering()
     {
-        rb.velocity = targetDir * enterSpeed;
+        DriveVelocity(targetDir * enterSpeed, 1.5f);
 
-        // 检测是否到达中心区域 (简单距离判定，或者判断是否进入屏幕范围)
+        // 妫€娴嬫槸鍚﹀埌杈句腑蹇冨尯鍩?(绠€鍗曡窛绂诲垽瀹氾紝鎴栬€呭垽鏂槸鍚﹁繘鍏ュ睆骞曡寖鍥?
         if (Mathf.Abs(transform.position.x) < centerAreaSize.x / 2 + 2f &&
             Mathf.Abs(transform.position.y) < centerAreaSize.y / 2 + 2f)
         {
             currentState = State.Prowling;
-            rb.velocity = rb.velocity.normalized * (enterSpeed * 0.5f); // 减速巡逻
+            DriveVelocity(rb.velocity.normalized * (enterSpeed * 0.5f), 1.2f); // 鍑忛€熷贰閫?
         }
     }
 
     void HandleProwling()
     {
-        // 简单的惯性游荡，碰到墙壁反弹由物理材质处理，这里只做索敌
+        // 绠€鍗曠殑鎯€ф父鑽★紝纰板埌澧欏鍙嶅脊鐢辩墿鐞嗘潗璐ㄥ鐞嗭紝杩欓噷鍙仛绱㈡晫
         if (playerTransform != null)
         {
             float dist = Vector2.Distance(transform.position, playerTransform.position);
@@ -119,16 +119,16 @@ public class EnemyBlade : EnemyBase
     void StartAggro()
     {
         currentState = State.AggroTrans;
-        rb.velocity = Vector2.zero; // 停下蓄力
+        StopMovementDrive(); // 鍋滀笅钃勫姏
 
-        // 颜色渐变 -> 变红
+        // 棰滆壊娓愬彉 -> 鍙樼孩
         if (bodyRenderer)
         {
             bodyRenderer.DOKill();
             bodyRenderer.DOColor(aggroColor, 0.5f);
         }
 
-        // 蓄力抖动
+        // 钃勫姏鎶栧姩
         transform.DOPunchScale(Vector3.one * 0.2f, 0.5f, 10, 1).OnComplete(() =>
         {
             currentAttackCount = 0;
@@ -141,14 +141,14 @@ public class EnemyBlade : EnemyBase
         currentState = State.Slashing;
         stateTimer = attackDuration;
 
-        // 开启拖尾
+        // 寮€鍚嫋灏?
         if (trail) trail.emitting = true;
 
         if (playerTransform != null)
         {
-            // 初始冲锋方向：稍微预判一点点，或者直接指向玩家
+            // 鍒濆鍐查攱鏂瑰悜锛氱◢寰鍒や竴鐐圭偣锛屾垨鑰呯洿鎺ユ寚鍚戠帺瀹?
             targetDir = (playerTransform.position - transform.position).normalized;
-            rb.velocity = targetDir * slashSpeed;
+            SnapVelocity(targetDir * slashSpeed);
         }
     }
 
@@ -158,20 +158,22 @@ public class EnemyBlade : EnemyBase
 
         if (playerTransform != null)
         {
-            // --- 核心：弧线运动逻辑 ---
-            // 类似于导弹制导，不断修正速度方向指向玩家，但限制修正率(TurnRate)
-            // 这样如果速度够快，它就会划出一道弧线而不是直线
+            // --- 鏍稿績锛氬姬绾胯繍鍔ㄩ€昏緫 ---
+            // 绫讳技浜庡寮瑰埗瀵硷紝涓嶆柇淇閫熷害鏂瑰悜鎸囧悜鐜╁锛屼絾闄愬埗淇鐜?TurnRate)
+            // 杩欐牱濡傛灉閫熷害澶熷揩锛屽畠灏变細鍒掑嚭涓€閬撳姬绾胯€屼笉鏄洿绾?
 
             Vector2 desiredDir = (playerTransform.position - transform.position).normalized;
 
-            // 使用 RotateTowards 平滑转向
-            // 这里的 step 是弧度，TurnRate 越大拐弯越急
-            Vector2 newDir = Vector3.RotateTowards(rb.velocity.normalized, desiredDir, turnRate * Time.deltaTime, 0f);
+            // 浣跨敤 RotateTowards 骞虫粦杞悜
+            // 杩欓噷鐨?step 鏄姬搴︼紝TurnRate 瓒婂ぇ鎷愬集瓒婃€?
+            Vector2 currentVelocity = rb.velocity;
+            Vector2 currentDir = currentVelocity.sqrMagnitude > 0.0001f ? currentVelocity.normalized : targetDir;
+            Vector2 newDir = Vector3.RotateTowards(currentDir, desiredDir, turnRate * Time.deltaTime, 0f);
 
-            rb.velocity = newDir * slashSpeed;
+            DriveVelocity(newDir * slashSpeed, 3f);
         }
 
-        // 超时未命中 (Miss)
+        // 瓒呮椂鏈懡涓?(Miss)
         if (stateTimer <= 0)
         {
             EnterMissRecovery();
@@ -183,12 +185,14 @@ public class EnemyBlade : EnemyBase
         currentState = State.Recovering;
         stateTimer = missRecoveryTime;
 
-        // 强力刹车
+        StopMovementDrive();
+
+        // 寮哄姏鍒硅溅
         rb.drag = 5f;
 
         if (trail) trail.emitting = false;
 
-        // 视觉：颜色稍微暗淡一点表示喘息? (可选)
+        // 瑙嗚锛氶鑹茬◢寰殫娣′竴鐐硅〃绀哄枠鎭? (鍙€?
     }
 
     void HandleRecovering()
@@ -196,7 +200,7 @@ public class EnemyBlade : EnemyBase
         stateTimer -= Time.deltaTime;
         if (stateTimer <= 0)
         {
-            rb.drag = 0f; // 恢复阻力
+            rb.drag = 0f; // 鎭㈠闃诲姏
             StartNextAttackOrReset();
         }
     }
@@ -206,21 +210,21 @@ public class EnemyBlade : EnemyBase
         currentAttackCount++;
         if (currentAttackCount < attacksPerRound)
         {
-            // 继续下一次冲锋
+            // 缁х画涓嬩竴娆″啿閿?
             StartSlashAttack();
         }
         else
         {
-            // 攻击轮次结束，回到正常状态
+            // 鏀诲嚮杞缁撴潫锛屽洖鍒版甯哥姸鎬?
             currentState = State.Prowling;
             currentAttackCount = 0;
 
-            // 颜色恢复
+            // 棰滆壊鎭㈠
             if (bodyRenderer) bodyRenderer.DOColor(normalColor, 1f);
 
-            // 稍微远离玩家一点，防止贴脸不动
+            // 绋嶅井杩滅鐜╁涓€鐐癸紝闃叉璐磋劯涓嶅姩
             Vector2 retreatDir = (transform.position - playerTransform.position).normalized;
-            rb.velocity = retreatDir * enterSpeed;
+            SnapVelocity(retreatDir * enterSpeed);
         }
     }
 
@@ -243,12 +247,12 @@ public class EnemyBlade : EnemyBase
                 currentState = State.Bouncing;
                 if (trail) trail.emitting = false;
 
-                // 计算反弹方向：沿着法线反射
+                // 璁＄畻鍙嶅脊鏂瑰悜锛氭部鐫€娉曠嚎鍙嶅皠
                 Vector2 normal = collision.contacts[0].normal;
                 Vector2 reflectDir = Vector2.Reflect(rb.velocity.normalized, normal);
 
-                // 施加反弹力
-                rb.velocity = reflectDir * (slashSpeed * 0.6f); // 稍微降速反弹
+                // 鏂藉姞鍙嶅脊鍔?
+                SnapVelocity(reflectDir * (slashSpeed * 0.6f)); // 绋嶅井闄嶉€熷弽寮?
             }
         }
         else if (collision.gameObject.layer == LayerMask.NameToLayer("ArenaWall"))
@@ -256,7 +260,7 @@ public class EnemyBlade : EnemyBase
             if (currentState == State.Slashing)
             {
                 EnterMissRecovery();
-                rb.velocity = collision.contacts[0].normal * 5f;
+                SnapVelocity(collision.contacts[0].normal * 5f);
             }
         }
 

@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3a3728f9e81b6d41ae0ea6e65b3c910, type: 3}
+  m_Name: Schema_Movement
+  m_EditorClassIdentifier: 
+  schemaId: movement
+  displayName: "\u79FB\u52A8\u6A21\u5757\u6A21\u5F0F\u7EC4"
+  description: "\u8BB0\u5F55\u79FB\u52A8\u76F8\u5173\u6A21\u5757\u7684\u6240\u6709\u53EF\u80FD\u5C5E\u6027"
+  allowedCategories: 7
+  availableStats:
+  - {fileID: 11400000, guid: 1ae5d8e2c207ed34887c86013b7f7be8, type: 2}
+  - {fileID: 11400000, guid: 788e5226ec5ecb843bef437c90b29fdc, type: 2}

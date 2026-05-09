@@ -1,142 +1,102 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 
 public class ModuleManager : MonoBehaviour
 {
     private PlayerController playerController;
+    private readonly Dictionary<string, PlayerModule> modulesBySlot = new();
+    private readonly Dictionary<ModuleType, List<PlayerModule>> modulesByType = new();
+    private readonly List<PlayerModule> activeModules = new();
 
-    private Dictionary<ModuleType, PlayerModule> moduleDict = new Dictionary<ModuleType, PlayerModule>();
-
-    private List<PlayerModule> activeModules = new List<PlayerModule>();
-
-    public Action Initialize { get; private set; }
-
-    void Awake()
+    private void Awake()
     {
         playerController = GetComponent<PlayerController>();
-
-       
-
-       
     }
 
-    /// <summary>
-    /// 注册一个模块实例到管理器（由 LoadModule 调用）
-    /// </summary>
-    /*public void RegisterModule(PlayerModule module)
+    private void Update()
     {
-        if (module == null) return;
-        if (!moduleDict.ContainsKey(module.moduleType))
-        {
-            moduleDict.Add(module.moduleType, module);
-        }
-        else
-        {
-            Debug.LogWarning($"模块已存在，跳过注册: {module.moduleType}");
-        }
-    }*/
+        float deltaTime = playerController != null ? playerController.ModuleDeltaTime : Time.deltaTime;
+        if (Mathf.Approximately(deltaTime, 0f))
+            return;
 
-    void Update()
-    {
-        float delta = Time.deltaTime;  
-        // 这里添加层级检查，确保只有玩家对象或UI模型对象的模块更新被执行,同时UI_Model不受时间缩放影响
-        if(transform.gameObject.layer==LayerMask.NameToLayer("Player")) 
+        for (int index = 0; index < activeModules.Count; index++)
         {
-            delta = Time.timeScale;
-        }
-        if(transform.gameObject.layer==LayerMask.NameToLayer("UI_Model")) 
-        {
-            delta = Time.unscaledDeltaTime;
-        }
-        for (int i = 0; i < activeModules.Count; i++)
-        {
-            activeModules[i].OnModuleUpdate();
+            var module = activeModules[index];
+            if (module != null && module.IsActiveModule)
+                module.OnModuleUpdate();
         }
     }
 
-    public void UnlockModule(ModuleType type)
+    public void ClearRuntimeModules(bool destroyModuleObjects = true)
     {
-        if (moduleDict.TryGetValue(type, out PlayerModule module))
+        for (int index = activeModules.Count - 1; index >= 0; index--)
         {
-            if (!module.isUnlocked)
-            {
-                module.OnActivate();
-                activeModules.Add(module);
-                Debug.Log($"<color=cyan>模块已装载: {type}</color>");
-            }
+            var module = activeModules[index];
+            if (module == null)
+                continue;
+
+            module.DeactivateModule();
+            if (destroyModuleObjects)
+                Destroy(module.gameObject);
         }
-        else
-        {
-            ModuleConfig config=UpgradeManager.Instance.GetConfig(type);
-            if(config)
-            {
-                Transform modulesRoot = transform.Find("Modules") ?? transform;
-                GameObject instance = Instantiate(config.prefab, modulesRoot);
-                PlayerModule module1=instance.GetComponent<PlayerModule>();
-                module1.OnActivate();
-                activeModules.Add(module1);
-                moduleDict.Add(config.moduleType, module1);
-                module1.Initialize(playerController);
-            }
-        }
+
+        activeModules.Clear();
+        modulesBySlot.Clear();
+        modulesByType.Clear();
     }
 
-    public void UpgradeModule(ModuleType type, StatType stat)
+    public bool RegisterRuntimeModule(PlayerModule module, LoadoutModuleRuntimeData runtimeData)
     {
-        if (moduleDict.TryGetValue(type, out PlayerModule module))
+        if (module == null || runtimeData == null || string.IsNullOrWhiteSpace(runtimeData.slotId))
+            return false;
+
+        if (modulesBySlot.TryGetValue(runtimeData.slotId, out var existingModule))
         {
-            if (module.isUnlocked)
+            if (existingModule != null)
             {
-                module.UpgradeModule(type, stat);
-                Debug.Log($"<color=green>模块已升级: {type}</color>");
+                existingModule.DeactivateModule();
+                Destroy(existingModule.gameObject);
             }
-            else
-            {
-                Debug.LogWarning($"模块{type}未解锁，无法升级");
-            }
+
+            RemoveModuleReferences(runtimeData.slotId);
         }
-        else
+
+        module.Initialize(playerController, runtimeData);
+        module.ActivateModule();
+
+        modulesBySlot[runtimeData.slotId] = module;
+        activeModules.Add(module);
+
+        if (!modulesByType.TryGetValue(module.moduleType, out var typedModules))
         {
-            Debug.LogError($"找不到模块: {type}，请检查是否挂载了对应脚本并设置了Type");
+            typedModules = new List<PlayerModule>();
+            modulesByType[module.moduleType] = typedModules;
         }
+
+        typedModules.Add(module);
+        return true;
     }
 
-    /// <summary>                   /// 禁用模块
-    /// </summary>
-    public void DisableModule(ModuleType type)
+    public PlayerModule GetModule(string slotId)
     {
-        if (moduleDict.TryGetValue(type, out PlayerModule module))
-        {
-            if (module.isUnlocked)
-            {
-                module.OnDeactivate();
-                activeModules.Remove(module);
-            }
-        }
-    }
+        if (string.IsNullOrWhiteSpace(slotId))
+            return null;
 
-    public void RemoveModule(ModuleType type)
-    {
-        if (moduleDict.ContainsKey(type))
-        {
-            moduleDict.Remove(type);
-        }
+        modulesBySlot.TryGetValue(slotId, out var module);
+        return module;
     }
 
     public T GetModule<T>(ModuleType type) where T : PlayerModule
     {
-        if (moduleDict.TryGetValue(type, out PlayerModule module))
+        if (!modulesByType.TryGetValue(type, out var typedModules))
+            return null;
+
+        for (int index = 0; index < typedModules.Count; index++)
         {
-            if (module.isUnlocked)
-            {
-                return module as T;
-            }
+            if (typedModules[index] is T matchedModule)
+                return matchedModule;
         }
+
         return null;
     }
 
@@ -147,10 +107,56 @@ public class ModuleManager : MonoBehaviour
 
     public bool HasAbility(ModuleType type)
     {
-        if (moduleDict.TryGetValue(type, out PlayerModule module))
+        return modulesByType.TryGetValue(type, out var typedModules) && typedModules.Count > 0;
+    }
+
+    public void DisableModule(ModuleType type)
+    {
+        if (!modulesByType.TryGetValue(type, out var typedModules))
+            return;
+
+        for (int index = 0; index < typedModules.Count; index++)
         {
-            return module.isUnlocked;
+            if (typedModules[index] != null)
+                typedModules[index].DeactivateModule();
         }
-        return false;
+    }
+
+    public void RemoveModule(ModuleType type)
+    {
+        if (!modulesByType.TryGetValue(type, out var typedModules))
+            return;
+
+        var snapshot = new List<PlayerModule>(typedModules);
+        for (int index = 0; index < snapshot.Count; index++)
+        {
+            var module = snapshot[index];
+            if (module == null)
+                continue;
+
+            string slotId = module.SlotId;
+            module.DeactivateModule();
+            Destroy(module.gameObject);
+            RemoveModuleReferences(slotId);
+        }
+    }
+
+    private void RemoveModuleReferences(string slotId)
+    {
+        if (string.IsNullOrWhiteSpace(slotId))
+            return;
+
+        if (!modulesBySlot.TryGetValue(slotId, out var module))
+            return;
+
+        modulesBySlot.Remove(slotId);
+        activeModules.Remove(module);
+
+        if (modulesByType.TryGetValue(module.moduleType, out var typedModules))
+        {
+            typedModules.Remove(module);
+            if (typedModules.Count == 0)
+                modulesByType.Remove(module.moduleType);
+        }
     }
 }

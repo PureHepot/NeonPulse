@@ -1,9 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ShieldModule : PlayerModule
 {
+    private const string ShieldCapacityStatId = "defence.shiledcapacity";
+    private const string ShieldRegenStatId = "defence.shieldcharge";
+    private const string ShieldKnockbackStatId = "defence.shieldknockback";
+
     [Header("Shield References")]
     public GameObject shieldObject;
     public ShieldController shieldScript;
@@ -13,79 +15,57 @@ public class ShieldModule : PlayerModule
     public float rotateSpeed = 200f;
 
     [Header("Parameter")]
-    public float ShieldCapacity = 100;
+    public float ShieldCapacity = 100f;
     public float ShieldRegen = 10f;
-    public float ShieldKnockback = 10;
+    public float ShieldKnockback = 10f;
 
-    public override void Initialize(PlayerController _player)
+    protected override void OnInitialize()
     {
-        base.Initialize(_player);
-
+        RecalculateStats();
     }
 
-    public override void OnActivate()
+    protected override void OnActivate()
     {
-        base.OnActivate();
-        // 激活时，打开护盾物体
-        if (shieldObject) shieldObject.SetActive(true);
-        // 重置护盾状态
-        if (shieldScript) shieldScript.SetDefend(false); // 假设你之前的脚本有这个方法
+        if (shieldObject != null)
+            shieldObject.SetActive(true);
+
+        if (shieldScript != null)
+            shieldScript.SetDefend(false);
+    }
+
+    protected override void OnDeactivate()
+    {
+        if (shieldObject != null)
+            shieldObject.SetActive(false);
     }
 
     public override void OnModuleUpdate()
     {
-        if (player == null || player.IsDead || player.isPreview) return;
+        if (player == null || player.IsDead || !HasControl)
+            return;
 
         HandleRotation();
 
-        if (InputManager.Instance.Mouse1())
-        {
-            shieldScript.SetDefend(true);
-        }
-        else
-        {
-            shieldScript.SetDefend(false);
-        }
+        if (shieldScript != null)
+            shieldScript.SetDefend(InputManager.Instance.Mouse1());
     }
 
-    void HandleRotation()
+    private void HandleRotation()
     {
-        if (shieldObject == null) return;
+        if (shieldObject == null)
+            return;
 
         Vector3 mousePos = MUtils.GetMouseWorldPosition();
-
         Vector2 direction = mousePos - shieldObject.transform.position;
-
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-
         Quaternion targetRotation = Quaternion.AngleAxis(angle, Vector3.forward);
-
-        shieldObject.transform.rotation = Quaternion.Slerp(shieldObject.transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
+        shieldObject.transform.rotation = Quaternion.Slerp(shieldObject.transform.rotation, targetRotation, rotateSpeed * DeltaTime);
     }
 
-    public override void OnDeactivate()
+    private void RecalculateStats()
     {
-        base.OnDeactivate();
-        if (shieldObject) shieldObject.SetActive(false);
-    }
-
-    public override void UpgradeModule(ModuleType moduleType, StatType statType)
-    {
-        base.UpgradeModule(moduleType, statType);
-        if (moduleType == ModuleType.Shield)
-        {
-            switch (statType)
-            {
-                case StatType.ShieldCapacity:
-                    this.ShieldCapacity = UpgradeManager.Instance.GetStat(moduleType, statType);
-                    break;
-                case StatType.ShiledRegen:
-                    this.ShieldRegen = UpgradeManager.Instance.GetStat(moduleType, statType);
-                    break;
-                case StatType.ShieldKnockback:
-                    this.ShieldRegen = UpgradeManager.Instance.GetStat(moduleType, statType);
-                    break;
-            }
-        }
+        ShieldCapacity = GetStat(ShieldCapacityStatId, ShieldCapacity);
+        ShieldRegen = GetStat(ShieldRegenStatId, ShieldRegen);
+        ShieldKnockback = GetStat(ShieldKnockbackStatId, ShieldKnockback);
     }
 }

@@ -48,7 +48,7 @@ public class EnemyDrifter : EnemyBase
             moveDirection = newDir.normalized;
         }
 
-        rb.velocity = moveDirection * moveSpeed;
+        DriveVelocity(moveDirection * moveSpeed, 1.25f);
 
         float angle = Mathf.Atan2(moveDirection.y, moveDirection.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);

@@ -2,6 +2,11 @@ using UnityEngine;
 
 public class ShotgunModule : PlayerModule
 {
+    private const string ShotgunFireRateStatId = "weapon.shotgunfirerate";
+    private const string ShotgunDamageStatId = "weapon.shotgundamage";
+    private const string ShotgunPelletCountStatId = "weapon.shotgunpelletcount";
+    private const string ShotgunSpreadAngleStatId = "weapon.shotgunspreadangle";
+
     [Header("Refs")]
     public Transform muzzle;
     public Transform partToRotate;
@@ -16,65 +21,49 @@ public class ShotgunModule : PlayerModule
     private float spreadAngle;
     private float cooldown;
 
-    public override void Initialize(PlayerController _player)
+    protected override void OnInitialize()
     {
-        base.Initialize(_player);
         if (muzzle != null)
             muzzle.gameObject.SetActive(false);
+
         RecalculateStats();
     }
 
-    public override void OnActivate()
+    protected override void OnActivate()
     {
-        base.OnActivate();
         if (muzzle != null)
             muzzle.gameObject.SetActive(true);
     }
 
-    public override void OnDeactivate()
+    protected override void OnDeactivate()
     {
         if (muzzle != null)
             muzzle.gameObject.SetActive(false);
-        base.OnDeactivate();
     }
 
     public override void OnModuleUpdate()
     {
-        if (player == null || player.IsDead || player.isPreview) return;
+        if (player == null || player.IsDead)
+            return;
 
         HandleRotation();
 
-        if (cooldown > 0)
-            cooldown -= Time.deltaTime;
+        if (cooldown > 0f)
+            cooldown -= DeltaTime;
 
-        if (InputManager.Instance.Mouse0() && cooldown <= 0)
-        {
+        if (HasControl && InputManager.Instance.Mouse0() && cooldown <= 0f)
             Fire();
-        }
     }
 
-    public override void UpgradeModule(ModuleType moduleType, StatType statType)
+    private void RecalculateStats()
     {
-        if (moduleType != ModuleType.Shotgun) return;
-        RecalculateStats();
+        fireRate = GetStat(ShotgunFireRateStatId, 1.5f);
+        damage = Mathf.RoundToInt(GetStat(ShotgunDamageStatId, 2f));
+        pelletCount = Mathf.Max(1, Mathf.RoundToInt(GetStat(ShotgunPelletCountStatId, 6f)));
+        spreadAngle = GetStat(ShotgunSpreadAngleStatId, 30f);
     }
 
-    void RecalculateStats()
-    {
-        fireRate = UpgradeManager.Instance.GetStat(ModuleType.Shotgun, StatType.ShotgunFireRate);
-        if (fireRate <= 0) fireRate = 1.5f;
-
-        damage = (int)UpgradeManager.Instance.GetStat(ModuleType.Shotgun, StatType.ShotgunDamage);
-        if (damage <= 0) damage = 2;
-
-        pelletCount = (int)UpgradeManager.Instance.GetStat(ModuleType.Shotgun, StatType.ShotgunPelletCount);
-        if (pelletCount <= 0) pelletCount = 6;
-
-        spreadAngle = UpgradeManager.Instance.GetStat(ModuleType.Shotgun, StatType.ShotgunSpreadAngle);
-        if (spreadAngle <= 0) spreadAngle = 30f;
-    }
-
-    void Fire()
+    private void Fire()
     {
         cooldown = fireRate;
 
@@ -82,42 +71,29 @@ public class ShotgunModule : PlayerModule
         float startAngle = baseAngle - spreadAngle * 0.5f;
         float step = pelletCount > 1 ? spreadAngle / (pelletCount - 1) : 0f;
 
-        for (int i = 0; i < pelletCount; i++)
-        {
-            float angle = startAngle + step * i;
-            SpawnPellet(angle);
-        }
+        for (int index = 0; index < pelletCount; index++)
+            SpawnPellet(startAngle + step * index);
     }
 
-    void SpawnPellet(float angle)
+    private void SpawnPellet(float angle)
     {
-        Quaternion rot = Quaternion.Euler(0, 0, angle);
+        Quaternion rot = Quaternion.Euler(0f, 0f, angle);
         AudioManager.Instance.PlayEffect("Shotgunnershoot", 0.1f, 1f);
-
-        GameObject bullet = ObjectPoolManager.Instance.Get(
-            bulletPrefab,
-            muzzle.position,
-            rot
-        );
-
-        PlayerShotgunBullet bulletScript = bullet.GetComponent<PlayerShotgunBullet>();
+        GameObject bullet = ObjectPoolManager.Instance.Get(bulletPrefab, muzzle.position, rot);
+        var bulletScript = bullet.GetComponent<PlayerShotgunBullet>();
         if (bulletScript != null)
             bulletScript.damage = damage;
     }
 
-    void HandleRotation()
+    private void HandleRotation()
     {
-        if (partToRotate == null) return;
+        if (partToRotate == null)
+            return;
 
-        Vector3 mousePos = MUtils.GetMouseWorldPosition();
+        Vector3 mousePos = HasControl ? MUtils.GetMouseWorldPosition() : partToRotate.position + partToRotate.right;
         Vector2 dir = mousePos - partToRotate.position;
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         Quaternion target = Quaternion.AngleAxis(angle, Vector3.forward);
-
-        partToRotate.rotation = Quaternion.Slerp(
-            partToRotate.rotation,
-            target,
-            rotationSpeed * Time.deltaTime
-        );
+        partToRotate.rotation = Quaternion.Slerp(partToRotate.rotation, target, rotationSpeed * DeltaTime);
     }
 }

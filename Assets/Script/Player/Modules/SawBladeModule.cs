@@ -1,15 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using DG.Tweening;
+using UnityEngine;
 
 public class SawBladeModule : PlayerModule
 {
-    [Header("Visual Refs")]
-    public Transform bladeVisual;      // 刀片视觉物体
-    public TrailRenderer dashTrail;    // 拖尾
+    private const string BladeBaseDamageStatId = "weapon.bladebasedamage";
+    private const string BladeChargeTimeStatId = "weapon.bladechargetime";
+    private const string BladeHitCountStatId = "weapon.bladehitcount";
+    private const string MoveSpeedStatId = "move.speed";
 
-    [Header("Charge Settings (Staged)")]
+    [Header("Visual Refs")]
+    public Transform bladeVisual;
+    public TrailRenderer dashTrail;
+
+    [Header("Charge Settings")]
     public float maxChargeTime = 1.5f;
     public float minSpinSpeed = 360f;
     public float maxSpinSpeed = 1800f;
@@ -25,395 +30,301 @@ public class SawBladeModule : PlayerModule
     [Header("Combat Settings")]
     public int baseDamage = 10;
     public float attackRadius = 1.5f;
-    public int hitCount = 3;               // 攻击段数
-    public float hitInterval = 0.2f;      // 每段攻击间隔
-    public float knockbackForce = 10f;     // 击退力度
-    public float attackRadiusRatio = 1.2f; // 判定范围是视觉大小的多少倍
+    public int hitCount = 3;
+    public float hitInterval = 0.2f;
+    public float knockbackForce = 10f;
+    public float attackRadiusRatio = 1.2f;
     public LayerMask enemyLayer;
 
-    // --- 内部状态 ---
-    private enum State { Idle, Charging, Dashing, Settling }
-    private State currentState = State.Idle;
+    private enum BladeState
+    {
+        Idle,
+        Charging,
+        Dashing,
+        Settling
+    }
 
-    private float currentChargeTime = 0f;
-    private float currentSpinSpeed = 0f;
-    private int currentStage = 0;
-
+    private BladeState currentState = BladeState.Idle;
+    private float currentChargeTime;
+    private float currentSpinSpeed;
+    private int currentStage;
     private Vector3 dashDirection;
-    [SerializeField]
     private float currentDashSpeed;
-
-    private HashSet<Collider2D> hitTargets = new HashSet<Collider2D>();
-
+    private readonly HashSet<Collider2D> hitTargets = new();
     private HealthModule healthModule;
-
     private int playerLayerID;
     private int enemyLayerID;
 
-    public override void Initialize(PlayerController _player)
+    protected override void OnInitialize()
     {
-        base.Initialize(_player);
-
-        healthModule = _player.Modules.GetModule<HealthModule>(ModuleType.Health);
+        healthModule = player != null && player.Modules != null
+            ? player.Modules.GetModule<HealthModule>(ModuleType.Health)
+            : null;
 
         playerLayerID = LayerMask.NameToLayer("Player");
         enemyLayerID = LayerMask.NameToLayer("Enemy");
 
-        if (bladeVisual)
+        if (bladeVisual != null)
         {
             bladeVisual.gameObject.SetActive(false);
             bladeVisual.localScale = Vector3.one * 0.1f;
         }
-        if (dashTrail) dashTrail.emitting = false;
+
+        if (dashTrail != null)
+            dashTrail.emitting = false;
 
         RecalculateStats();
     }
 
-    private void RecalculateStats()
+    protected override void OnActivate()
     {
-        baseDamage = (int)UpgradeManager.Instance.GetStat(ModuleType.SawBlade, StatType.BladeBaseDamage);
-        maxChargeTime = UpgradeManager.Instance.GetStat(ModuleType.SawBlade, StatType.BladeChargeTime);
-        hitCount = (int)UpgradeManager.Instance.GetStat(ModuleType.SawBlade, StatType.BladeHitCount);
-        minDashSpeed = UpgradeManager.Instance.GetStat(ModuleType.Movement, StatType.MoveSpeed) * 4;
-        maxDashSpeed = UpgradeManager.Instance.GetStat(ModuleType.Movement, StatType.MoveSpeed)* 4 + 5f;
+        RecalculateStats();
+    }
+
+    protected override void OnDeactivate()
+    {
+        var runtimeHealthModule = EnsureHealthModule();
+        if (runtimeHealthModule != null)
+            runtimeHealthModule.IsInvincible = false;
+
+        if (bladeVisual != null)
+            bladeVisual.gameObject.SetActive(false);
+
+        Physics2D.IgnoreLayerCollision(playerLayerID, enemyLayerID, false);
     }
 
     public override void OnModuleUpdate()
     {
-        if (player == null || player.IsDead || player.isPreview) return;
+        if (player == null || player.IsDead)
+            return;
 
-        // 只要不是 Idle，刀片都在转
-        if (currentState != State.Idle && bladeVisual)
-        {
-            bladeVisual.Rotate(Vector3.forward, currentSpinSpeed * Time.deltaTime);
-        }
+        if (currentState != BladeState.Idle && bladeVisual != null)
+            bladeVisual.Rotate(Vector3.forward, currentSpinSpeed * DeltaTime);
 
         switch (currentState)
         {
-            case State.Idle:
+            case BladeState.Idle:
                 HandleIdle();
                 break;
-            case State.Charging:
+            case BladeState.Charging:
                 HandleCharging();
                 break;
-            case State.Dashing:
+            case BladeState.Dashing:
                 HandleDashing();
                 break;
-            case State.Settling:
-                break;
         }
     }
 
-    void HandleIdle()
+    private void RecalculateStats()
     {
-        if (InputManager.Instance.Mouse0())
-        {
+        baseDamage = Mathf.RoundToInt(GetStat(BladeBaseDamageStatId, baseDamage));
+        maxChargeTime = GetStat(BladeChargeTimeStatId, maxChargeTime);
+        hitCount = Mathf.Max(1, Mathf.RoundToInt(GetStat(BladeHitCountStatId, hitCount)));
+        float moveSpeed = GetStat(MoveSpeedStatId, 5f);
+        minDashSpeed = moveSpeed * 4f;
+        maxDashSpeed = moveSpeed * 4f + 5f;
+    }
+
+    private HealthModule EnsureHealthModule()
+    {
+        if (healthModule == null && player != null && player.Modules != null)
+            healthModule = player.Modules.GetModule<HealthModule>(ModuleType.Health);
+
+        return healthModule;
+    }
+
+    private void HandleIdle()
+    {
+        if (HasControl && InputManager.Instance.Mouse0())
             StartCharging();
-        }
     }
 
-    void HandleCharging()
+    private void HandleCharging()
     {
-        currentChargeTime += Time.deltaTime;
+        currentChargeTime += DeltaTime;
         float progress = Mathf.Clamp01(currentChargeTime / maxChargeTime);
-
-        // 转速
         currentSpinSpeed = Mathf.Lerp(minSpinSpeed, maxSpinSpeed, progress);
 
-        // 阶段判断
-        int newStage = 0;
-        float targetScale = 0.1f;
+        int newStage = progress >= 1f ? 3 : progress >= 0.66f ? 2 : progress >= 0.33f ? 1 : 0;
+        float targetScale = newStage switch
+        {
+            3 => scaleStage3,
+            2 => scaleStage2,
+            1 => scaleStage1,
+            _ => scaleStage1 * 0.5f
+        };
 
-        if (progress >= 1f)
-        {
-            newStage = 3; targetScale = scaleStage3;
-        }
-        else if (progress >= 0.66f)
-        {
-            newStage = 2; targetScale = scaleStage2;
-        }
-        else if (progress >= 0.33f)
-        {
-            newStage = 1; targetScale = scaleStage1;
-        }
-        else
-        {
-            newStage = 0; targetScale = scaleStage1 * 0.5f;
-        }
-
-        // 升阶动画
         if (newStage != currentStage)
         {
             currentStage = newStage;
-            if (bladeVisual && currentStage > 0)
+            if (bladeVisual != null && currentStage > 0)
             {
-                bladeVisual.DOKill(true); // 杀掉之前的动画
+                bladeVisual.DOKill(true);
                 bladeVisual.localScale = Vector3.one * targetScale;
-                bladeVisual.DOPunchScale(Vector3.one * 0.4f, 0.3f, 10, 1);
+                bladeVisual.DOPunchScale(Vector3.one * 0.4f, 0.3f, 10, 1f);
             }
         }
 
-        // 保持目标大小
-        if (!DOTween.IsTweening(bladeVisual))
-        {
-            bladeVisual.localScale = Vector3.Lerp(bladeVisual.localScale, Vector3.one * targetScale, Time.deltaTime * 10f);
-        }
+        if (bladeVisual != null && !DOTween.IsTweening(bladeVisual))
+            bladeVisual.localScale = Vector3.Lerp(bladeVisual.localScale, Vector3.one * targetScale, DeltaTime * 10f);
 
-        // 松开鼠标
-        if (!InputManager.Instance.Mouse0())
+        if (HasControl && !InputManager.Instance.Mouse0())
         {
-            if (currentStage == 0) CancelCharge();
-            else StartDash(progress);
+            if (currentStage == 0)
+                CancelCharge();
+            else
+                StartDash(progress);
         }
     }
 
-    void HandleDashing()
+    private void HandleDashing()
     {
-        player.Rigid2d.velocity = dashDirection * currentDashSpeed;
+        if (player.Rigid2d != null)
+            player.SnapVelocity(dashDirection * currentDashSpeed);
 
         DetectEnemies();
     }
 
-    // --- 核心逻辑 ---
-
-    void StartCharging()
+    private void StartCharging()
     {
-        currentState = State.Charging;
+        currentState = BladeState.Charging;
         currentChargeTime = 0f;
         currentStage = 0;
         currentSpinSpeed = minSpinSpeed;
 
-        // 清理可能存在的"消失动画"，强制显示
-        if (bladeVisual)
-        {
-            bladeVisual.DOKill();
-            bladeVisual.gameObject.SetActive(true);
-            bladeVisual.localScale = Vector3.zero;
-            bladeVisual.DOScale(scaleStage1 * 0.5f, 0.2f).SetEase(Ease.OutBack);
-        }
+        if (bladeVisual == null)
+            return;
+
+        bladeVisual.DOKill();
+        bladeVisual.gameObject.SetActive(true);
+        bladeVisual.localScale = Vector3.zero;
+        bladeVisual.DOScale(scaleStage1 * 0.5f, 0.2f).SetEase(Ease.OutBack);
     }
 
-    void CancelCharge()
+    private void CancelCharge()
     {
-        currentState = State.Idle;
-        if (bladeVisual)
-        {
-            bladeVisual.DOScale(0, 0.2f).OnComplete(() => bladeVisual.gameObject.SetActive(false));
-        }
+        currentState = BladeState.Idle;
+        if (bladeVisual != null)
+            bladeVisual.DOScale(0f, 0.2f).OnComplete(() => bladeVisual.gameObject.SetActive(false));
     }
 
-    void StartDash(float chargeProgress)
+    private void StartDash(float chargeProgress)
     {
-        currentState = State.Dashing;
-
-        hitTargets.Clear(); // 清空受击列表
+        currentState = BladeState.Dashing;
+        hitTargets.Clear();
         currentDashSpeed = Mathf.Lerp(minDashSpeed, maxDashSpeed, chargeProgress);
 
         Vector3 mousePos = MUtils.GetMouseWorldPosition();
         dashDirection = (mousePos - player.transform.position).normalized;
 
-        if (healthModule) healthModule.IsInvincible = true;
-        if (dashTrail) dashTrail.emitting = true;
+        if (healthModule != null)
+            healthModule.IsInvincible = true;
+
+        if (dashTrail != null)
+            dashTrail.emitting = true;
 
         Physics2D.IgnoreLayerCollision(playerLayerID, enemyLayerID, true);
-
         CameraManager.Instance.Shake("Blade");
-
         StartCoroutine(DashRoutine());
     }
 
-    IEnumerator DashRoutine()
+    private IEnumerator DashRoutine()
     {
-        // 冲刺时间
-        float duration = dashDurationBase + (currentStage * 0.05f);
+        float duration = dashDurationBase + currentStage * 0.05f;
         yield return new WaitForSeconds(duration);
         EndDash();
     }
 
-    float GetCurrentStageScale()
+    private void DetectEnemies()
     {
-        switch (currentStage)
-        {
-            case 3: return scaleStage3;
-            case 2: return scaleStage2;
-            case 1: return scaleStage1;
-            default: return scaleStage1 * 0.5f;
-        }
-    }
-
-    void DetectEnemies()
-    {
-        float currentScale = GetCurrentStageScale();
-
-        float detectRadius = currentScale * attackRadius * attackRadiusRatio;
-
+        float detectRadius = GetCurrentStageScale() * attackRadius * attackRadiusRatio;
         Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, detectRadius, enemyLayer);
         foreach (var hit in hits)
         {
-            IDamageable damageable = hit.GetComponent<IDamageable>();
-            if (damageable != null)
-            {
+            if (hit.GetComponent<IDamageable>() != null)
                 hitTargets.Add(hit);
-            }
         }
     }
 
-    void EndDash()
+    private void EndDash()
     {
-        // 停止无敌
-        if (healthModule) healthModule.IsInvincible = false;
-        if (dashTrail) dashTrail.emitting = false;
+        if (healthModule != null)
+            healthModule.IsInvincible = false;
+
+        if (dashTrail != null)
+            dashTrail.emitting = false;
 
         Physics2D.IgnoreLayerCollision(playerLayerID, enemyLayerID, false);
-        player.Rigid2d.velocity = dashDirection * (currentDashSpeed * 0.2f);
+        if (player.Rigid2d != null)
+            player.SnapVelocity(dashDirection * (currentDashSpeed * 0.2f));
 
-        // 进入结算阶段
         StartCoroutine(SettlementRoutine());
     }
 
-    IEnumerator SettlementRoutine()
+    private IEnumerator SettlementRoutine()
     {
-        currentState = State.Settling;
+        currentState = BladeState.Settling;
+        List<Collider2D> targets = new(hitTargets);
+        int finalDamage = Mathf.RoundToInt(baseDamage * Mathf.Max(1, currentStage));
+        float finalKnockback = knockbackForce * Mathf.Max(1, currentStage);
 
-        // 复制列表防止修改
-        List<Collider2D> targets = new List<Collider2D>(hitTargets);
-
-        int finalDamage = Mathf.RoundToInt(baseDamage * currentStage);
-        float finalKnockback = knockbackForce * currentStage;
-
-        for (int i = 0; i < hitCount; i++)
+        for (int hitIndex = 0; hitIndex < hitCount; hitIndex++)
         {
-            bool isLastHit = (i == hitCount - 1);
-
-            foreach (var col in targets)
+            bool isLastHit = hitIndex == hitCount - 1;
+            foreach (var collider in targets)
             {
-                // 判空 (可能怪已经死了被 Destroy 了)
-                if (col == null || col.gameObject == null) continue;
+                if (collider == null)
+                    continue;
 
-                // 计算击退方向
-                Vector3 dir = (col.transform.position - player.transform.position).normalized;
-
-                // 【修改 6】伤害类型分流处理
-                EnemyBase enemy = col.GetComponent<EnemyBase>();
-
+                Vector3 dir = (collider.transform.position - player.transform.position).normalized;
+                EnemyBase enemy = collider.GetComponent<EnemyBase>();
                 if (enemy != null)
                 {
-                    // A. 如果是 EnemyBase (小怪/本体)，使用带击退的高级伤害
                     float force = isLastHit ? finalKnockback : 0f;
-                    enemy.TakeDamage(finalDamage, col.transform.position, dir, force);
+                    enemy.TakeDamage(finalDamage, collider.transform.position, dir, force);
                 }
                 else
                 {
-                    // B. 如果只是 IDamageable (比如 BossPart)，使用普通伤害接口
-                    IDamageable part = col.GetComponent<IDamageable>();
-                    if (part != null)
-                    {
-                        // 普通受击（通常 Boss 部位不吃物理击退）
-                        part.TakeDamage(finalDamage, col.transform.position, dir);
-                    }
+                    var damageable = collider.GetComponent<IDamageable>();
+                    if (damageable != null)
+                        damageable.TakeDamage(finalDamage, collider.transform.position, dir);
                 }
-
-                if (i > 0) CameraManager.Instance.Shake("BladeLight");
             }
 
             yield return new WaitForSeconds(hitInterval);
         }
 
-        CheckInputAndReset();
+        ResetAfterSettlement();
     }
 
-    void CheckInputAndReset()
+    private void ResetAfterSettlement()
     {
-        if (InputManager.Instance.Mouse0())
+        if (HasControl && InputManager.Instance.Mouse0())
         {
             StartCharging();
+            return;
         }
-        else
+
+        currentState = BladeState.Idle;
+        if (bladeVisual != null)
         {
-            currentState = State.Idle;
-            if (bladeVisual)
+            bladeVisual.DOScale(0f, 0.15f).OnComplete(() =>
             {
-                bladeVisual.DOScale(0, 0.15f).OnComplete(() =>
-                {
-                    // 再次检查防止 tween 回调时已经开始新一轮蓄力了
-                    if (currentState == State.Idle)
-                        bladeVisual.gameObject.SetActive(false);
-                });
-            }
+                if (currentState == BladeState.Idle)
+                    bladeVisual.gameObject.SetActive(false);
+            });
         }
     }
 
-    public override void OnActivate()
+    private float GetCurrentStageScale()
     {
-        base.OnActivate();
-        RecalculateStats();
-    }
-
-    public override void OnDeactivate()
-    {
-        base.OnDeactivate();
-        if (healthModule) healthModule.IsInvincible = false;
-        if (bladeVisual) bladeVisual.gameObject.SetActive(false);
-        Physics2D.IgnoreLayerCollision(playerLayerID, enemyLayerID, false);
-    }
-
-    public override void UpgradeModule(ModuleType moduleType, StatType statType)
-    {
-        if (moduleType == ModuleType.SawBlade)
+        return currentStage switch
         {
-            switch (statType)
-            {
-                case StatType.BladeBaseDamage:
-                    baseDamage = (int)UpgradeManager.Instance.GetStat(moduleType, statType);
-                    break;
-                case StatType.BladeChargeTime:
-                    maxChargeTime = UpgradeManager.Instance.GetStat(moduleType, statType);
-                    break;
-            }
-        }
-        minDashSpeed = UpgradeManager.Instance.GetStat(ModuleType.Movement, StatType.MoveSpeed) * 4;
-        maxDashSpeed = UpgradeManager.Instance.GetStat(ModuleType.Movement, StatType.MoveSpeed) * 4 + 5f;
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        // 如果判定参数还没设置，就不画
-        if (attackRadius <= 0) return;
-
-        Vector3 center = transform.position;
-
-        // 1. 绘制基础参考圆 (白色) - 这是 attackRadius 的原始大小
-        // Gizmos.color = new Color(1, 1, 1, 0.2f);
-        // Gizmos.DrawWireSphere(center, attackRadius);
-
-        // 2. 预计算各个阶段的实际判定半径
-        // 公式必须与 DetectEnemies 保持完全一致: scale * attackRadius * attackRadiusRatio
-        float r1 = scaleStage1 * attackRadius * attackRadiusRatio;
-        float r2 = scaleStage2 * attackRadius * attackRadiusRatio;
-        float r3 = scaleStage3 * attackRadius * attackRadiusRatio;
-
-        // 3. 绘制 Stage 1 (绿色 - 最小判定)
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(center, r1);
-
-        // 4. 绘制 Stage 2 (黄色 - 中等判定)
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(center, r2);
-
-        // 5. 绘制 Stage 3 (红色 - 最大判定)
-        Gizmos.color = new Color(1f, 0.3f, 0.3f); // 浅红
-        Gizmos.DrawWireSphere(center, r3);
-
-        // 6. [运行时] 绘制当前生效的判定范围
-        if (Application.isPlaying)
-        {
-            float currentR = GetCurrentStageScale() * attackRadius * attackRadiusRatio;
-            Gizmos.color = Color.cyan;
-
-            // 稍微画粗一点 (多画几圈)
-            Gizmos.DrawWireSphere(center, currentR);
-            Gizmos.DrawWireSphere(center, currentR * 0.99f);
-        }
+            3 => scaleStage3,
+            2 => scaleStage2,
+            1 => scaleStage1,
+            _ => scaleStage1 * 0.5f
+        };
     }
 }
 

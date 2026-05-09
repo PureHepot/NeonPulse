@@ -5,7 +5,7 @@ public class EnemySpinner : EnemyBase
     [Header("Rotation Settings")]
     public float rotateSpeed = 360f;
 
-    [Header("×·×ÙÆ½»¬")]
+    [Header("è¿½è¸ªå¹³æ»‘")]
     public float followSmooth = 6f;
 
     [Header("Separation")]
@@ -29,13 +29,13 @@ public class EnemySpinner : EnemyBase
 
         Vector2 dir = (playerTransform.position - transform.position).normalized;
 
-        // Î¢°Ú¶¯ÈÅ¶¯
+        // å¾®æ‘†åŠ¨æ‰°åŠ¨
         Vector2 perpendicular = new Vector2(-dir.y, dir.x);
         float wave = Mathf.Sin(Time.time * waveFrequency + noiseOffset) * waveMagnitude;
 
         Vector2 finalDir = (dir + perpendicular * wave).normalized;
 
-        // ÓëÍ¬Àà±£³Ö¾àÀë
+        // ä¸åŒç±»ä¿æŒè·ç¦»
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, separationDistance, LayerMask.GetMask("Enemy"));
         foreach (var hit in hits)
         {
@@ -46,10 +46,10 @@ public class EnemySpinner : EnemyBase
                 finalDir += away.normalized * separationStrength * (1f - d / separationDistance);
         }
 
-        // Æ½»¬ËÙ¶È
-        rb.velocity = Vector2.Lerp(rb.velocity, finalDir * moveSpeed, Time.fixedDeltaTime * followSmooth);
+        // å¹³æ»‘é€Ÿåº¦
+        DriveVelocity(finalDir * moveSpeed, followSmooth / 4f);
 
-        // ×ÔĞı
+        // è‡ªæ—‹
         transform.Rotate(0, 0, rotateSpeed * Time.fixedDeltaTime);
     }
 }

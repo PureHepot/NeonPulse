@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2938850d4485ee45954e75922bd383a, type: 3}
+  m_Name: BaseHealthModule
+  m_EditorClassIdentifier: 
+  moduleId: base_health_module
+  moduleName: "\u57FA\u7840\u751F\u547D\u6A21\u5757"
+  moduleType: 1
+  description: "\u8FD9\u662F\u57FA\u7840\u7684\u751F\u547D\u6A21\u5757\uFF0C\u53EF\u4EE5\u63D0\u4F9B\u673A\u4F53\u7684"
+  icon: {fileID: 0}
+  categories: 128
+  statSchema: {fileID: 11400000, guid: 5d08e2b9816f892409689f47e42b069f, type: 2}
+  defaultRarity: 0
+  rarityProfiles:
+  - rarity: 0
+    baseStats:
+    - statDefinition: {fileID: 11400000, guid: 14c01b01d1953c249907e5d7f1eed946, type: 2}
+      value: 40
+    - statDefinition: {fileID: 11400000, guid: da89ff98cbf3c414c81fa1b3bba0a6c1, type: 2}
+      value: 1
+    maxPluginSlots: 1
+    loadCost: 1
+  coreSlotCount: 1
+  themeColor: {r: 0.37995815, g: 1, b: 0, a: 1}
+  runtimePrefab: {fileID: 0}
+  previewPrefab: {fileID: 7912777684067947577, guid: 142a2546d2871ba498c4e8f5e356f7f5, type: 3}
+  unlockCost: 0

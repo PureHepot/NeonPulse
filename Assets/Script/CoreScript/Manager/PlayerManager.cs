@@ -4,27 +4,23 @@ using UnityEngine;
 
 public class PlayerManager : MonoSingleton<PlayerManager>
 {
-    [Header("配置")]
-    [SerializeField] private int maxHealth;
-    public int MaxHealth => maxHealth;
+    private const string PlayerPrefabResourcePath = "Prefabs/Mono/Player/Player";
+    private const string FrameCoreResourceRoot = "Prefabs/Mono/Frame/Core";
 
     public Action<int, int> OnHpChanged;
+
     public GameObject playerPrefab;
     public Transform spawnPoint;
+
     public GameObject CurrentPlayerObj { get; private set; }
     public ModuleManager CurrentModules { get; private set; }
-    public PlayerPreview PlayerPreview { get; private set; }
 
-    public bool IsPlayerAlive => CurrentPlayerObj != null;
-
-    public Vector3 PlayerPosition => CurrentPlayerObj ? CurrentPlayerObj.transform.position : Vector3.zero;
-
-    // --- 玩家视觉引用 ---
     [Header("Visual References")]
     public SpriteRenderer bodyRenderer;
 
-    // --- 玩家数据 ---
     [SerializeField] private int currentHp;
+    [SerializeField] private int maxHealth;
+
     public int CurrentHp
     {
         get => currentHp;
@@ -35,213 +31,217 @@ public class PlayerManager : MonoSingleton<PlayerManager>
         }
     }
 
-    private void Awake()
-    {
-        // 移除原有的模块初始化逻辑，全部移交 UpgradeManager
-        if (spawnPoint == null)
-        {
-            var bf = GameObject.Find("BattleField");
-            if (bf) spawnPoint = bf.transform;
-        }
-    }
+    public int MaxHealth => maxHealth;
+    public bool IsPlayerAlive => CurrentPlayerObj != null && CurrentPlayerObj.activeInHierarchy;
+    public Vector3 PlayerPosition => CurrentPlayerObj != null ? CurrentPlayerObj.transform.position : Vector3.zero;
 
     public void SpawnPlayer()
     {
-        if (CurrentPlayerObj != null) return;
+        var data = DataManager.Instance;
+        var database = GameConfigDatabase.Instance;
+        var runtimeLoadout = data != null ? data.CurrentLoadout : null;
+        if (runtimeLoadout == null || database == null)
+        {
+            Debug.LogWarning("[PlayerManager] Cannot spawn runtime player because run loadout or database is missing.");
+            return;
+        }
 
-        currentHp = MaxHealth;
-        if (spawnPoint) spawnPoint.gameObject.SetActive(true);
+        var prefab = playerPrefab != null ? playerPrefab : Resources.Load<GameObject>(PlayerPrefabResourcePath);
+        if (prefab == null)
+        {
+            Debug.LogWarning("[PlayerManager] Player prefab not found for runtime spawn.");
+            return;
+        }
 
-        CurrentPlayerObj = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
+        ClearRuntimePlayer();
 
-        CurrentModules = CurrentPlayerObj.GetComponent<ModuleManager>();
+        Vector3 spawnPosition = ResolveSpawnPosition();
+        var playerObject = Instantiate(prefab, spawnPosition, Quaternion.identity);
+        playerObject.name = prefab.name;
 
-        if (bodyRenderer == null) bodyRenderer = CurrentPlayerObj.GetComponentInChildren<SpriteRenderer>();
-
-        var pc = CurrentPlayerObj.GetComponent<PlayerController>();
-        pc.OnDeath += HandlePlayerDeath;
-
-        Debug.Log("<color=green>Player Generated</color>");
-
-        UpgradeManager.Instance.ApplyModulesToPlayer();
-
-        MaskSystemManager.Instance?.ApplyCurrentMaskVisuals();
-
-        GameObject.Find("PlayerModelCamera").GetComponent<PlayerPreviewSync>().RebuildPreview();
+        RegisterRuntimePlayer(playerObject);
+        AttachFrameCore(playerObject.transform, ResolveFrameConfig(runtimeLoadout.frameId));
+        AttachRuntimeModules(playerObject, runtimeLoadout, database);
     }
 
-    private void HandlePlayerDeath()
+    public void ClearRuntimePlayer()
     {
-        Debug.Log("<color=red>Player Died</color>");
-        DataManager.Instance.GameData.IsGameOver = true;
-        CurrentPlayerObj.SetActive(false);
+        if (CurrentPlayerObj != null)
+            Destroy(CurrentPlayerObj);
+
+        CurrentPlayerObj = null;
+        CurrentModules = null;
+        bodyRenderer = null;
+        currentHp = 0;
+        maxHealth = 0;
+    }
+
+    public void RegisterRuntimePlayer(GameObject playerObject)
+    {
+        CurrentPlayerObj = playerObject;
+        CurrentModules = playerObject != null ? playerObject.GetComponent<ModuleManager>() : null;
+        bodyRenderer = null;
+
+        if (playerObject == null)
+            return;
+
+        var playerController = playerObject.GetComponent<PlayerController>();
+        if (playerController != null)
+        {
+            playerController.IsDead = false;
+            playerController.IsStunned = false;
+            playerController.IsDashing = false;
+            playerController.ConfigureRuntime(true, false);
+        }
     }
 
     public void UpdatePlayerVisuals(Sprite bodySprite, Color color)
     {
-        if (CurrentPlayerObj != null && bodyRenderer != null)
-        {
-            if (bodySprite != null) bodyRenderer.sprite = bodySprite;
-            bodyRenderer.color = color;
-        }
+        if (bodyRenderer == null)
+            return;
+
+        if (bodySprite != null)
+            bodyRenderer.sprite = bodySprite;
+
+        bodyRenderer.color = color;
     }
 
     public void SyncHp(int current, int max)
     {
-        currentHp = current;
-        maxHealth = max;
-        OnHpChanged?.Invoke(current, max);
+        maxHealth = Mathf.Max(0, max);
+        currentHp = Mathf.Clamp(current, 0, maxHealth);
+        OnHpChanged?.Invoke(currentHp, maxHealth);
+    }
+
+    public void SavePlayerState()
+    {
+        var run = DataManager.Instance.Run;
+        if (run == null)
+            return;
+
+        run.player.currentHp = currentHp;
+        run.player.maxHp = maxHealth;
+
+        if (CurrentPlayerObj == null)
+            return;
+
+        var pos = CurrentPlayerObj.transform.position;
+        run.player.posX = pos.x;
+        run.player.posY = pos.y;
+    }
+
+    private void AttachRuntimeModules(GameObject playerObject, RunLoadoutData runtimeLoadout, GameConfigDatabase database)
+    {
+        if (playerObject == null || runtimeLoadout?.slots == null)
+            return;
+
+        var moduleManager = playerObject.GetComponent<ModuleManager>();
+        if (moduleManager == null)
+            return;
+
+        moduleManager.ClearRuntimeModules();
+
+        var modulesRoot = playerObject.transform.Find("Modules") ?? playerObject.transform;
+        foreach (var slot in runtimeLoadout.slots)
+        {
+            var runtimeData = LoadoutModuleRuntimeBuilder.Build(slot, database);
+            if (runtimeData == null || !runtimeData.HasModule)
+                continue;
+
+            var modulePrefab = PlayerModulePrefabResolver.Resolve(runtimeData);
+            if (modulePrefab == null)
+            {
+                Debug.LogWarning($"[PlayerManager] Missing runtime prefab for module {runtimeData.moduleId}.");
+                continue;
+            }
+
+            var moduleObject = Instantiate(modulePrefab, modulesRoot);
+            var playerModule = moduleObject.GetComponent<PlayerModule>();
+            if (playerModule == null)
+                playerModule = moduleObject.AddComponent<PassiveModule>();
+
+            moduleManager.RegisterRuntimeModule(playerModule, runtimeData);
+        }
+    }
+
+    private void AttachFrameCore(Transform playerRoot, FrameConfig frameConfig)
+    {
+        if (playerRoot == null)
+            return;
+
+        var coreRoot = playerRoot.Find("Core") ?? playerRoot;
+        for (int index = coreRoot.childCount - 1; index >= 0; index--)
+            Destroy(coreRoot.GetChild(index).gameObject);
+
+        var frameCorePrefab = ResolveFrameCorePrefab(frameConfig);
+        if (frameCorePrefab == null)
+            return;
+
+        var frameCoreInstance = Instantiate(frameCorePrefab, coreRoot);
+        frameCoreInstance.name = frameCorePrefab.name;
+        frameCoreInstance.transform.localPosition = Vector3.zero;
+        frameCoreInstance.transform.localRotation = Quaternion.identity;
+        frameCoreInstance.transform.localScale = Vector3.one;
+    }
+
+    private Vector3 ResolveSpawnPosition()
+    {
+        if (spawnPoint != null)
+            return spawnPoint.position;
+
+        var run = DataManager.Instance.Run;
+        if (run != null)
+        {
+            var savedPosition = new Vector3(run.player.posX, run.player.posY, 0f);
+            if (savedPosition.sqrMagnitude > 0.0001f)
+                return savedPosition;
+        }
+
+        var camera = Camera.main;
+        if (camera != null)
+            return new Vector3(camera.transform.position.x, camera.transform.position.y, 0f);
+
+        return Vector3.zero;
+    }
+
+    private static FrameConfig ResolveFrameConfig(string frameId)
+    {
+        if (string.IsNullOrWhiteSpace(frameId))
+            return null;
+
+        var database = GameConfigDatabase.Instance;
+        if (database?.allFrames == null)
+            return null;
+
+        foreach (var frame in database.allFrames)
+        {
+            if (frame != null && string.Equals(frame.frameId, frameId, StringComparison.OrdinalIgnoreCase))
+                return frame;
+        }
+
+        return null;
+    }
+
+    private static GameObject ResolveFrameCorePrefab(FrameConfig frameConfig)
+    {
+        if (frameConfig == null)
+            return null;
+
+        string framePrefabName = string.Empty;
+        if (frameConfig.slotLayoutPrefab != null)
+            framePrefabName = frameConfig.slotLayoutPrefab.name;
+        else if (frameConfig.frameCore != null)
+            framePrefabName = frameConfig.frameCore.name;
+        else if (!string.IsNullOrWhiteSpace(frameConfig.frameId))
+            framePrefabName = frameConfig.frameId.Trim();
+
+        if (!string.IsNullOrWhiteSpace(framePrefabName))
+        {
+            var runtimeFrameCore = Resources.Load<GameObject>($"{FrameCoreResourceRoot}/Core_{framePrefabName}");
+            if (runtimeFrameCore != null)
+                return runtimeFrameCore;
+        }
+
+        return frameConfig.frameCore;
     }
 }
-//public class PlayerManager : MonoSingleton<PlayerManager>
-//{
-//    [Header("配置")]
-//    [SerializeField]
-//    private int maxHealth;
-
-//    public int MaxHealth
-//    {
-//        get => maxHealth;
-//        set
-//        {
-//            maxHealth = value;
-//            OnHpChanged?.Invoke(CurrentHp, maxHealth);
-//        }
-//    }
-
-//    [SerializeField]
-//    private int bulletDamage = 1;
-
-//    public Action<int, int> OnHpChanged; 
-
-//    public GameObject playerPrefab;
-//    public Transform spawnPoint;
-
-//    public GameObject CurrentPlayerObj { get; private set; }
-
-//    public Vector3 PlayerPosition => CurrentPlayerObj ? CurrentPlayerObj.transform.position : Vector3.zero;
-
-//    public bool IsPlayerAlive => CurrentPlayerObj != null;
-
-//    public Action<GameObject> OnPlayerSpawned;
-//    public Action OnPlayerDead;
-
-//    //---模块---
-//    [Header("Default Loadout")]
-//    public List<ModuleType> startingModules;
-
-//    private HashSet<ModuleType> unlockedModuleTypes = new HashSet<ModuleType>();
-//    public PlayerModuleManager CurrentModules { get; private set; }
-
-//    //---玩家数据---
-//    [SerializeField]
-//    private int currentHp;
-//    public int CurrentHp
-//    {
-//        get => currentHp;
-//        set
-//        {
-//            currentHp = Mathf.Clamp(value, 0, MaxHealth);
-//            OnHpChanged?.Invoke(currentHp, MaxHealth);
-//        }
-//    }
-
-//    public int BulletDamage { get { return bulletDamage; } set { bulletDamage = value; } }
-
-//    private void Awake()
-//    {
-//        // 初始化初始解锁模块
-//        foreach (var type in startingModules)
-//        {
-//            if (!unlockedModuleTypes.Contains(type))
-//            {
-//                unlockedModuleTypes.Add(type);
-//            }
-//        }
-//        UpgradeManager.Instance.SyncWithPlayerManager();
-
-//        if (spawnPoint == null)
-//        {
-//            spawnPoint = GameObject.Find("BattleField").transform;
-//            spawnPoint.gameObject.SetActive(false);
-//        }
-
-//    }
-
-//    /// <summary>
-//    /// 生成玩家
-//    /// </summary>
-//    public void SpawnPlayer()
-//    {
-//        if (CurrentPlayerObj != null) return; 
-
-//        currentHp = MaxHealth;
-
-//        spawnPoint.gameObject.SetActive(true);
-
-//        CurrentPlayerObj = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
-
-//        CurrentModules = CurrentPlayerObj.GetComponent<PlayerModuleManager>();
-
-//        var pc = CurrentPlayerObj.GetComponent<PlayerController>();
-//        pc.OnDeath += HandlePlayerDeath;
-
-//        Debug.Log("<color=green>Player Generated</color>");
-
-//        SyncModulesToPlayer();
-
-//        OnPlayerSpawned?.Invoke(CurrentPlayerObj);
-//    }
-
-//    private void SyncModulesToPlayer()
-//    {
-//        if (CurrentModules == null) return;
-
-//        foreach (var type in unlockedModuleTypes)
-//        {
-//            CurrentModules.UnlockModule(type);
-//        }
-//    }
-
-//    /// <summary>
-//    /// 处理玩家死亡
-//    /// </summary>
-//    private void HandlePlayerDeath()
-//    {
-//        Debug.Log("<color=red>Player Died</color>");
-
-//        OnPlayerDead?.Invoke();
-
-//        DataManager.Instance.GameData.IsGameOver = true;
-
-//        CurrentPlayerObj.SetActive(false);
-//    }
-
-//    /// <summary>
-//    /// 添加新能力
-//    /// </summary>
-//    public void UnlockModuleData(ModuleType type)
-//    {
-//        if (!unlockedModuleTypes.Contains(type))
-//        {
-//            unlockedModuleTypes.Add(type);
-//            Debug.Log($"模块{type}已加入解锁列表");
-
-//            if (CurrentModules != null)
-//            {
-//                CurrentModules.UnlockModule(type);
-//            }
-//        }
-//    }
-
-//    /// <summary>
-//    /// 检查模块是否已解锁
-//    /// </summary>
-//    public bool IsModuleUnlocked(ModuleType type)
-//    {
-//        return unlockedModuleTypes.Contains(type);
-//    }
-
-
-
-//}

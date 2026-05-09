@@ -32,7 +32,7 @@ public class EnemyChaser : EnemyBase
 
         Vector2 finalDir = (toPlayer + perpendicular * wave).normalized;
 
-        rb.velocity = finalDir * moveSpeed;
+        DriveVelocity(finalDir * moveSpeed, 1.4f);
 
         Vector2 lookDir = finalDir;
 

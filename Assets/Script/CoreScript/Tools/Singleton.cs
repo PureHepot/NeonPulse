@@ -56,6 +56,14 @@ public abstract class MonoSingleton<T> : MonoBehaviour where T : MonoSingleton<T
     private static T _instance;
     private static object _lock = new object();
 
+    public static void RegisterInstance(T instance)
+    {
+        if (instance == null)
+            return;
+
+        _instance = instance;
+    }
+
     /// <summary>
     ///实例
     /// </summary>
