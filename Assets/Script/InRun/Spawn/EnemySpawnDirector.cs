@@ -62,7 +62,10 @@ public class EnemySpawnDirector
         float spawnPerSecond = loopConfig.spawnBudgetPerSecondCurve != null
             ? loopConfig.spawnBudgetPerSecondCurve.Evaluate(Mathf.Clamp01(normalizedTime))
             : 1f;
-        float maxThreat = Mathf.Max(1f, loopConfig.baseActiveThreatCap * loopScale * themeScale * themeDifficulty);
+        float maxTreatRate = loopConfig.maxTreatCurve != null
+            ? loopConfig.maxTreatCurve.Evaluate(Mathf.Clamp01(normalizedTime))
+            : 1f;
+        float maxThreat = Mathf.Max(1f, loopConfig.baseActiveThreatCap * loopScale * themeScale * themeDifficulty * maxTreatRate);
 
         spawnBudget += spawnPerSecond * deltaTime * loopScale * themeScale;
         CurrentActiveThreat = CalculateActiveThreat();

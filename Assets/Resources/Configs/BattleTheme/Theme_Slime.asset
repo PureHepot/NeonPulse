@@ -26,25 +26,25 @@ MonoBehaviour:
     tags:
     - basic
     - slime
-  - enemyId: Slime_Chaser
-    enemyPrefab: {fileID: 5687499291434305790, guid: 706a79fa4b565b747bd409464879a084, type: 3}
-    enemyResourcePath: Prefabs/Mono/Enemys/TheSlime/EnemyChaser
-    baseScore: 14
-    baseSpawnCost: 1.35
-    baseThreat: 1.2
-    minLoopIndex: 1
-    tags:
-    - chase
-    - slime
   - enemyId: Slime_Dasher
     enemyPrefab: {fileID: 3862104991398879297, guid: f837404300d7da240a1f98c5a0dea4e1, type: 3}
     enemyResourcePath: Prefabs/Mono/Enemys/TheSlime/EnemyDasher
     baseScore: 18
-    baseSpawnCost: 1.75
-    baseThreat: 1.6
-    minLoopIndex: 2
+    baseSpawnCost: 1
+    baseThreat: 1
+    minLoopIndex: 1
     tags:
     - dash
+    - slime
+  - enemyId: Slime_Chaser
+    enemyPrefab: {fileID: 5687499291434305790, guid: 706a79fa4b565b747bd409464879a084, type: 3}
+    enemyResourcePath: Prefabs/Mono/Enemys/TheSlime/EnemyChaser
+    baseScore: 14
+    baseSpawnCost: 1.3
+    baseThreat: 1.3
+    minLoopIndex: 2
+    tags:
+    - chase
     - slime
   loopEnemyPlans:
   - loopIndex: 0
@@ -56,11 +56,11 @@ MonoBehaviour:
   - loopIndex: 1
     unlockedEnemyIds:
     - Slime_Drifter
-    - Slime_Chaser
+    - Slime_Dasher
     weightedEnemies:
     - enemyId: Slime_Drifter
       weight: 1
-    - enemyId: Slime_Chaser
+    - enemyId: Slime_Dasher
       weight: 0.7
   - loopIndex: 2
     unlockedEnemyIds:
@@ -71,7 +71,7 @@ MonoBehaviour:
     - enemyId: Slime_Drifter
       weight: 0.9
     - enemyId: Slime_Chaser
-      weight: 0.9
-    - enemyId: Slime_Dasher
       weight: 0.6
+    - enemyId: Slime_Dasher
+      weight: 0.9
   difficultyMultiplier: 1

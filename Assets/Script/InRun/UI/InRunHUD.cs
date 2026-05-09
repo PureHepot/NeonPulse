@@ -35,11 +35,11 @@ public class InRunHUD : MonoBehaviour
         GUILayout.Label($"Threat: {director.CurrentActiveThreat:0.00}", labelStyle);
         GUILayout.EndArea();
 
-        if (director.CurrentPhase != InRunPhase.PulseReady)
+        if (director.CurrentPhase != InRunPhase.CombatLoopActive && director.CurrentPhase != InRunPhase.PulseReady)
             return;
 
         Rect centerRect = new Rect(0f, Screen.height * 0.36f, Screen.width, 80f);
-        GUI.Label(centerRect, $"PULSE READY\nPress {director.CurrentPulseKeyName}", centerStyle);
+        GUI.Label(centerRect, $"PULSE\nPress {director.CurrentPulseKeyName} to cash out", centerStyle);
     }
 
     private void EnsureStyles()

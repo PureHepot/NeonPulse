@@ -38,9 +38,9 @@ public class InRunDirector : MonoBehaviour
     public string CurrentThemeLabel => GetDisplayIndex(context != null ? context.CurrentThemeIndex : -1, themesPerRun);
     public string CurrentLoopLabel => GetDisplayIndex(context != null ? context.CurrentLoopIndex : -1, loopsPerTheme);
     public string CurrentLoopTimerText => $"{FormatSeconds(combatLoopController.RemainingSeconds)} / {FormatSeconds(combatLoopController.DurationSeconds)}";
-    public string CurrentPulseStatusText => CurrentPhase == InRunPhase.PulseReady
-        ? $"Ready [{CurrentPulseKeyName}]"
-        : pulseSystem.WasTriggered ? "Triggered" : "Idle";
+    public string CurrentPulseStatusText => pulseSystem.WasTriggered
+        ? "Triggered"
+        : pulseSystem.IsArmed ? $"Armed [{CurrentPulseKeyName}]" : "Idle";
     public string CurrentPulseKeyName => pulseSystem.PulseKey.ToString();
     public int CurrentActiveEnemyCount => enemySpawnDirector.ActiveEnemyCount;
     public float CurrentActiveThreat => enemySpawnDirector.CurrentActiveThreat;
@@ -301,28 +301,34 @@ public class InRunDirector : MonoBehaviour
     {
         yield return EnterState(InRunPhase.CombatLoopActive, !resumeTimer);
         combatLoopController.StartLoop(currentLoop, ResolveLoopDurationSeconds(), resumeTimer);
+        pulseSystem.Arm(ResolvePulseConfig(), currentLoop);
         enemySpawnDirector.BeginLoop(
             currentTheme,
             ResolveLoopGlobalConfig(),
             context != null ? Mathf.Max(0, context.CurrentThemeIndex) : 0,
             context != null ? Mathf.Max(0, context.CurrentLoopIndex) : 0);
-        yield return new WaitUntil(() => combatLoopController.IsComplete);
+
+        yield return new WaitUntil(() => combatLoopController.IsComplete || pulseSystem.WasTriggered);
+
+        if (pulseSystem.WasTriggered && !combatLoopController.IsComplete)
+            combatLoopController.CompleteNow();
+
         enemySpawnDirector.StopLoop();
         yield return EnterState(InRunPhase.CombatLoopComplete);
     }
 
     private IEnumerator RunPulseAndReward(bool resumePulseReady)
     {
-        yield return EnterState(InRunPhase.PulseReady, !resumePulseReady);
-        pulseSystem.Arm(ResolvePulseConfig(), currentLoop);
-
-        if (currentLoop == null || !currentLoop.pulseUsed)
+        bool pulseAlreadyTriggered = currentLoop != null && currentLoop.pulseUsed;
+        if (!pulseAlreadyTriggered)
         {
+            yield return EnterState(InRunPhase.PulseReady, !resumePulseReady);
+            pulseSystem.Arm(ResolvePulseConfig(), currentLoop);
             yield return new WaitUntil(() => pulseSystem.WasTriggered);
-            pulseSystem.ClearTrigger();
         }
 
         yield return EnterState(InRunPhase.PulseResolving);
+        pulseSystem.ClearTrigger();
         enemySpawnDirector.DespawnAllTrackedEnemies();
         yield return EnterState(InRunPhase.LoopReward);
         currentLoop.rewardClaimed = true;
