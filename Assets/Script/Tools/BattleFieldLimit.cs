@@ -18,7 +18,6 @@ public class BattleFieldLimit : MonoBehaviour
     public GameObject rightWall;
     public GameObject topWall;
     public GameObject bottomWall;
-    public GameObject ArenaTrap;
     private float wallThickness = 1f;
 
     private void Awake()
@@ -29,7 +28,7 @@ public class BattleFieldLimit : MonoBehaviour
         camHalfWidth = camWidth / 2f;
         camHalfHeight = camHeight / 2f;
         UpdateBounds();
-        
+        UpdateAllWalls();//更新墙体位置
     }
 
     private void FixedUpdate()
@@ -37,8 +36,8 @@ public class BattleFieldLimit : MonoBehaviour
         UpdateBounds(); // 实时更新边界
         FindPlayer();   // 查找玩家
         ClampPlayerPos(); // 限制玩家位置
-        UpdateAllWalls();//更新墙体位置
-        UpdateArenaTrap(ArenaTrap);
+        
+        
     }
 
     /// <summary>
@@ -137,10 +136,5 @@ public class BattleFieldLimit : MonoBehaviour
                 break;
         }
     }
-    private void UpdateArenaTrap(GameObject trap)
-    {
-        BoxCollider2D box=trap.GetComponent<BoxCollider2D>();
-        box.transform.position = new Vector3(_mainCam.transform.position.x, _mainCam.transform.position.y, 0);
-        box.size = new Vector2(_maxX - _minX, _maxY - _minY);
-    }
+    
 }

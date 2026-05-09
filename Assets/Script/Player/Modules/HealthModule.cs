@@ -144,7 +144,7 @@ public class HealthModule : PlayerModule
         Debug.Log("Player Died");
     }
 
-    public override void UpgradeModule(ModuleType moduleType, StatType statType)
+    public override void UpgradeModule(ModuleType ModuleType, StatType statType)
     {
         RecalculateStats();
 

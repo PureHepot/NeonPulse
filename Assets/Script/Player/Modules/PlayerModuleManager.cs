@@ -7,7 +7,7 @@ public class PlayerModuleManager : MonoBehaviour
 {
     private PlayerController playerController;
 
-    private Dictionary<ModuleType, PlayerModule> moduleDict = new Dictionary<ModuleType, PlayerModule>();
+    private Dictionary<ModuleType, PlayerModule> ModuleDict = new Dictionary<ModuleType, PlayerModule>();
 
     private List<PlayerModule> activeModules = new List<PlayerModule>();
 
@@ -16,22 +16,22 @@ public class PlayerModuleManager : MonoBehaviour
     void Awake()
     {
         playerController = GetComponent<PlayerController>();
-        PlayerModule[] modules = GetComponentsInChildren<PlayerModule>(true);
-        foreach (var module in modules)
+        PlayerModule[] Modules = GetComponentsInChildren<PlayerModule>(true);
+        foreach (var Module in Modules)
         {
-            if (!moduleDict.ContainsKey(module.moduleType))
+            if (!ModuleDict.ContainsKey(Module.ModuleType))
             {
-                moduleDict.Add(module.moduleType, module);
+                ModuleDict.Add(Module.ModuleType, Module);
             }
         }
 
         Initialize = () =>
         {
-            PlayerModule[] modules = GetComponentsInChildren<PlayerModule>(true);
+            PlayerModule[] Modules = GetComponentsInChildren<PlayerModule>(true);
 
-            foreach (var module in modules)
+            foreach (var Module in Modules)
             {
-                module.Initialize(playerController);
+                Module.Initialize(playerController);
             }
         };
     }
@@ -46,12 +46,12 @@ public class PlayerModuleManager : MonoBehaviour
 
     public void UnlockModule(ModuleType type)
     {
-        if (moduleDict.TryGetValue(type, out PlayerModule module))
+        if (ModuleDict.TryGetValue(type, out PlayerModule Module))
         {
-            if (!module.isUnlocked)
+            if (!Module.isUnlocked)
             {
-                module.OnActivate();
-                activeModules.Add(module);
+                Module.OnActivate();
+                activeModules.Add(Module);
                 Debug.Log($"<color=cyan>模块已装载: {type}</color>");
             }
         }
@@ -63,11 +63,11 @@ public class PlayerModuleManager : MonoBehaviour
 
     public void UpgradeModule(ModuleType type, StatType stat)
     {
-        if (moduleDict.TryGetValue(type, out PlayerModule module))
+        if (ModuleDict.TryGetValue(type, out PlayerModule Module))
         {
-            if (module.isUnlocked)
+            if (Module.isUnlocked)
             {
-                module.UpgradeModule(type, stat);
+                Module.UpgradeModule(type, stat);
                 Debug.Log($"<color=green>模块已升级: {type}</color>");
             }
             else
@@ -86,31 +86,31 @@ public class PlayerModuleManager : MonoBehaviour
     /// </summary>
     public void DisableModule(ModuleType type)
     {
-        if (moduleDict.TryGetValue(type, out PlayerModule module))
+        if (ModuleDict.TryGetValue(type, out PlayerModule Module))
         {
-            if (module.isUnlocked)
+            if (Module.isUnlocked)
             {
-                module.OnDeactivate();
-                activeModules.Remove(module);
+                Module.OnDeactivate();
+                activeModules.Remove(Module);
             }
         }
     }
 
     public void RemoveModule(ModuleType type)
     {
-        if (moduleDict.ContainsKey(type))
+        if (ModuleDict.ContainsKey(type))
         {
-            moduleDict.Remove(type);
+            ModuleDict.Remove(type);
         }
     }
 
     public T GetModule<T>(ModuleType type) where T : PlayerModule
     {
-        if (moduleDict.TryGetValue(type, out PlayerModule module))
+        if (ModuleDict.TryGetValue(type, out PlayerModule Module))
         {
-            if (module.isUnlocked)
+            if (Module.isUnlocked)
             {
-                return module as T;
+                return Module as T;
             }
         }
         return null;
@@ -123,9 +123,9 @@ public class PlayerModuleManager : MonoBehaviour
 
     public bool HasAbility(ModuleType type)
     {
-        if (moduleDict.TryGetValue(type, out PlayerModule module))
+        if (ModuleDict.TryGetValue(type, out PlayerModule Module))
         {
-            return module.isUnlocked;
+            return Module.isUnlocked;
         }
         return false;
     }

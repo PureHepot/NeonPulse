@@ -55,6 +55,12 @@ public enum StatType
     InvinciDuration,
 
 
+    //MagnetModule
+    MagnetRange,
+    MagnetControlTime,
+    MagnetCooldown,
+    //OddMovementModule
+    OddMoveSpeed,
     //诸如此类
 }
 
@@ -82,8 +88,8 @@ public class StatUpgradeDefinition
 public class ModuleConfig : ScriptableObject
 {
     [Header("Basic Info")]
-    public string moduleName;
-    public ModuleType moduleType;
+    public string ModuleName;
+    public ModuleType ModuleType;
     //public Sprite icon;
 
     [Header("Base Stats")]

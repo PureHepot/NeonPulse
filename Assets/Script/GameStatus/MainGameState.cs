@@ -76,6 +76,15 @@ public class MainGameState : GameState
         {
             UIManager.Instance.CloseTopPanel();
         }
+        if (Input.GetKeyDown(KeyCode.G) && !UIManager.Instance.CheckUIOpen<ModEquipUI>())
+        {
+            UIManager.Instance.Open<ModEquipUI>();
+            UIManager.Instance.ClosePopup();
+        }
+        else if (Input.GetKeyDown(KeyCode.G) && UIManager.Instance.CheckUIOpen<ModEquipUI>())
+        {
+            UIManager.Instance.CloseTopPanel();
+        }
     }
 
     private void StartGame()
@@ -107,10 +116,10 @@ public class MainGameState : GameState
         DataManager.Instance.EndRun(true, waveReached);
     }
 
-    private void OnModuleUpgrade(ModuleType moduleType, StatType statType)
+    private void OnModuleUpgrade(ModuleType ModuleType, StatType statType)
     {
-        Debug.Log($"模块升级: {moduleType}, 属性: {statType}");
-        PlayerManager.Instance.CurrentModules.GetModule<PlayerModule>(moduleType).UpgradeModule(moduleType, statType);
+        Debug.Log($"模块升级: {ModuleType}, 属性: {statType}");
+        PlayerManager.Instance.CurrentModules.GetModule<PlayerModule>(ModuleType).UpgradeModule(ModuleType, statType);
     }
 
     /// <summary>

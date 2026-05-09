@@ -35,18 +35,18 @@ public class ModuleRuntimeData
         var def = config.GetUpgradeDefinition(type);
         if (def == null)
         {
-            Debug.LogWarning($"[{config.moduleName}] 找不到升级定义: {type}");
+            Debug.LogWarning($"[{config.ModuleName}] 找不到升级定义: {type}");
             return false;
         }
 
         if (def.maxStacks != -1 && upgradeCounts[type] >= def.maxStacks)
         {
-            Debug.LogWarning($"[{config.moduleName}] 属性 {type} 已达最大等级");
+            Debug.LogWarning($"[{config.ModuleName}] 属性 {type} 已达最大等级");
             return false;
         }
 
         upgradeCounts[type]++;
-        Debug.Log($"[{config.moduleName}] 属性 {type} 升级! 当前层数: {upgradeCounts[type]}");
+        Debug.Log($"[{config.ModuleName}] 属性 {type} 升级! 当前层数: {upgradeCounts[type]}");
         return true;
     }
 

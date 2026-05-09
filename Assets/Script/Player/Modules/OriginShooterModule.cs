@@ -2,8 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using UnityEditor;
 
-public class OriginShooterModule : PlayerModule
+public class OriginShooterModule : ShooterModuleBase
 {
     [Header("Hierarchy Refs")]
     public Transform partToRotate;
@@ -32,6 +33,9 @@ public class OriginShooterModule : PlayerModule
     private bool isFiring = false;
 
     private List<float> muzzleVisualProgress = new();
+    private float force = 10f;
+    private Vector2 recoilVelocity;
+    private float recoilDamping = 10f;
 
     public override void Initialize(PlayerController _player)
     {
@@ -49,6 +53,7 @@ public class OriginShooterModule : PlayerModule
     public override void OnActivate()
     {
         base.OnActivate();
+        
         UpdateMuzzleVisibility();
     }
 
@@ -76,28 +81,33 @@ public class OriginShooterModule : PlayerModule
         {
             StartCoroutine(FireSequenceRoutine());
         }
+        if (recoilVelocity.magnitude > 0.01f)
+        {
+            player.Rigid2d.velocity += recoilVelocity;
+            recoilVelocity = Vector2.Lerp(recoilVelocity, Vector2.zero, recoilDamping * Time.deltaTime);
+        }
     }
 
-    public override void UpgradeModule(ModuleType moduleType, StatType statType)
+    public override void UpgradeModule(ModuleType ModuleType, StatType statType)
     {
-        if (moduleType == ModuleType.Shooter)
+        if (ModuleType == ModuleType.Shooter)
         {
             switch (statType)
             {
                 case StatType.BaseDamage:
-                    baseDamage = (int)UpgradeManager.Instance.GetStat(moduleType, statType);
+                    baseDamage = (int)UpgradeManager.Instance.GetStat(ModuleType, statType);
                     break;
                 case StatType.BaseFireRate:
-                    baseFireRate = UpgradeManager.Instance.GetStat(moduleType, statType);
+                    baseFireRate = UpgradeManager.Instance.GetStat(ModuleType, statType);
                     break;
                 case StatType.DamageRateMultiplier:
-                    damageMultiplier = UpgradeManager.Instance.GetStat(moduleType, statType);
+                    damageMultiplier = UpgradeManager.Instance.GetStat(ModuleType, statType);
                     break;
                 case StatType.FireRateMultiplier:
-                    fireRateMultiplier = UpgradeManager.Instance.GetStat(moduleType, statType);
+                    fireRateMultiplier = UpgradeManager.Instance.GetStat(ModuleType, statType);
                     break;
                 case StatType.ShooterCount:
-                    currentLevel = (int)UpgradeManager.Instance.GetStat(moduleType, statType);
+                    currentLevel = (int)UpgradeManager.Instance.GetStat(ModuleType, statType);
                     break;
             }
         }
@@ -185,7 +195,10 @@ public class OriginShooterModule : PlayerModule
         isFiring = true;
 
         globalCooldown = GetFinalFireRate();
-
+        if (ModManager.Instance.GetEquippedMods(this).Contains(ModType.ChaseMod))
+        {
+            
+        }
         List<int> activeIndices = new();
 
         if (currentLevel == 1)
@@ -227,6 +240,8 @@ public class OriginShooterModule : PlayerModule
     {
         AudioManager.Instance.PlayEffect("Shootershoot",0.4f,1f);
 
+        recoilVelocity += -(Vector2)muzzlePoint.right * force;
+
         GameObject bullet = ObjectPoolManager.Instance.Get(
             bulletPrefab,
             muzzlePoint.position,
@@ -236,6 +251,7 @@ public class OriginShooterModule : PlayerModule
         PlayerBullet bulletScript = bullet.GetComponent<PlayerBullet>();
         if (bulletScript)
             bulletScript.damage = (int)GetFinalDamage();
+        ApplyAllModsToBullet(bulletScript);
     }
 
     private void UpdateMuzzleVisibility()

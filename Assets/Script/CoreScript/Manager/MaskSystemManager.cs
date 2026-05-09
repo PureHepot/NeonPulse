@@ -11,7 +11,7 @@ public class MaskSystemManager : MonoSingleton<MaskSystemManager>
     [Header("Current State")]
     public MaskConfig currentMask;
 
-    private List<ModuleType> mods = new();//临时存
+    private List<ModuleType> Mods = new();//临时存
 
     public void ApplyCurrentMaskVisuals()
     {
@@ -75,21 +75,21 @@ public class MaskSystemManager : MonoSingleton<MaskSystemManager>
         EventManager.Broadcast(GameEvent.PlayerSkinChanged);
 
         // 解锁模块
-        foreach (var mod in mask.guaranteedModules)
+        foreach (var Mod in mask.guaranteedModules)
         {
-            UpgradeManager.Instance.UnlockModule(mod);
+            UpgradeManager.Instance.UnlockModule(Mod);
             //PlayrPreview的模块同步解锁
-            EventManager.Broadcast(GameEvent.PlayerUIModelUnlock, mod);
+            EventManager.Broadcast(GameEvent.PlayerUIModelUnlock, Mod);
         }
 
         //将不是面具带来的模块禁用
-        mods.Clear();
-        foreach (var mod in UpgradeManager.Instance.UnlockedModuleTypes)
+        Mods.Clear();
+        foreach (var Mod in UpgradeManager.Instance.UnlockedModuleTypes)
         {
             bool isFromMask = false;
             foreach(var m in mask.guaranteedModules)
             {
-                if(mod == m)
+                if(Mod == m)
                 {
                     isFromMask = true;
                     break;
@@ -97,16 +97,16 @@ public class MaskSystemManager : MonoSingleton<MaskSystemManager>
             }
             if(!isFromMask)
             {
-                mods.Add(mod);
-                EventManager.Broadcast(GameEvent.PlayerUIModelLock, mod);
+                Mods.Add(Mod);
+                EventManager.Broadcast(GameEvent.PlayerUIModelLock, Mod);
             }
         }
 
-        foreach (var mod in mods)
+        foreach (var Mod in Mods)
         {
-            UpgradeManager.Instance.GainUpgradePointByModule(mod);
-            UpgradeManager.Instance.ResetLevel(mod);
-            UpgradeManager.Instance.LockModule(mod);
+            UpgradeManager.Instance.GainUpgradePointByModule(Mod);
+            UpgradeManager.Instance.ResetLevel(Mod);
+            UpgradeManager.Instance.LockModule(Mod);
 
         }
 

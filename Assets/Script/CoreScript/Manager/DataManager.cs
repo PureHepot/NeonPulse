@@ -40,7 +40,9 @@ public class DataManager : MonoSingleton<DataManager>
             wave = new WaveRunData(),
             world = new WorldRunData()
         };
-
+        ModManager.Instance.AddMod(ModType.PenetrateMod);
+        ModManager.Instance.AddMod(ModType.PenetrateMod);
+        ModManager.Instance.AddMod(ModType.ReflectMod);
         Meta.totalRunsPlayed++;
         Save();
     }
@@ -56,6 +58,7 @@ public class DataManager : MonoSingleton<DataManager>
         int reward = waveReached * 10;
         if (victory) reward *= 2;
         Meta.softCurrency += reward;
+        ModManager.Instance.AddMod(ModType.ReflectMod);
 
         // 更新最高波次记录
         if (waveReached > Meta.bestWaveReached)

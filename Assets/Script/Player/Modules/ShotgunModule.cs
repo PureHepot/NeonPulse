@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class ShotgunModule : PlayerModule
+public class ShotgunModule : ShooterModuleBase
 {
     [Header("Refs")]
     public Transform muzzle;
@@ -15,6 +15,9 @@ public class ShotgunModule : PlayerModule
     private int pelletCount;
     private float spreadAngle;
     private float cooldown;
+    private float force = 15f;
+    private Vector2 recoilVelocity;
+    private float recoilDamping = 10f;
 
     public override void Initialize(PlayerController _player)
     {
@@ -51,11 +54,16 @@ public class ShotgunModule : PlayerModule
         {
             Fire();
         }
+        if (recoilVelocity.magnitude > 0.01f)
+        {
+            player.Rigid2d.velocity += recoilVelocity;
+            recoilVelocity = Vector2.Lerp(recoilVelocity, Vector2.zero, recoilDamping * Time.deltaTime);
+        }
     }
 
-    public override void UpgradeModule(ModuleType moduleType, StatType statType)
+    public override void UpgradeModule(ModuleType ModuleType, StatType statType)
     {
-        if (moduleType != ModuleType.Shotgun) return;
+        if (ModuleType != ModuleType.Shotgun) return;
         RecalculateStats();
     }
 
@@ -87,6 +95,7 @@ public class ShotgunModule : PlayerModule
             float angle = startAngle + step * i;
             SpawnPellet(angle);
         }
+        recoilVelocity += -(Vector2)muzzle.right * force;
     }
 
     void SpawnPellet(float angle)

@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3e51474ed9a6b447adfdd2b95c9733d, type: 3}
   m_Name: DashModule
   m_EditorClassIdentifier: 
-  moduleName: DashModule
-  moduleType: 4
+  ModuleName: DashModule
+  ModuleType: 4
   baseStats:
   - type: 16
     value: 2

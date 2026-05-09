@@ -70,21 +70,21 @@ public class ShieldModule : PlayerModule
         if (shieldObject) shieldObject.SetActive(false);
     }
 
-    public override void UpgradeModule(ModuleType moduleType, StatType statType)
+    public override void UpgradeModule(ModuleType ModuleType, StatType statType)
     {
-        base.UpgradeModule(moduleType, statType);
-        if (moduleType == ModuleType.Shield)
+        base.UpgradeModule(ModuleType, statType);
+        if (ModuleType == ModuleType.Shield)
         {
             switch (statType)
             {
                 case StatType.ShieldCapacity:
-                    this.ShieldCapacity = UpgradeManager.Instance.GetStat(moduleType, statType);
+                    this.ShieldCapacity = UpgradeManager.Instance.GetStat(ModuleType, statType);
                     break;
                 case StatType.ShiledRegen:
-                    this.ShieldRegen = UpgradeManager.Instance.GetStat(moduleType, statType);
+                    this.ShieldRegen = UpgradeManager.Instance.GetStat(ModuleType, statType);
                     break;
                 case StatType.ShieldKnockback:
-                    this.ShieldRegen = UpgradeManager.Instance.GetStat(moduleType, statType);
+                    this.ShieldRegen = UpgradeManager.Instance.GetStat(ModuleType, statType);
                     break;
             }
         }

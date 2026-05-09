@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3e51474ed9a6b447adfdd2b95c9733d, type: 3}
+  m_Name: MagnetModule
+  m_EditorClassIdentifier: 
+  ModuleName: MagnetModule
+  ModuleType: 9
+  baseStats:
+  - type: 29
+    value: 4
+  - type: 30
+    value: 1
+  - type: 31
+    value: 10
+  unlockLevel: 1
+  statUpgrades:
+  - statType: 29
+    valuePerUpgrade: 1
+    pointCost: 3
+    maxStacks: -1
+    upgradeName: "\u5438\u5F15\u8303\u56F4"
+    description: "\u589E\u52A0\u63A7\u5236\u8303\u56F4"
+  - statType: 30
+    valuePerUpgrade: 0.5
+    pointCost: 1
+    maxStacks: -1
+    upgradeName: "\u5438\u5F15\u529B\u5EA6"
+    description: "\u589E\u52A0\u5438\u5F15\u529B\u5EA6"
+  - statType: 31
+    valuePerUpgrade: -0.5
+    pointCost: 2
+    maxStacks: -1
+    upgradeName: "\u51B7\u5374\u65F6\u95F4"
+    description: "\u7F29\u51CF\u51B7\u5374\u65F6\u957F"
+  themeColor: {r: 0, g: 1, b: 1, a: 1}

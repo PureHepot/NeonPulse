@@ -357,17 +357,17 @@ public class SawBladeModule : PlayerModule
         Physics2D.IgnoreLayerCollision(playerLayerID, enemyLayerID, false);
     }
 
-    public override void UpgradeModule(ModuleType moduleType, StatType statType)
+    public override void UpgradeModule(ModuleType ModuleType, StatType statType)
     {
-        if (moduleType == ModuleType.SawBlade)
+        if (ModuleType == ModuleType.SawBlade)
         {
             switch (statType)
             {
                 case StatType.BladeBaseDamage:
-                    baseDamage = (int)UpgradeManager.Instance.GetStat(moduleType, statType);
+                    baseDamage = (int)UpgradeManager.Instance.GetStat(ModuleType, statType);
                     break;
                 case StatType.BladeChargeTime:
-                    maxChargeTime = UpgradeManager.Instance.GetStat(moduleType, statType);
+                    maxChargeTime = UpgradeManager.Instance.GetStat(ModuleType, statType);
                     break;
             }
         }

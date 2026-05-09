@@ -35,6 +35,7 @@ public class SettingsData
 public class MetaProgressData
 {
     public List<ModuleType> unlockedModules = new();
+    public List<ModData> mods = new();
     public int softCurrency;
     public int totalRunsPlayed;
     public int bestWaveReached;
@@ -84,7 +85,7 @@ public class BuildRunData
 [Serializable]
 public class OwnedModuleRunData
 {
-    public ModuleType moduleType;
+    public ModuleType ModuleType;
     public List<StatLevelData> statLevels = new();
 }
 
@@ -108,4 +109,9 @@ public class WorldRunData
     public string backgroundThemeId;
     public bool isGameOver;
     public bool isVictory;
+}
+public class ModData
+{
+    public ModType modType;
+    public int modCount;
 }

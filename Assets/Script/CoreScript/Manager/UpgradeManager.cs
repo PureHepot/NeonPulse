@@ -5,7 +5,7 @@ using UnityEngine;
 [Serializable]
 public struct UpgradeOption
 {
-    public ModuleType moduleType;
+    public ModuleType ModuleType;
     public StatType statType;
 }
 
@@ -71,9 +71,9 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
 
         foreach (var owned in run.build.ownedModules)
         {
-            unlockedModuleTypes.Add(owned.moduleType);
+            unlockedModuleTypes.Add(owned.ModuleType);
 
-            ModuleConfig config = GetConfig(owned.moduleType);
+            ModuleConfig config = GetConfig(owned.ModuleType);
             if (config == null) continue;
 
             var runtime = new ModuleRuntimeData(config);
@@ -83,7 +83,7 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
                 for (int i = 0; i < sl.level; i++)
                     runtime.AddStatUpgrade(sl.statType);
             }
-            activeModules[owned.moduleType] = runtime;
+            activeModules[owned.ModuleType] = runtime;
         }
     }
 
@@ -101,7 +101,7 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         {
             var owned = new OwnedModuleRunData
             {
-                moduleType = kvp.Key,
+                ModuleType = kvp.Key,
                 statLevels = new List<StatLevelData>()
             };
 
@@ -146,21 +146,21 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
     {
         var playerModules = PlayerManager.Instance.CurrentModules;
         if (playerModules == null) return;
-        foreach (var module in startingModules)
+        foreach (var Module in startingModules)
         {
-            UnlockModule(module);
-            EventManager.Broadcast<ModuleType>(GameEvent.PlayerUIModelUnlock, module);
+            UnlockModule(Module);
+            EventManager.Broadcast<ModuleType>(GameEvent.PlayerUIModelUnlock, Module);
         }
     }
 
-    public void ApplyModulesToPlayer(PlayerModuleManager modules)
+    public void ApplyModulesToPlayer(PlayerModuleManager Modules)
     {
-        foreach (var module in startingModules)
+        foreach (var Module in startingModules)
         {
-            modules.UnlockModule(module);
+            Modules.UnlockModule(Module);
         }
 
-        modules.Initialize?.Invoke();
+        Modules.Initialize?.Invoke();
     }
 
     public void UnlockModule(ModuleType type)
@@ -198,9 +198,9 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         }
     }
 
-    public void ResetLevel(ModuleType moduleType)
+    public void ResetLevel(ModuleType ModuleType)
     {
-        if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
+        if (activeModules.TryGetValue(ModuleType, out ModuleRuntimeData data))
         {
             data.ResetAllStatLevel();
             SyncToSaveData();
@@ -240,14 +240,14 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
     }
 
 
-    public void UpgradeModuleStat(ModuleType moduleType, StatType statType)
+    public void UpgradeModuleStat(ModuleType ModuleType, StatType statType)
     {
-        if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
+        if (activeModules.TryGetValue(ModuleType, out ModuleRuntimeData data))
         {
             if (data.AddStatUpgrade(statType))
             {
                 SyncToSaveData();
-                EventManager.Broadcast<ModuleType, StatType>(GameEvent.ModuleUpgrade, moduleType, statType);
+                EventManager.Broadcast<ModuleType, StatType>(GameEvent.ModuleUpgrade, ModuleType, statType);
             }
         }
     }
@@ -269,9 +269,9 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
         }
     }
 
-    public bool CanUpgrade(ModuleType moduleType, StatType statType)
+    public bool CanUpgrade(ModuleType ModuleType, StatType statType)
     {
-        if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
+        if (activeModules.TryGetValue(ModuleType, out ModuleRuntimeData data))
         {
             if (data.IsStatMaxed(statType))
             {
@@ -279,39 +279,39 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
             }
         }
 
-        return ConsumeUpgradePoint(GetCost(moduleType, statType));
+        return ConsumeUpgradePoint(GetCost(ModuleType, statType));
     }
 
-    public float GetStat(ModuleType moduleType, StatType statType, float defaultValue = 0f)
+    public float GetStat(ModuleType ModuleType, StatType statType, float defaultValue = 0f)
     {
-        if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
+        if (activeModules.TryGetValue(ModuleType, out ModuleRuntimeData data))
         {
             return data.GetCurrentStat(statType);
         }
         return defaultValue;
     }
 
-    public int GetLevel(ModuleType moduleType, StatType statType)
+    public int GetLevel(ModuleType ModuleType, StatType statType)
     {
-        if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
+        if (activeModules.TryGetValue(ModuleType, out ModuleRuntimeData data))
         {
             return data.GetStatLevel(statType);
         }
         return 0;
     }
 
-    public List<StatType> GetUpgradedStats(ModuleType moduleType)
+    public List<StatType> GetUpgradedStats(ModuleType ModuleType)
     {
-        if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
+        if (activeModules.TryGetValue(ModuleType, out ModuleRuntimeData data))
         {
             return data.statTypes;
         }
         return null;
     }
 
-    public int GetCost(ModuleType moduleType, StatType statType)
+    public int GetCost(ModuleType ModuleType, StatType statType)
     {
-        if (activeModules.TryGetValue(moduleType, out ModuleRuntimeData data))
+        if (activeModules.TryGetValue(ModuleType, out ModuleRuntimeData data))
         {
             return data.config.GetUpgradeDefinition(statType).pointCost;
         }
@@ -322,7 +322,7 @@ public class UpgradeManager : MonoSingleton<UpgradeManager>
     {
         foreach (var config in allModuleConfigs)
         {
-            if (config.moduleType == type)
+            if (config.ModuleType == type)
                 return config;
         }
         return null;

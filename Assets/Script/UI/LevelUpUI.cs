@@ -27,30 +27,30 @@ public class LevelUpUI : UIBase
 
     public void RefreshUI()
     {
-        List<PlayerModule> modules = PlayerManager.Instance.CurrentModules.GetAllActiveModules();
+        List<PlayerModule> Modules = PlayerManager.Instance.CurrentModules.GetAllActiveModules();
 
         Transform trans = Get<Transform>("ItemContent");
 
-        trans.IteratorChild(modules.Count, iterator);
+        trans.IteratorChild(Modules.Count, iterator);
 
         void iterator(int index, Transform item)
         {
             int i = index;
 
-            ModuleConfig config = UpgradeManager.Instance.GetConfig(modules[i].moduleType);
-            Color moduleColor = Color.cyan;
+            ModuleConfig config = UpgradeManager.Instance.GetConfig(Modules[i].ModuleType);
+            Color ModuleColor = Color.cyan;
 
             if (config != null)
             {
-                moduleColor = config.themeColor;
+                ModuleColor = config.themeColor;
             }
 
             var itemImg = item.GetComponent<Image>();
-            if (itemImg) itemImg.color = moduleColor;
+            if (itemImg) itemImg.color = ModuleColor;
 
-            item.Find("Name").GetComponent<Text>().text = modules[i].moduleType.ToString();
+            item.Find("Name").GetComponent<Text>().text = Modules[i].ModuleType.ToString();
 
-            List<StatType> statTypes = UpgradeManager.Instance.GetUpgradedStats(modules[i].moduleType);
+            List<StatType> statTypes = UpgradeManager.Instance.GetUpgradedStats(Modules[i].ModuleType);
             item.Find("Detail_Container").IteratorChild(statTypes.Count, detailIterator);
 
             void detailIterator(int detailIndex, Transform detailItem)
@@ -59,22 +59,22 @@ public class LevelUpUI : UIBase
                 StatType statType = statTypes[j];
 
                 var detailImg = detailItem.GetComponent<Image>();
-                if (detailImg) detailImg.color = moduleColor * 0.8f;
+                if (detailImg) detailImg.color = ModuleColor * 0.8f;
 
                 detailItem.Find("Name").GetComponent<Text>().text = statType.ToString();
-                int currentLevel = UpgradeManager.Instance.GetLevel(modules[i].moduleType, statType) + 1;
+                int currentLevel = UpgradeManager.Instance.GetLevel(Modules[i].ModuleType, statType) + 1;
                 detailItem.Find("LevelNum").GetComponent<Text>().text = currentLevel.ToString();
-                string description = UpgradeManager.Instance.GetConfig(modules[i].moduleType).GetDescription(statType);
+                string description = UpgradeManager.Instance.GetConfig(Modules[i].ModuleType).GetDescription(statType);
                 detailItem.Find("Description").GetComponent<Text>().text = description;
                 detailItem.Find("CostPoint").GetComponent<Text>().text =
-                    UpgradeManager.Instance.GetCost(modules[i].moduleType, statType).ToString();
-                detailItem.Find("DesBg").GetComponent<Image>().color = moduleColor * 0.8f;
-                detailItem.Find("UpgradeBtn").GetComponent<Image>().color = moduleColor * 0.8f;
+                    UpgradeManager.Instance.GetCost(Modules[i].ModuleType, statType).ToString();
+                detailItem.Find("DesBg").GetComponent<Image>().color = ModuleColor * 0.8f;
+                detailItem.Find("UpgradeBtn").GetComponent<Image>().color = ModuleColor * 0.8f;
                 detailItem.Find("UpgradeBtn").GetComponent<Button>().onClick.SetListener(() =>
                 {
-                    if (UpgradeManager.Instance.CanUpgrade(modules[i].moduleType, statType))
+                    if (UpgradeManager.Instance.CanUpgrade(Modules[i].ModuleType, statType))
                     {
-                        UpgradeManager.Instance.UpgradeModuleStat(modules[i].moduleType, statType);
+                        UpgradeManager.Instance.UpgradeModuleStat(Modules[i].ModuleType, statType);
                         
                         RefreshUI();
                     }

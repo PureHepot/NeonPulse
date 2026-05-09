@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3e51474ed9a6b447adfdd2b95c9733d, type: 3}
   m_Name: MovementModule
   m_EditorClassIdentifier: 
-  moduleName: MovementModule
-  moduleType: 0
+  ModuleName: MovementMocule
+  ModuleType: 0
   baseStats:
   - type: 3
     value: 4

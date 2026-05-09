@@ -105,9 +105,16 @@ MonoBehaviour:
   hitLayer:
     serializedVersion: 2
     m_Bits: 1032
+  explodePS: {fileID: 0}
   WallLayer:
     serializedVersion: 2
     m_Bits: 1024
+  detectionRadius: 15
+  turnSpeed: 5
+  isReflect: 0
+  isPenetrate: 0
+  isChase: 0
+  isExplode: 1
 --- !u!58 &9126253519375017355
 CircleCollider2D:
   m_ObjectHideFlags: 0

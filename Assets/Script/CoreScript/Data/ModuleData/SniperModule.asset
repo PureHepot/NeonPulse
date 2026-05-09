@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3e51474ed9a6b447adfdd2b95c9733d, type: 3}
   m_Name: SniperModule
   m_EditorClassIdentifier: 
-  moduleName: SniperModule
-  moduleType: 6
+  ModuleName: SniperModule
+  ModuleType: 6
   baseStats:
   - type: 18
     value: 3

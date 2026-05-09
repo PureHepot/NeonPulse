@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -18,10 +19,18 @@ public enum SpawnDirection
 public class WaveGroup
 {
     [Header("配置")]
-    public List<int> enemyIndex; // 怪物的预制体
-    public List<float> spawnRate;   // 间隔时间(秒)
+    public List<EnemyEntry> enemyEntries; // 替代原来的 enemyIndex 和 spawnRate
+
     public float groupDuration;
     public SpawnDirection direction = SpawnDirection.Random;
+}
+
+// 新增：用于存储每个敌人的配置
+[System.Serializable]
+public class EnemyEntry
+{
+    public int enemyIndex; // 存储敌人索引
+    public float spawnRate; // 生成间隔
 }
 
 [System.Serializable]
@@ -188,40 +197,68 @@ public class WaveManager : MonoSingleton<WaveManager>
         for (int i = 0; i < wave.groups.Count; i++)
         {
             var currentGroup = wave.groups[i];
-            for(int j = 0; j < currentGroup.enemyIndex.Count; j++)
+
+            // 为每个 EnemyEntry 启动一个独立的协程
+            runningGroupRoutines.Clear();
+            for (int j = 0; j < currentGroup.enemyEntries.Count; j++)
             {
-                runningGroupRoutines.Add(StartCoroutine(SpawnGroupRoutine(wave, currentGroup,j)));
+                runningGroupRoutines.Add(StartCoroutine(SpawnGroupRoutine(wave, currentGroup, j)));
             }
 
+            // 等待当前组的所有敌人配置完成
             foreach (var routine in runningGroupRoutines)
             {
                 if (routine != null) yield return routine;
             }
             runningGroupRoutines.Clear();
         }
-
     }
 
-    IEnumerator SpawnGroupRoutine(WaveData wave,WaveGroup group,int index)
+    IEnumerator SpawnGroupRoutine(WaveData wave, WaveGroup group, int index)
     {
-        activeSpawnerCount++; // 标记有一个刷怪进程开始
+        activeSpawnerCount++;
 
-        float timer=0;
+        float timer = 0;
         while (timer < group.groupDuration)
         {
-            SpawnEnemy(wave.enemies[group.enemyIndex[index]], group.direction);
-            yield return new WaitForSeconds(group.spawnRate[index]);
-            timer+= group.spawnRate[index];
+            // 使用 EnemyEntry 中的配置
+            if (index < group.enemyEntries.Count)
+            {
+                var entry = group.enemyEntries[index];
+                if (entry != null && entry.enemyIndex >= 0 && entry.enemyIndex < wave.enemies.Count)
+                {
+                    SpawnEnemy(wave.enemies[entry.enemyIndex], group.direction);
+                    yield return new WaitForSeconds(entry.spawnRate);
+                    timer += entry.spawnRate;
+                }
+                else
+                {
+                    yield return null;
+                }
+            }
+            else
+            {
+                yield return null;
+            }
         }
 
-        activeSpawnerCount--; // 标记这个刷怪进程结束
+        activeSpawnerCount--;
     }
 
     void SpawnEnemy(GameObject prefab, SpawnDirection dir)
     {
         Vector3 spawnPos = GetSpawnPosition(dir);
 
-        ObjectPoolManager.Instance.Get(prefab, spawnPos, Quaternion.identity);
+        GameObject gameObject= ObjectPoolManager.Instance.Get(prefab, spawnPos, Quaternion.identity);
+        DOVirtual.Float(0f, 1f, 3f, (value) =>
+        {
+            Color rainbowColor = Color.HSVToRGB(value, 0.8f, 1f);
+            gameObject.GetComponentInChildren<EnemyBase>().normalColor = rainbowColor;
+            
+        })
+            .SetLoops(-1, LoopType.Restart)
+            .SetEase(Ease.Linear)
+            .SetUpdate(true);
     }
 
     Vector3 GetSpawnPosition(SpawnDirection dir)

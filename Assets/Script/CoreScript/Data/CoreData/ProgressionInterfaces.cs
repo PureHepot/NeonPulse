@@ -9,16 +9,16 @@ using System;
 public interface IStatReader
 {
     /// <summary> 获取局外永久强化的基础等级 </summary>
-    int GetMetaBaseLevel(ModuleType module, StatType stat);
+    int GetMetaBaseLevel(ModuleType Module, StatType stat);
 
     /// <summary> 获取局内获得的临时等级 </summary>
-    int GetRunLevel(ModuleType module, StatType stat);
+    int GetRunLevel(ModuleType Module, StatType stat);
 
     /// <summary> 获取最终计算的总等级 (Meta + Run) </summary>
-    int GetTotalLevel(ModuleType module, StatType stat);
+    int GetTotalLevel(ModuleType Module, StatType stat);
 
     /// <summary> 获取该属性在局内的最高可升等级（由局外科技树决定上限） </summary>
-    int GetRunMaxLevelCap(ModuleType module, StatType stat);
+    int GetRunMaxLevelCap(ModuleType Module, StatType stat);
 }
 
 // --------------------------------------------------------
@@ -29,10 +29,10 @@ public interface IStatReader
 public interface IProgressionMutator
 {
     /// <summary> 尝试在局外升级（消耗 Meta 货币） </summary>
-    bool TryUpgradeMeta(ModuleType module, StatType stat, int cost);
+    bool TryUpgradeMeta(ModuleType Module, StatType stat, int cost);
 
     /// <summary> 尝试在局内升级（消耗局内拾取物/经验） </summary>
-    bool TryUpgradeRun(ModuleType module, StatType stat);
+    bool TryUpgradeRun(ModuleType Module, StatType stat);
 }
 
 // --------------------------------------------------------

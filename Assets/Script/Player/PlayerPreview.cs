@@ -39,18 +39,18 @@ public class PlayerPreview : MonoBehaviour
         EventManager.AddListener<ModuleType>(GameEvent.PlayerUIModelLock, LockUIModule);
     }
 
-    private void UnLockUIModule(ModuleType moduleType)
+    private void UnLockUIModule(ModuleType ModuleType)
     {
-        currentModel.GetComponent<PlayerModuleManager>().UnlockModule(moduleType);
+        currentModel.GetComponent<PlayerModuleManager>().UnlockModule(ModuleType);
     }
 
     private void InitUIModule()
     {
         currentModel.GetComponent<PlayerModuleManager>().Initialize?.Invoke();
     }
-    private void UpgradeUIModule(ModuleType moduleType, StatType statType)
+    private void UpgradeUIModule(ModuleType ModuleType, StatType statType)
     {
-        currentModel.GetComponent<PlayerModuleManager>().UpgradeModule(moduleType, statType);
+        currentModel.GetComponent<PlayerModuleManager>().UpgradeModule(ModuleType, statType);
     }
 
     private void LockUIModule(ModuleType type)

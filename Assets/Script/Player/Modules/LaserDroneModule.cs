@@ -611,24 +611,24 @@ public class LaserDroneModule : PlayerModule
         }
     }
 
-    public override void UpgradeModule(ModuleType moduleType, StatType statType)
+    public override void UpgradeModule(ModuleType ModuleType, StatType statType)
     {
-        base.UpgradeModule(moduleType, statType);
-        if (moduleType == ModuleType.LaserDrone)
+        base.UpgradeModule(ModuleType, statType);
+        if (ModuleType == ModuleType.LaserDrone)
         {
             switch (statType)
             {
                 case StatType.BeamPerTick:
-                    damagePerTick = (int)UpgradeManager.Instance.GetStat(moduleType, statType);
+                    damagePerTick = (int)UpgradeManager.Instance.GetStat(ModuleType, statType);
                     break;
                 case StatType.BeamCooldown:
-                    laserCD = UpgradeManager.Instance.GetStat(moduleType, statType);
+                    laserCD = UpgradeManager.Instance.GetStat(ModuleType, statType);
                     break;
                 case StatType.BeamCount:
-                    droneCount = (int)UpgradeManager.Instance.GetStat(moduleType, statType);
+                    droneCount = (int)UpgradeManager.Instance.GetStat(ModuleType, statType);
                     break;
                 case StatType.BeamRange:
-                    laserRange = (int)UpgradeManager.Instance.GetStat(moduleType, statType);
+                    laserRange = (int)UpgradeManager.Instance.GetStat(ModuleType, statType);
                     detectionRadius = laserRange + 0.2f;
                     break;
             }

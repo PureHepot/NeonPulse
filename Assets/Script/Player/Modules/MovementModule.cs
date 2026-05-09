@@ -37,7 +37,7 @@ public class MovementModule : PlayerModule
         player.SetVelocity(currentVelocity);
     }
 
-    public override void UpgradeModule(ModuleType moduleType, StatType statType)
+    public override void UpgradeModule(ModuleType ModuleType, StatType statType)
     {
         if (statType == StatType.MoveSpeed)
         {

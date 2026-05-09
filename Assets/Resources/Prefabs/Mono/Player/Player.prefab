@@ -45,8 +45,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0288b216740e24247bb06a3f3ed9d385, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moduleType: 7
+  ModuleType: 7
   isUnlocked: 0
+  Mods: []
+  maxNum: 4
   muzzle: {fileID: 2212211593126393716}
   partToRotate: {fileID: 8441444997167167994}
   bulletPrefab: {fileID: 5583805212181470135, guid: 12283c92e02028646983a69ebd415565, type: 3}
@@ -387,6 +389,59 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &3325377132677339372
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5464505836442106268}
+  - component: {fileID: 2668324208573213125}
+  m_Layer: 6
+  m_Name: MagnetModule
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5464505836442106268
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3325377132677339372}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3973550111986303730}
+  m_Father: {fileID: 6811986722074343809}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2668324208573213125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3325377132677339372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9027e051ff1686740b885827b6b2b0d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ModuleType: 9
+  isUnlocked: 0
+  magnetObject: {fileID: 4552014235154069711}
+  sectorAngle: 90
+  MagnetRange: 10
+  MagnetControlTime: 1
+  MagnetCooldown: 0
+  magnetSparks: {fileID: 0}
 --- !u!1 &3623913218821052582
 GameObject:
   m_ObjectHideFlags: 0
@@ -713,7 +768,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35d1219e5779b4148bf440c7b6d18897, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moduleType: 4
+  ModuleType: 0
   isUnlocked: 0
   dashTrail: {fileID: 5563649334771793631}
   dashForce: 20
@@ -745,6 +800,37 @@ MonoBehaviour:
   playerLayerName: Player
   enemyLayerName: Enemy
   enemyBulletLayerName: EnemyBullet
+--- !u!1 &4552014235154069711
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3973550111986303730}
+  m_Layer: 6
+  m_Name: Magnet
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3973550111986303730
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4552014235154069711}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5464505836442106268}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5174814283663807816
 GameObject:
   m_ObjectHideFlags: 0
@@ -1083,6 +1169,7 @@ GameObject:
   - component: {fileID: 4230855693488703627}
   - component: {fileID: 6873994201756524193}
   - component: {fileID: 882021336278156554}
+  - component: {fileID: 316753604993142705}
   m_Layer: 6
   m_Name: Modules
   m_TagString: Untagged
@@ -1110,6 +1197,7 @@ Transform:
   - {fileID: 3685235989871488641}
   - {fileID: 3218088321755269212}
   - {fileID: 7280041295073249344}
+  - {fileID: 5464505836442106268}
   m_Father: {fileID: 4754426117737457041}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4230855693488703627
@@ -1124,7 +1212,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8968445cfe51b6245b006bc6d11a767b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moduleType: 1
+  ModuleType: 1
   isUnlocked: 0
   knockbackForce: 5
   stunDuration: 0.1
@@ -1143,7 +1231,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9255acf24448a24e8241591344ecf72, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moduleType: 0
+  ModuleType: 0
   isUnlocked: 0
   smoothTime: 0.15
 --- !u!114 &882021336278156554
@@ -1158,7 +1246,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d98a28f3c38c4fd4796d0d5feb57b8ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moduleType: 3
+  ModuleType: 3
   isUnlocked: 0
   shieldObject: {fileID: 5832138676679245043}
   shieldScript: {fileID: 4590724806426610434}
@@ -1167,6 +1255,21 @@ MonoBehaviour:
   ShieldCapacity: 100
   ShieldRegen: 10
   ShieldKnockback: 10
+--- !u!114 &316753604993142705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6045741450448671065}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 985783868ce57a041adab54e5e0a9bc4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ModuleType: 10
+  isUnlocked: 0
+  smoothTime: 0.15
 --- !u!1 &6236048808547626479
 GameObject:
   m_ObjectHideFlags: 0
@@ -1505,8 +1608,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69817f263dce9bf4e8f893b6fc08052a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moduleType: 6
+  ModuleType: 6
   isUnlocked: 0
+  Mods: []
+  maxNum: 4
   muzzle: {fileID: 9181234039565064316}
   partToRotate: {fileID: 4969249526720642887}
   sniperBulletPrefab: {fileID: 3724406646315978653, guid: 6b79f76f75d43504daf451d743d303a9, type: 3}
@@ -1642,8 +1747,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55fce6915dd1a5347a3b273480f3d9b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moduleType: 2
+  ModuleType: 2
   isUnlocked: 0
+  Mods: []
+  maxNum: 4
   partToRotate: {fileID: 5559335993037766974}
   muzzles:
   - {fileID: 7720353606840874526}
@@ -1669,7 +1776,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &7280041295073249344
 Transform:
   m_ObjectHideFlags: 0
@@ -1698,7 +1805,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b655117f17f23044bd3a8427a869a1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moduleType: 8
+  ModuleType: 8
   isUnlocked: 0
   bladeVisual: {fileID: 3721512836702343860}
   dashTrail: {fileID: 0}
@@ -1737,7 +1844,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &3218088321755269212
 Transform:
   m_ObjectHideFlags: 0
@@ -1768,7 +1875,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2dc5e887e44ab774a8f54ade31049cfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moduleType: 5
+  ModuleType: 5
   isUnlocked: 0
   droneTransforms:
   - {fileID: 6070942501130648111}

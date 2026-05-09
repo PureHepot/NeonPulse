@@ -94,9 +94,9 @@ public class SlimePhysicsRuntime : MonoBehaviour
         }
     }
 
-    public void AddForceToAll(Vector2 force, ForceMode2D mode = ForceMode2D.Force)
+    public void AddForceToAll(Vector2 force, ForceMode2D Mode = ForceMode2D.Force)
     {
-        foreach (var rb in allRBs) rb.AddForce(force, mode);
+        foreach (var rb in allRBs) rb.AddForce(force, Mode);
     }
 
     // 径向阻尼 (防塌缩)

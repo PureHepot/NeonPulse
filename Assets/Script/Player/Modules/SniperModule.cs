@@ -1,6 +1,7 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
-public class SniperModule : PlayerModule
+public class SniperModule : ShooterModuleBase
 {
     [Header("Refs")]
     public Transform muzzle;
@@ -14,6 +15,9 @@ public class SniperModule : PlayerModule
     private int damage;
     private int penetration;
     private float cooldown;
+    private float force = 20f;
+    private Vector2 recoilVelocity;
+    private float recoilDamping = 10f;
 
     private bool hasFiredThisCycle = false;
 
@@ -56,11 +60,16 @@ public class SniperModule : PlayerModule
             Fire();
             hasFiredThisCycle = true;
         }
+        if (recoilVelocity.magnitude > 0.01f)
+        {
+            player.Rigid2d.velocity += recoilVelocity;
+            recoilVelocity = Vector2.Lerp(recoilVelocity, Vector2.zero, recoilDamping * Time.deltaTime);
+        }
     }
 
-    public override void UpgradeModule(ModuleType moduleType, StatType statType)
+    public override void UpgradeModule(ModuleType ModuleType, StatType statType)
     {
-        if (moduleType != ModuleType.Sniper) return;
+        if (ModuleType != ModuleType.Sniper) return;
         RecalculateStats();
     }
 
@@ -81,6 +90,8 @@ public class SniperModule : PlayerModule
         if (muzzle == null) return;
 
         cooldown = fireRate;
+
+        recoilVelocity += -(Vector2)muzzle.right * force;
 
         AudioManager.Instance.PlayEffect("SniperShoot");
         GameObject bullet = ObjectPoolManager.Instance.Get(

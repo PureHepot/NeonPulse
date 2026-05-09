@@ -13,13 +13,15 @@ public enum ModuleType
     Sniper,
     Shotgun,
     SawBlade,
+    Magnet,
+    OddMovement
 }
 
 
 public abstract class PlayerModule : MonoBehaviour
 {
     [Header("Base Settings")]
-    public ModuleType moduleType;
+    public ModuleType ModuleType;
     public bool isUnlocked = false;
 
     protected PlayerController player;
@@ -49,7 +51,7 @@ public abstract class PlayerModule : MonoBehaviour
     }
 
 
-    public virtual void UpgradeModule(ModuleType moduleType, StatType statType)
+    public virtual void UpgradeModule(ModuleType ModuleType, StatType statType)
     {
         // 子类重写此方法来实现升级逻辑
     }

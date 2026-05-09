@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3e51474ed9a6b447adfdd2b95c9733d, type: 3}
   m_Name: HealthModule
   m_EditorClassIdentifier: 
-  moduleName: HealthModule
-  moduleType: 1
+  ModuleName: HealthModule
+  ModuleType: 1
   baseStats:
   - type: 1
     value: 10
