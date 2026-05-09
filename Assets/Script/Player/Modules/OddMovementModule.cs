@@ -1,28 +1,30 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class OddMovementModule : PlayerModule
 {
+    private const string OddMoveSpeedStatId = "move.speed";
+
     [Header("Move Settings")]
     public float smoothTime = 0.15f;
 
     private float baseMoveSpeed;
     private float speedMultiplier = 1f;
-
     private Vector2 currentVelocity;
     private Vector2 refVelocity;
-    public override void Initialize(PlayerController _player)
+
+    protected override void OnInitialize()
     {
-        base.Initialize(_player);
         RecalculateStats();
     }
+
     public override void OnModuleUpdate()
     {
-        if (player == null || player.IsStunned || player.IsDead || player.IsDashing || player.isPreview) return;
+        if (player == null || player.IsStunned || player.IsDead || player.IsDashing || !HasControl)
+            return;
 
         float scrollDelta = Input.GetAxis("Mouse ScrollWheel");
+        if (Mathf.Approximately(scrollDelta, 0f))
+            return;
 
         Vector2 mouseWorld = MUtils.GetMouseWorldPosition();
         Vector2 lookDir = (mouseWorld - (Vector2)player.transform.position).normalized;
@@ -31,25 +33,16 @@ public class OddMovementModule : PlayerModule
             currentVelocity,
             targetVelocity,
             ref refVelocity,
-            smoothTime
-        );
+            smoothTime);
 
         player.SetVelocity(currentVelocity);
     }
-    public override void UpgradeModule(ModuleType ModuleType, StatType statType)
-    {
-        if (statType == StatType.OddMoveSpeed)
-        {
-            RecalculateStats();
-            Debug.Log($"[MovementModule] ÒÆËÙÉý¼¶: {GetFinalSpeed():F2}");
-        }
-    }
+
     private void RecalculateStats()
     {
-        baseMoveSpeed =
-            UpgradeManager.Instance.GetStat(ModuleType.OddMovement, StatType.OddMoveSpeed);
-
-        if (baseMoveSpeed <= 0) baseMoveSpeed = 5f;
+        baseMoveSpeed = GetStat(OddMoveSpeedStatId, 5f);
+        if (baseMoveSpeed <= 0f)
+            baseMoveSpeed = 5f;
 
         speedMultiplier = 1f;
     }

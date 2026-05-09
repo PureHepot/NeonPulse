@@ -2,16 +2,18 @@ using UnityEngine;
 
 public enum ModuleType
 {
-    Movement,
-    Health,
-    Shooter,
-    Shield,
-    Dash,
-    LaserDrone,
-    Sniper,
-    Shotgun,
-    SawBlade,
-    None
+    Movement = 0,
+    Health = 1,
+    Shooter = 2,
+    Shield = 3,
+    Dash = 4,
+    LaserDrone = 5,
+    Sniper = 6,
+    Shotgun = 7,
+    SawBlade = 8,
+    Magnet = 9,
+    OddMovement = 10,
+    None = 11
 }
 
 public abstract class PlayerModule : MonoBehaviour

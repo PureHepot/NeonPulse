@@ -1,48 +1,42 @@
-using System.Collections;
-using System.Collections.Generic;
+锘縰sing System.Collections.Generic;
 using UnityEngine;
 
+// Legacy compatibility layer for the old weapon-mod pipeline.
 public class ShooterModuleBase : PlayerModule
 {
     public List<WeaponPlugin> Mods = new List<WeaponPlugin>();
     public int maxNum = 4;
-    // 安装插件
-    public override void OnActivate()
+
+    protected override void OnActivate()
     {
-        base.OnActivate();
-        ModManager.Instance.InitForShooter(this);
-    }
-    public void AddMod(WeaponPlugin Mod)
-    {
-        if (Mod == null) return;
-
-        // 核心：超过4个就不让装
-        if (Mods.Count >= maxNum)
-        {
-            Debug.Log("插件已满，最多装备4个！");
-            return;
-        }
-
-        // 防止重复装同一个
-        if (Mods.Contains(Mod))
-        {
-            Debug.Log("不能重复装备同一个插件！");
-            return;
-        }
-
-        Mods.Add(Mod);
+        ModManager.Instance?.InitForShooter(this);
     }
 
-    public void RemoveMod(WeaponPlugin Mod)
+    public void AddMod(WeaponPlugin mod)
     {
-        Mods.Remove(Mod);
+        if (mod == null || Mods.Count >= maxNum || Mods.Contains(mod))
+            return;
+
+        Mods.Add(mod);
+    }
+
+    public void RemoveMod(WeaponPlugin mod)
+    {
+        if (mod == null)
+            return;
+
+        Mods.Remove(mod);
     }
 
     public void ApplyAllModsToBullet(PlayerBullet bullet)
     {
-        foreach (var Mod in Mods)
+        if (bullet == null)
+            return;
+
+        for (int index = 0; index < Mods.Count; index++)
         {
-            Mod.ModifyBullet(bullet);
+            if (Mods[index] != null)
+                Mods[index].ModifyBullet(bullet);
         }
     }
 }

@@ -1,11 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ReflectMod : WeaponPlugin
 {
     public override void ModifyBullet(PlayerBullet bullet)
     {
-        bullet.isReflect = true;
+        // Legacy plugin hook kept for compatibility with old mod prefabs.
     }
 }
