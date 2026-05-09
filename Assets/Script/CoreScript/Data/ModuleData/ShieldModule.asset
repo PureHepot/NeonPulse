@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3e51474ed9a6b447adfdd2b95c9733d, type: 3}
   m_Name: ShieldModule
   m_EditorClassIdentifier: 
-  ModuleName: ShieldModule
-  ModuleType: 3
+  moduleName: ShieldModule
+  moduleType: 3
+  playerModule: {fileID: -3104412164907961016, guid: 088dae57238296d44be81bdda7fd4226, type: 3}
+  prefab: {fileID: 1341279604334608228, guid: 088dae57238296d44be81bdda7fd4226, type: 3}
   baseStats:
   - type: 4
     value: 200

@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3e51474ed9a6b447adfdd2b95c9733d, type: 3}
   m_Name: MovementModule
   m_EditorClassIdentifier: 
-  ModuleName: MovementMocule
-  ModuleType: 0
+  moduleName: MovementModule
+  moduleType: 0
+  playerModule: {fileID: 6839693602601240403, guid: ca5d0eb2616ef3f41981109d1b00277d, type: 3}
+  prefab: {fileID: 950323459775795189, guid: ca5d0eb2616ef3f41981109d1b00277d, type: 3}
   baseStats:
   - type: 3
     value: 4

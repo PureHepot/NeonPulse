@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3e51474ed9a6b447adfdd2b95c9733d, type: 3}
   m_Name: SawBladeModule
   m_EditorClassIdentifier: 
-  ModuleName: SawBladeModule
-  ModuleType: 8
+  moduleName: SawBladeModule
+  moduleType: 8
+  playerModule: {fileID: 5942647128606552513, guid: 37a7bb75c14188f42b2202a9ab624f8d, type: 3}
+  prefab: {fileID: 5292678585978595035, guid: 37a7bb75c14188f42b2202a9ab624f8d, type: 3}
   baseStats:
   - type: 25
     value: 1

@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3e51474ed9a6b447adfdd2b95c9733d, type: 3}
   m_Name: HealthModule
   m_EditorClassIdentifier: 
-  ModuleName: HealthModule
-  ModuleType: 1
+  moduleName: HealthModule
+  moduleType: 1
+  playerModule: {fileID: 7067713784367103175, guid: 142a2546d2871ba498c4e8f5e356f7f5, type: 3}
+  prefab: {fileID: 7912777684067947577, guid: 142a2546d2871ba498c4e8f5e356f7f5, type: 3}
   baseStats:
   - type: 1
     value: 10

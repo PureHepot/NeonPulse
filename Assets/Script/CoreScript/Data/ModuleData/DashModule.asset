@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3e51474ed9a6b447adfdd2b95c9733d, type: 3}
   m_Name: DashModule
   m_EditorClassIdentifier: 
-  ModuleName: DashModule
-  ModuleType: 4
+  moduleName: DashModule
+  moduleType: 4
+  playerModule: {fileID: 5633913836713127619, guid: 621a24e96ef5bd8469d4a3da14dcc165, type: 3}
+  prefab: {fileID: 9028085116831135087, guid: 621a24e96ef5bd8469d4a3da14dcc165, type: 3}
   baseStats:
   - type: 16
     value: 2

@@ -21,7 +21,6 @@ public class ShieldModule : PlayerModule
     {
         base.Initialize(_player);
 
-        if (shieldObject) shieldObject.SetActive(false);
     }
 
     public override void OnActivate()

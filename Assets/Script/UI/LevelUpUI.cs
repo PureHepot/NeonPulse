@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class LevelUpUI : UIBase
 {
     private PlayerPreviewSync playerPreview;
+    private float uiTime=0f;
 
     private void Awake()
     {
@@ -24,7 +25,6 @@ public class LevelUpUI : UIBase
 
         RefreshUI();
     }
-
     public void RefreshUI()
     {
         List<PlayerModule> Modules = PlayerManager.Instance.CurrentModules.GetAllActiveModules();

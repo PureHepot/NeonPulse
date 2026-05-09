@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3e51474ed9a6b447adfdd2b95c9733d, type: 3}
   m_Name: ShotgunModule
   m_EditorClassIdentifier: 
-  ModuleName: ShotgunModule
-  ModuleType: 7
+  moduleName: ShotgunModule
+  moduleType: 7
+  playerModule: {fileID: 5328289174854811733, guid: ea3a17c20e03d01419151f1eccf69833, type: 3}
+  prefab: {fileID: 5053212285601675987, guid: ea3a17c20e03d01419151f1eccf69833, type: 3}
   baseStats:
   - type: 21
     value: 1

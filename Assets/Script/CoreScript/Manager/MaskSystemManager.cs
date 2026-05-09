@@ -11,7 +11,7 @@ public class MaskSystemManager : MonoSingleton<MaskSystemManager>
     [Header("Current State")]
     public MaskConfig currentMask;
 
-    private List<ModuleType> Mods = new();//临时存
+    private List<ModuleType> mods = new();//临时存
 
     public void ApplyCurrentMaskVisuals()
     {
@@ -42,54 +42,30 @@ public class MaskSystemManager : MonoSingleton<MaskSystemManager>
         return result;
     }
 
-    /// <summary>
-    /// 从存档恢复面具（根据名称匹配）
-    /// </summary>
-    public void InitFromSaveData()
-    {
-        var run = DataManager.Instance.Run;
-        if (run == null || string.IsNullOrEmpty(run.build.currentMaskName)) return;
-
-        foreach (var mask in maskPool)
-        {
-            if (mask.maskName == run.build.currentMaskName)
-            {
-                currentMask = mask;
-                return;
-            }
-        }
-    }
-
     private void EquipMask(MaskConfig mask)
     {
         currentMask = mask;
-
-        // 同步到存档
-        var run = DataManager.Instance.Run;
-        if (run != null)
-            run.build.currentMaskName = mask.maskName;
-
+        UpgradeManager.Instance.ClearRoundExclude();
         // 应用外观
         ApplyCurrentMaskVisuals();
-
         EventManager.Broadcast(GameEvent.PlayerSkinChanged);
-
+        
         // 解锁模块
-        foreach (var Mod in mask.guaranteedModules)
+        foreach (var mod in mask.guaranteedModules)
         {
-            UpgradeManager.Instance.UnlockModule(Mod);
+            UpgradeManager.Instance.UnlockModule(mod);
             //PlayrPreview的模块同步解锁
-            EventManager.Broadcast(GameEvent.PlayerUIModelUnlock, Mod);
-        }
+            EventManager.Broadcast(GameEvent.PlayerUIModelUnlock, mod);
 
+        }
         //将不是面具带来的模块禁用
-        Mods.Clear();
-        foreach (var Mod in UpgradeManager.Instance.UnlockedModuleTypes)
+        mods.Clear();
+        foreach (var mod in UpgradeManager.Instance.UnlockedModuleTypes)
         {
             bool isFromMask = false;
             foreach(var m in mask.guaranteedModules)
             {
-                if(Mod == m)
+                 if(mod == m)
                 {
                     isFromMask = true;
                     break;
@@ -97,17 +73,18 @@ public class MaskSystemManager : MonoSingleton<MaskSystemManager>
             }
             if(!isFromMask)
             {
-                Mods.Add(Mod);
-                EventManager.Broadcast(GameEvent.PlayerUIModelLock, Mod);
+                mods.Add(mod);
+                EventManager.Broadcast(GameEvent.PlayerUIModelLock, mod);
             }
         }
+        
 
-        foreach (var Mod in Mods)
+        foreach (var mod in mods)
         {
-            UpgradeManager.Instance.GainUpgradePointByModule(Mod);
-            UpgradeManager.Instance.ResetLevel(Mod);
-            UpgradeManager.Instance.LockModule(Mod);
-
+            UpgradeManager.Instance.GainUpgradePointByModule(mod);
+            UpgradeManager.Instance.ResetLevel(mod);
+            UpgradeManager.Instance.LockModule(mod);
+            Debug.Log($"回收模块: {mod}");
         }
 
 

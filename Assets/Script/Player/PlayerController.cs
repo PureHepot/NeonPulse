@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour
 {
     public Rigidbody2D Rigid2d { get; private set; }
     public Collider2D Colli2d { get; private set; }
-    public PlayerModuleManager Modules { get; private set; }
+    public ModuleManager Modules { get; private set; }
     public SpriteRenderer BodyRenderer { get; private set; }
 
     public bool isPreview = false;
@@ -27,7 +27,7 @@ public class PlayerController : MonoBehaviour
     {
         Rigid2d = GetComponent<Rigidbody2D>();
         Colli2d = GetComponent<Collider2D>();
-        Modules = GetComponent<PlayerModuleManager>();
+        Modules = GetComponent<ModuleManager>();
         BodyRenderer = transform.Find("Body").GetComponent<SpriteRenderer>();
     }
 
