@@ -472,10 +472,10 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -2.431669, y: 0.024283767}
+  m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -823,10 +823,10 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -3.2523658, y: 0.0127283335}
+  m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -1151,10 +1151,10 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 3.293814, y: -0.017136425}
+  m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -1445,6 +1445,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   margin: {x: 0.1, y: 0.1}
+  leftWall: {fileID: 571840452}
+  rightWall: {fileID: 632764603}
+  topWall: {fileID: 1566795226}
+  bottomWall: {fileID: 514730209}
 --- !u!1 &1145577979
 GameObject:
   m_ObjectHideFlags: 0
@@ -1637,6 +1641,7 @@ GameObject:
   - component: {fileID: 1357557151}
   - component: {fileID: 1357557156}
   - component: {fileID: 1357557160}
+  - component: {fileID: 1357557164}
   m_Layer: 0
   m_Name: Manager
   m_TagString: Untagged
@@ -1692,8 +1697,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d0b5eab6cf28434986c2f658fd29da1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IsSoundMuted: 0
-  IsEffectMuted: 0
 --- !u!114 &1357557154
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1763,7 +1766,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a9e5c686bc12c64aba189ddc4ec8b37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 0
   playerPrefab: {fileID: 6236048808547626479, guid: e4eef060148b4ac42a54b7cdc2645e60, type: 3}
   spawnPoint: {fileID: 1122123913}
   bodyRenderer: {fileID: 0}
@@ -1780,7 +1782,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 196864cceaa100b478c47f0cd2912327, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  candidateCount: 3
 --- !u!114 &1357557161
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1803,10 +1804,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 472761cc1f14d544c8df1634bd73db0a, type: 2}
   - {fileID: 11400000, guid: dcd474ec85357a043840da7bbf32b8de, type: 2}
   - {fileID: 11400000, guid: c76b4233dee69224bb67a1b25753cb9e, type: 2}
+  - {fileID: 11400000, guid: 27b8225d3edfad845b2dffc8e645069f, type: 2}
+  - {fileID: 11400000, guid: aa20afd0f2070e14a8307d458ed9db52, type: 2}
   baseExpToLevelUp: 100
   expScale: 1.3
   pointsPerLevel: 3
-  startingModules: 000000000100000002000000
+  startingModules: 00000000010000000200000009000000
 --- !u!114 &1357557162
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1846,6 +1849,25 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 87566234c404c9b449faa63c79c8f52e, type: 2}
   gachaCost: 3
   currentMask: {fileID: 0}
+--- !u!114 &1357557164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1357557150}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19e1d782c02f05f4095b16aa33cf9700, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  allMods:
+  - {fileID: 11400000, guid: d803936b803644542bd15bfc9270fdc8, type: 2}
+  - {fileID: 11400000, guid: 55c28eb4c575f1e42b3c0f3ee89cd9c6, type: 2}
+  - {fileID: 11400000, guid: e387f75cde70cd346b346f1682f80cf9, type: 2}
+  - {fileID: 11400000, guid: d028166f7e7716d44a8134e110c7dd04, type: 2}
+  - {fileID: 11400000, guid: 7eea8938bfd00f245ac3f04cdfeb760b, type: 2}
+  deFireRate: 1
 --- !u!1 &1367779161
 GameObject:
   m_ObjectHideFlags: 0
@@ -2118,10 +2140,10 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 2.762812, y: -0.019068718}
+  m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}

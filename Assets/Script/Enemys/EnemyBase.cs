@@ -36,6 +36,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     protected ContinuousPhysicsMotor2D motionMotor;
 
     public bool isInScene;
+    public bool scared;
 
     private void Awake()
     {
@@ -102,7 +103,10 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         CheckOutView();
     }
 
-    protected abstract void MoveBehavior();
+    protected virtual void MoveBehavior()
+    {
+        
+    }
 
     public void TakeDamage(int amount)
     {

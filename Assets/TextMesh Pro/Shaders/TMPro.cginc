@@ -24,7 +24,7 @@ fixed4 GetColor(half d, fixed4 faceColor, fixed4 outlineColor, half outline, hal
 
 float3 GetSurfaceNormal(float4 h, float bias)
 {
-	bool raisedBevel = step(1, fmod(_ShaderFlags, 2));
+	bool raisedBevel = step(1, fMod(_ShaderFlags, 2));
 
 	h += bias+_BevelOffset;
 

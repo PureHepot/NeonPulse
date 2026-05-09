@@ -129,7 +129,7 @@
 		#define applyFog(i, color, alpha)	UNITY_APPLY_FOG_COLOR(i.fogCoord, color, alpha * unity_FogColor);
 	#elif _CFXR_ADDITIVE
 		#define applyFog(i, color, alpha)	UNITY_APPLY_FOG_COLOR(i.fogCoord, color, half4(0, 0, 0, 0));
-	#elif _ALPHAMODULATE_ON
+	#elif _ALPHAModULATE_ON
 		#define applyFog(i, color, alpha)	UNITY_APPLY_FOG_COLOR(i.fogCoord, color, half4(1, 1, 1, 1));
 	#else
 		#define applyFog(i, color, alpha)	UNITY_APPLY_FOG_COLOR(i.fogCoord, color, unity_FogColor);
@@ -175,7 +175,7 @@
 		#if _ALPHAPREMULTIPLY_ON
 			particleColor *= particleAlpha;
 		#endif
-		#if _ALPHAMODULATE_ON
+		#if _ALPHAModULATE_ON
 			particleColor.rgb = lerp(float3(1,1,1), particleColor.rgb, particleAlpha);
 		#endif
 

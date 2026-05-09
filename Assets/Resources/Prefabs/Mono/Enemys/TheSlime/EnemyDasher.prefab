@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 3862104991398879297}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.4816566, y: -0.12368581, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -63,6 +63,7 @@ MonoBehaviour:
   knockbackTorque: 20
   currentHp: 0
   isInScene: 0
+  scared: 0
   orbitDistance: 5
   distanceCorrectionSpeed: 2
   dashInterval: 3

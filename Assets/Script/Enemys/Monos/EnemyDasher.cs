@@ -25,6 +25,14 @@ public class EnemyDasher : EnemyBase
 
     protected override void MoveBehavior()
     {
+        
+        if (scared)
+        {
+            timer = dashInterval;
+            rb.velocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+            return;
+        }
         // 始终让怪物朝向玩家 (几何风格常见设定)
         if (playerTransform != null)
         {
