@@ -31,6 +31,8 @@ public class InRunHUD : MonoBehaviour
         GUILayout.Label($"Theme Id: {director.CurrentThemeId}", labelStyle);
         GUILayout.Label($"Timer: {director.CurrentLoopTimerText}", labelStyle);
         GUILayout.Label($"Pulse: {director.CurrentPulseStatusText}", labelStyle);
+        GUILayout.Label($"Enemies: {director.CurrentActiveEnemyCount}", labelStyle);
+        GUILayout.Label($"Threat: {director.CurrentActiveThreat:0.00}", labelStyle);
         GUILayout.EndArea();
 
         if (director.CurrentPhase != InRunPhase.PulseReady)

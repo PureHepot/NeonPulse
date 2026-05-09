@@ -11,7 +11,11 @@ public class InRunConfigDatabase : ScriptableObject
         get
         {
             if (instance == null)
+            {
                 instance = Resources.Load<InRunConfigDatabase>("Configs/InRun/InRunConfigDatabase");
+                if (instance == null)
+                    instance = Resources.Load<InRunConfigDatabase>("Configs/InRunConfigDatabase");
+            }
 
             return instance;
         }

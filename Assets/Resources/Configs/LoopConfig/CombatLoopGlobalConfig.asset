@@ -96,3 +96,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   loopDifficultyStep: 0.18
   themeDifficultyStep: 0.35
+  baseActiveThreatCap: 10
+  spawnInnerPadding: 1.5
+  spawnOuterPadding: 3
+  maxSpawnAttemptsPerTick: 8

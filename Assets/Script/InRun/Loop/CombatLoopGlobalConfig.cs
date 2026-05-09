@@ -9,4 +9,8 @@ public class CombatLoopGlobalConfig : ScriptableObject
     public AnimationCurve eliteChanceCurve = AnimationCurve.Linear(0f, 0f, 1f, 0.25f);
     public float loopDifficultyStep = 0.18f;
     public float themeDifficultyStep = 0.35f;
+    public float baseActiveThreatCap = 10f;
+    public float spawnInnerPadding = 1.5f;
+    public float spawnOuterPadding = 3f;
+    public int maxSpawnAttemptsPerTick = 8;
 }

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PulseConfig
   m_EditorClassIdentifier: 
   pulseKey: 114
-  pulseClearRadius: -1
+  pulseClearRadius: 50
   pulseClearedEnemiesGrantScore: 0
   pulseClearedEnemiesTriggerDrops: 0
   pulseVfxDuration: 0.8

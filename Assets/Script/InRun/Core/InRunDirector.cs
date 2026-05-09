@@ -6,12 +6,13 @@ public class InRunDirector : MonoBehaviour
     [SerializeField] private InRunConfigDatabase configOverride;
     [SerializeField] private int themesPerRun = 3;
     [SerializeField] private int loopsPerTheme = 3;
-    [SerializeField] private float debugLoopDurationSeconds = 30f;
+    [SerializeField] private float debugLoopDurationSeconds = 0f; //改成0就是不进行Debug测试
     [SerializeField] private float placeholderAdvanceDelaySeconds = 0.35f;
     [SerializeField] private bool showDebugHud = true;
 
     private readonly CombatLoopController combatLoopController = new();
     private readonly PulseSystem pulseSystem = new();
+    private readonly EnemySpawnDirector enemySpawnDirector = new();
 
     private Coroutine stateFlowRoutine;
     private InRunRuntimeContext context;
@@ -41,6 +42,8 @@ public class InRunDirector : MonoBehaviour
         ? $"Ready [{CurrentPulseKeyName}]"
         : pulseSystem.WasTriggered ? "Triggered" : "Idle";
     public string CurrentPulseKeyName => pulseSystem.PulseKey.ToString();
+    public int CurrentActiveEnemyCount => enemySpawnDirector.ActiveEnemyCount;
+    public float CurrentActiveThreat => enemySpawnDirector.CurrentActiveThreat;
 
     public void BeginRun(bool resumeExistingRun = false)
     {
@@ -62,6 +65,7 @@ public class InRunDirector : MonoBehaviour
         currentLoop = null;
         combatLoopController.Reset();
         pulseSystem.Reset();
+        enemySpawnDirector.Reset();
         EnsureHud();
         isSessionActive = true;
 
@@ -81,6 +85,7 @@ public class InRunDirector : MonoBehaviour
 
         combatLoopController.Reset();
         pulseSystem.Reset();
+        enemySpawnDirector.Reset();
         currentTheme = null;
         currentLoop = null;
         isSessionActive = false;
@@ -93,6 +98,9 @@ public class InRunDirector : MonoBehaviour
 
         combatLoopController.Tick(Time.deltaTime);
         pulseSystem.Tick();
+
+        if (CurrentPhase == InRunPhase.CombatLoopActive)
+            enemySpawnDirector.Tick(Time.deltaTime, combatLoopController.NormalizedTime);
     }
 
     private IEnumerator RunFreshStateFlow()
@@ -203,6 +211,7 @@ public class InRunDirector : MonoBehaviour
     {
         yield return EnterState(InRunPhase.ThemeSelecting);
         currentTheme = context.SelectTheme(themeIndex);
+        ApplyCurrentThemeVisuals();
         Debug.Log($"[InRunDirector] Selected theme {themeIndex + 1}/{themesPerRun}: {DescribeTheme(currentTheme, themeIndex)}");
 
         yield return EnterState(InRunPhase.ThemeIntro);
@@ -217,6 +226,7 @@ public class InRunDirector : MonoBehaviour
         if (startPhase == InRunPhase.ThemeSelecting)
             Debug.Log($"[InRunDirector] Resuming theme selection {themeIndex + 1}/{themesPerRun}: {DescribeTheme(currentTheme, themeIndex)}");
 
+        ApplyCurrentThemeVisuals();
         yield return EnterState(startPhase == InRunPhase.ThemeSelecting ? InRunPhase.ThemeSelecting : InRunPhase.ThemeIntro);
         if (startPhase == InRunPhase.ThemeSelecting)
             yield return EnterState(InRunPhase.ThemeIntro);
@@ -291,7 +301,13 @@ public class InRunDirector : MonoBehaviour
     {
         yield return EnterState(InRunPhase.CombatLoopActive, !resumeTimer);
         combatLoopController.StartLoop(currentLoop, ResolveLoopDurationSeconds(), resumeTimer);
+        enemySpawnDirector.BeginLoop(
+            currentTheme,
+            ResolveLoopGlobalConfig(),
+            context != null ? Mathf.Max(0, context.CurrentThemeIndex) : 0,
+            context != null ? Mathf.Max(0, context.CurrentLoopIndex) : 0);
         yield return new WaitUntil(() => combatLoopController.IsComplete);
+        enemySpawnDirector.StopLoop();
         yield return EnterState(InRunPhase.CombatLoopComplete);
     }
 
@@ -307,6 +323,7 @@ public class InRunDirector : MonoBehaviour
         }
 
         yield return EnterState(InRunPhase.PulseResolving);
+        enemySpawnDirector.DespawnAllTrackedEnemies();
         yield return EnterState(InRunPhase.LoopReward);
         currentLoop.rewardClaimed = true;
 
@@ -402,6 +419,12 @@ public class InRunDirector : MonoBehaviour
         return config != null ? config.pulseConfig : null;
     }
 
+    private CombatLoopGlobalConfig ResolveLoopGlobalConfig()
+    {
+        var config = configOverride != null ? configOverride : InRunConfigDatabase.Instance;
+        return config != null ? config.loopGlobalConfig : null;
+    }
+
     private static string DescribeTheme(BattleThemeConfig theme, int themeIndex)
     {
         if (theme == null)
@@ -414,6 +437,14 @@ public class InRunDirector : MonoBehaviour
             return theme.themeId;
 
         return $"debug_theme_{themeIndex + 1}";
+    }
+
+    private void ApplyCurrentThemeVisuals()
+    {
+        if (currentTheme == null || currentTheme.backgroundPreset == null || BackgroundFXController.Instance == null)
+            return;
+
+        BackgroundFXController.Instance.ApplyPresetCollection(currentTheme.backgroundPreset);
     }
 
     private static string GetDisplayIndex(int zeroBasedIndex, int totalCount)

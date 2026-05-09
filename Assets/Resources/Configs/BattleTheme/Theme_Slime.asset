@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87f8d2310b09252428aa9c1462cd7db7, type: 3}
+  m_Name: Theme_Slime
+  m_EditorClassIdentifier: 
+  themeId: theme_slime
+  displayName: Slime Test
+  backgroundPreset: {fileID: 11400000, guid: ade3f143988cdce478adf8817dba7be9, type: 2}
+  enemyPool:
+  - enemyId: Slime_Drifter
+    enemyPrefab: {fileID: 2559620815044795701, guid: 0565c5dd0e594194c936a8e3a1a62198, type: 3}
+    enemyResourcePath: Prefabs/Mono/Enemys/EnemyDrifter
+    baseScore: 10
+    baseSpawnCost: 1
+    baseThreat: 1
+    minLoopIndex: 0
+    tags:
+    - basic
+    - slime
+  - enemyId: Slime_Chaser
+    enemyPrefab: {fileID: 5687499291434305790, guid: 706a79fa4b565b747bd409464879a084, type: 3}
+    enemyResourcePath: Prefabs/Mono/Enemys/TheSlime/EnemyChaser
+    baseScore: 14
+    baseSpawnCost: 1.35
+    baseThreat: 1.2
+    minLoopIndex: 1
+    tags:
+    - chase
+    - slime
+  - enemyId: Slime_Dasher
+    enemyPrefab: {fileID: 3862104991398879297, guid: f837404300d7da240a1f98c5a0dea4e1, type: 3}
+    enemyResourcePath: Prefabs/Mono/Enemys/TheSlime/EnemyDasher
+    baseScore: 18
+    baseSpawnCost: 1.75
+    baseThreat: 1.6
+    minLoopIndex: 2
+    tags:
+    - dash
+    - slime
+  loopEnemyPlans:
+  - loopIndex: 0
+    unlockedEnemyIds:
+    - Slime_Drifter
+    weightedEnemies:
+    - enemyId: Slime_Drifter
+      weight: 1
+  - loopIndex: 1
+    unlockedEnemyIds:
+    - Slime_Drifter
+    - Slime_Chaser
+    weightedEnemies:
+    - enemyId: Slime_Drifter
+      weight: 1
+    - enemyId: Slime_Chaser
+      weight: 0.7
+  - loopIndex: 2
+    unlockedEnemyIds:
+    - Slime_Drifter
+    - Slime_Chaser
+    - Slime_Dasher
+    weightedEnemies:
+    - enemyId: Slime_Drifter
+      weight: 0.9
+    - enemyId: Slime_Chaser
+      weight: 0.9
+    - enemyId: Slime_Dasher
+      weight: 0.6
+  difficultyMultiplier: 1

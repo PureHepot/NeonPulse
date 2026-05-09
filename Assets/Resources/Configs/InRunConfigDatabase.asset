@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f4c0e7ec778d964d9121709639021c5, type: 3}
   m_Name: InRunConfigDatabase
   m_EditorClassIdentifier: 
-  allThemes: []
-  loopGlobalConfig: {fileID: 0}
-  scoreConfig: {fileID: 0}
-  pulseConfig: {fileID: 0}
+  allThemes:
+  - {fileID: 11400000, guid: 0f551dabba278d741b0e76c4eab3c045, type: 2}
+  loopGlobalConfig: {fileID: 11400000, guid: 0e9f74d672cc40f4ba7957d0e504e390, type: 2}
+  scoreConfig: {fileID: 11400000, guid: 07f2ed29c638549498f245c9b622eb2c, type: 2}
+  pulseConfig: {fileID: 11400000, guid: 5b6c817b392fa874bb4282c8d90d5fdb, type: 2}
