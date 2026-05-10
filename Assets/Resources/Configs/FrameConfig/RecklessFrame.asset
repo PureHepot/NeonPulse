@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f5cb7c727437d54ab40755a7cc50bce, type: 3}
+  m_Name: RecklessFrame
+  m_EditorClassIdentifier: 
+  frameId: RecklessFrame
+  displayName: "\u6B27\u7F8E\u6846\u67B6"
+  description: "\u8FD9\u662F\u4E00\u4E2A\u53EA\u653B\u4E0D\u9632\u7684\u6B27\u7F8E\u6846\u67B6\uFF0C\u820D\u5F03\u9632\u5FA1\u6A21\u5757\uFF0C\u53EF\u4EE5\u9009\u62E9\u4E09\u4E2A\u6B66\u5668\u6A21\u5757"
+  icon: {fileID: 0}
+  baseMaxHP: 100
+  inherentEffects:
+  - effectId: 
+    param1: 0
+    param2: 0
+    param3: 0
+    description: 
+  frameCore: {fileID: 3660777588017717101, guid: b3cf8fbbc9003734fb6e022c436fab3f, type: 3}
+  slotLayoutPrefab: {fileID: 9168375515282800303, guid: f070ef3015225da4194be3fdc3e283be, type: 3}

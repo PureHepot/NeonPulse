@@ -10,31 +10,31 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f2938850d4485ee45954e75922bd383a, type: 3}
-  m_Name: Weapon_Ranged_Snipe
+  m_Name: Weapon_Ranged_LaserDrones
   m_EditorClassIdentifier: 
-  moduleId: weapon_module_sniper
-  moduleName: "\u72D9\u51FB\u67AA"
-  moduleType: 6
-  description: "\u8FD9\u662F\u4E00\u4E2A\u72D9\u51FB\u67AA\uFF0C\u53EF\u4EE5\u5C04\u51FA\u4F24\u5BB3\u9AD8\u4E14\u9AD8\u4F24\u5BB3\u7684\u5B50\u5F39"
-  icon: {fileID: 21300000, guid: 59b97c2873892e045a85a0bb390fc12b, type: 3}
+  moduleId: weapon_module_laserdrones
+  moduleName: "\u6D6E\u6E38\u70AE"
+  moduleType: 5
+  description: "\u8FD9\u662F\u4E00\u4E2A\u6D6E\u6E38\u70AE\uFF0C\u53EF\u4EE5\u81EA\u52A8\u53D1\u5C04\u6FC0\u5149\u6253\u51FB\u654C\u4EBA"
+  icon: {fileID: 0}
   categories: 3
   statSchema: {fileID: 11400000, guid: c438295c9c4cbee4eafc06ae0b017fa6, type: 2}
   defaultRarity: 0
   rarityProfiles:
   - rarity: 0
     baseStats:
-    - statDefinition: {fileID: 11400000, guid: fddb1fe5ce65f514988fb97e08e9009e, type: 2}
-      value: 1
     - statDefinition: {fileID: 11400000, guid: 78fd7d5dbc780f8468dfed5cc4f5b5c1, type: 2}
-      value: 1
+      value: 0
     - statDefinition: {fileID: 11400000, guid: 739ac8df719410941ba8aa457488fd3d, type: 2}
       value: 0
     - statDefinition: {fileID: 11400000, guid: 9555f464902f5ec45b09ea050f35bb62, type: 2}
-      value: 110
+      value: 0
+    - statDefinition: {fileID: 11400000, guid: fddb1fe5ce65f514988fb97e08e9009e, type: 2}
+      value: 0
     maxPluginSlots: 1
     loadCost: 1
   coreSlotCount: 1
-  themeColor: {r: 1, g: 0.08282871, b: 0, a: 1}
-  runtimePrefab: {fileID: 1289084884220203822, guid: 6fcab3ad23c44334ea1974456237f783, type: 3}
-  previewPrefab: {fileID: 1289084884220203822, guid: 6fcab3ad23c44334ea1974456237f783, type: 3}
+  themeColor: {r: 0, g: 1, b: 1, a: 1}
+  runtimePrefab: {fileID: 1289084884220203822, guid: b433089a5941e3d46873323020909b82, type: 3}
+  previewPrefab: {fileID: 1289084884220203822, guid: b433089a5941e3d46873323020909b82, type: 3}
   unlockCost: 0

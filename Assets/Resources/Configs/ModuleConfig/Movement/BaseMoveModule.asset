@@ -31,5 +31,6 @@ MonoBehaviour:
     loadCost: 1
   coreSlotCount: 1
   themeColor: {r: 0.2117647, g: 1, b: 0.8737547, a: 1}
+  runtimePrefab: {fileID: 0}
   previewPrefab: {fileID: 950323459775795189, guid: ca5d0eb2616ef3f41981109d1b00277d, type: 3}
   unlockCost: 0
