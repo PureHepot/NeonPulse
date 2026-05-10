@@ -7,6 +7,7 @@ public class BossEncounterDirector
     private GameObject activeBossObject;
     private EnemyBase activeBossEnemy;
     private BossEncounterConfig activeConfig;
+    private PlayerController activePlayer;
 
     public bool IsRunning { get; private set; }
     public bool IsComplete { get; private set; }
@@ -20,7 +21,8 @@ public class BossEncounterDirector
         Reset();
 
         activeConfig = ResolveEncounterConfig(theme);
-        arenaLimiter.Activate(activeConfig != null ? activeConfig.arenaConfig : null, InRunDirector.ActiveInstance != null ? InRunDirector.ActiveInstance.transform : null);
+        arenaLimiter.Activate(activeConfig != null ? activeConfig.arenaConfig : null);
+        activePlayer = ResolveActivePlayer();
 
         GameObject bossPrefab = activeConfig != null ? activeConfig.ResolvePrefab() : null;
         if (bossPrefab == null)
@@ -61,6 +63,17 @@ public class BossEncounterDirector
         }
     }
 
+    public void LateTick()
+    {
+        if (!IsRunning || IsComplete || !arenaLimiter.IsActive)
+            return;
+
+        if (activePlayer == null || !activePlayer.gameObject.activeInHierarchy)
+            activePlayer = ResolveActivePlayer();
+
+        arenaLimiter.ConstrainPlayer(activePlayer);
+    }
+
     public void CleanupEncounter()
     {
         ClearActiveEnemies();
@@ -70,6 +83,7 @@ public class BossEncounterDirector
 
         activeBossObject = null;
         activeBossEnemy = null;
+        activePlayer = null;
         arenaLimiter.Deactivate();
         IsRunning = false;
     }
@@ -118,6 +132,14 @@ public class BossEncounterDirector
             ObjectPoolManager.Instance.Return(enemy.gameObject);
         }
     }
+
+    private static PlayerController ResolveActivePlayer()
+    {
+        if (PlayerManager.Instance != null && PlayerManager.Instance.CurrentPlayerObj != null)
+            return PlayerManager.Instance.CurrentPlayerObj.GetComponent<PlayerController>();
+
+        return Object.FindFirstObjectByType<PlayerController>();
+    }
 }
 
 internal static class BossEncounterConfigFallbackExtensions
@@ -132,8 +154,7 @@ internal static class BossEncounterConfigFallbackExtensions
         {
             centerOffset = Vector2.zero,
             halfExtents = new Vector2(8f, 4.5f),
-            bossSpawnOffset = new Vector2(0f, 3f),
-            wallThickness = 1f
+            bossSpawnOffset = new Vector2(0f, 3f)
         };
         return config;
     }

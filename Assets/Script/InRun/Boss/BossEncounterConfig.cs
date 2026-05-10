@@ -54,7 +54,4 @@ public class BossArenaConfig
 
     [Tooltip("Boss 初始生成点相对 Arena 中心的偏移。")]
     public Vector2 bossSpawnOffset = new(0f, 3f);
-
-    [Tooltip("Arena 墙体厚度。")]
-    public float wallThickness = 1f;
 }

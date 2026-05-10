@@ -791,3 +791,87 @@ That is the direction of the current `loadoutData` unification work.
   - `InRunRuntimeContext` now exposes theme resolution helpers so the in-run flow can reuse previously selected themes during resume instead of always redrawing.
   - Verification:
     - `dotnet build Assembly-CSharp.csproj --no-restore` succeeds with 0 errors; remaining warnings are pre-existing retained-script warnings.
+
+### 2026-05-10
+
+- InRun progress is currently through Boss flow implementation and runtime support layers beyond the original Step 2 placeholder loop:
+  - Step 3-equivalent runtime work landed:
+    - test theme hookup
+    - three-enemy staged unlock/weighted spawning
+    - off-camera ring spawn sampling
+    - time-budget driven spawn curve hookup
+  - Step 4-equivalent runtime work landed:
+    - minimal reward flow
+    - minimal shop flow
+    - score resolution into loop reward/shop sequence
+  - Step 5-equivalent runtime work landed:
+    - minimal Boss encounter flow
+    - per-theme boss config support with fallback boss config
+  - Current practical state:
+    - `InRunDirector` can run theme -> 3 loops -> boss -> next theme
+    - pulse can now be triggered at any time during combat and immediately cash out the current loop into reward/shop
+    - `InRunDirector` was split into:
+      - `Assets/Script/InRun/Core/InRunFlowRunner.cs`
+      - `Assets/Script/InRun/Core/InRunResumeCoordinator.cs`
+    - `InRunDirector` now mainly owns runtime dependencies plus atomic phase operations instead of all orchestration branches inline
+
+- InRun runtime/boss files added during this pass:
+  - `Assets/Script/InRun/Boss/BossEncounterConfig.cs`
+  - `Assets/Script/InRun/Boss/BossArenaLimiter.cs`
+  - `Assets/Script/InRun/Boss/BossEncounterDirector.cs`
+  - `Assets/Script/InRun/Reward/RewardDirector.cs`
+  - `Assets/Script/InRun/Shop/ShopDirector.cs`
+  - `Assets/Script/InRun/Score/ScoreResolver.cs`
+  - `Assets/Script/InRun/Core/InRunFlowRunner.cs`
+  - `Assets/Script/InRun/Core/InRunResumeCoordinator.cs`
+
+- Enemy boundary handling was redesigned away from the old monolithic `EnemyManager` logic:
+  - New central pure runtime service:
+    - `Assets/Script/Enemys/EnemyBoundaryService.cs`
+  - `EnemyBase` now registers boundary-aware enemies through `InRunDirector` when an in-run session is active, and only falls back to the legacy scene `EnemyManager` shell outside in-run.
+  - `EnemyManager` still exists as a thin compatibility MonoBehaviour because current scenes still serialize that component, but the actual boundary logic has been extracted into the shared service.
+  - Boundary semantics are now centralized:
+    - first entry from off-screen into the arena does not count as a boundary reaction trigger
+    - ongoing boundary checks are batched by the service
+    - per-enemy behavior is component-driven instead of being hardcoded in the manager
+
+- Enemy boundary behaviors were split into two explicit categories:
+  - Constraints:
+    - `Assets/Script/Enemys/EnemyBoundaryConstraint.cs`
+    - continuous positional rules such as "cannot leave bounds"
+  - Reactions:
+    - `Assets/Script/Enemys/EnemyBoundaryReaction.cs`
+    - one-shot or cooldown-based edge responses such as teleport/death/bounce
+  - Existing event scripts were remapped:
+    - `EnemyCollisionEvent` is now a boundary constraint
+    - `EnemyTeleportEvent` is now a boundary reaction
+    - `EnemyBoomEvent` is now a boundary reaction
+  - Design rule going forward:
+    - use constraints for persistent motion restrictions
+    - use reactions for triggered edge effects
+    - do not mix multiple mutually exclusive constraint styles on one enemy unless a dedicated composed behavior is authored
+
+- Shared continuous physics layer was extended to cooperate with boundary and arena limits:
+  - `Assets/Script/Physics/ContinuousPhysicsMotor2D.cs` now exposes `ClampPositionToBounds(...)`
+  - Important reason:
+    - simply snapping a rigidbody back inside bounds is not enough when `ContinuousPhysicsMotor2D` still has an outward `desiredVelocity`
+    - the clamp path now also trims outward current velocity and outward desired velocity on the blocked axes
+  - `Assets/Script/Player/PlayerController.cs` now exposes `ClampToBounds(...)` and delegates to the motor when present
+
+- Boss arena restriction was reworked to remove physics wall colliders:
+  - Old problem:
+    - the first boss-arena implementation created four static collider walls
+    - this could be bypassed by player invincibility/hurt-frame collider disable
+    - it also polluted the physics world for enemies/boss/bullets
+  - New implementation:
+    - `BossArenaLimiter` now stores arena bounds only; it does not create any collider objects
+    - `BossEncounterDirector.LateTick()` directly constrains the active player into those bounds
+    - `InRunDirector.LateUpdate()` drives that player-only arena clamp while `BossActive`
+  - Current rule:
+    - boss arena restriction now affects player positioning only
+    - it no longer blocks or perturbs enemies through physics collision
+
+- Current verification baseline after these additions:
+  - `dotnet build .\\Assembly-CSharp.csproj -nologo` succeeds
+  - latest result during this work: `0 error, 12 warning`
+  - remaining warnings are existing retained-script warnings in boss/player utility scripts, not failures from the new in-run/boundary/boss-arena systems

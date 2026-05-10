@@ -5,6 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "ShopCatalogConfig", menuName = "Game/InRun/Shop Catalog")]
 public class ShopCatalogConfig : ScriptableObject
 {
+    public string catalogId;
     public List<ShopOfferEntry> baseOffers = new();
     public List<ShopOfferEntry> themeOffers = new();
 }
@@ -13,7 +14,10 @@ public class ShopCatalogConfig : ScriptableObject
 public class ShopOfferEntry
 {
     public string offerId;
+    public string itemId;
     public string displayName;
     [TextArea] public string description;
     public int cost = 30;
+    public InRunItemType itemType = InRunItemType.Misc;
+    public int warehouseSlotsDelta;
 }

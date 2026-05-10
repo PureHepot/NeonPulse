@@ -14,6 +14,10 @@ public class ShopDirector
         IsComplete = false;
 
         var catalog = theme != null ? theme.shopCatalog : null;
+        string catalogId = ResolveCatalogId(catalog);
+        if (runtime != null && ShopInventoryRuntimeState.TryRestore(catalogId, runtime, currentOffers))
+            return;
+
         if (catalog != null)
         {
             AddOffers(catalog.baseOffers);
@@ -27,23 +31,31 @@ public class ShopDirector
                 offerId = "shop_hull_patch",
                 displayName = "Hull Patch",
                 description = "Placeholder shop item for future HP repair integration.",
-                cost = 35
+                cost = 35,
+                itemType = InRunItemType.Repair,
+                itemId = "shop_hull_patch"
             });
             currentOffers.Add(new ShopOffer
             {
                 offerId = "shop_target_cache",
                 displayName = "Target Cache",
                 description = "Placeholder offense upgrade pack.",
-                cost = 60
+                cost = 60,
+                itemType = InRunItemType.Module,
+                itemId = "shop_target_cache"
             });
             currentOffers.Add(new ShopOffer
             {
                 offerId = "shop_map_key",
                 displayName = "Map Key",
                 description = "Placeholder map expansion purchase.",
-                cost = 80
+                cost = 80,
+                itemType = InRunItemType.MapExpansion,
+                itemId = "shop_map_key"
             });
         }
+
+        ShopInventoryRuntimeState.Snapshot(catalogId, runtime, currentOffers);
     }
 
     public void Tick(InRunRuntimeSaveData runtime)
@@ -76,16 +88,39 @@ public class ShopDirector
         if (offer == null || offer.purchased || runtime.runCurrency < offer.cost)
             return;
 
+        if (!CanPurchase(offer, runtime))
+            return;
+
         runtime.runCurrency -= offer.cost;
         offer.purchased = true;
         runtime.pendingRewards.Add(new RunRewardSaveData
         {
             rewardId = offer.offerId,
+            itemId = offer.itemId,
             displayName = offer.displayName,
             description = offer.description,
             source = "Shop",
-            currencyBonus = 0
+            currencyBonus = 0,
+            itemType = offer.itemType,
+            warehouseSlotsDelta = offer.warehouseSlotsDelta
         });
+
+        if (offer.warehouseSlotsDelta != 0)
+            WarehouseRuntimeState.ApplyCapacityDelta(runtime, offer.warehouseSlotsDelta);
+
+        if (offer.itemType != InRunItemType.Currency)
+        {
+            WarehouseRuntimeState.TryAddItem(
+                runtime,
+                offer.offerId,
+                offer.itemType,
+                offer.itemId,
+                offer.displayName,
+                offer.description,
+                "Shop");
+        }
+
+        ShopInventoryRuntimeState.Snapshot(runtime.shopInventory != null ? runtime.shopInventory.catalogId : string.Empty, runtime, currentOffers);
     }
 
     public void Reset()
@@ -107,10 +142,38 @@ public class ShopDirector
             currentOffers.Add(new ShopOffer
             {
                 offerId = entry.offerId,
+                itemId = string.IsNullOrWhiteSpace(entry.itemId) ? entry.offerId : entry.itemId,
                 displayName = entry.displayName,
                 description = entry.description,
-                cost = entry.cost
+                cost = entry.cost,
+                itemType = entry.itemType,
+                warehouseSlotsDelta = entry.warehouseSlotsDelta
             });
         }
+    }
+
+    private static bool CanPurchase(ShopOffer offer, InRunRuntimeSaveData runtime)
+    {
+        if (offer == null || runtime == null)
+            return false;
+
+        if (offer.warehouseSlotsDelta > 0)
+            return true;
+
+        if (offer.itemType == InRunItemType.Currency)
+            return true;
+
+        return WarehouseRuntimeState.HasSpace(runtime);
+    }
+
+    private static string ResolveCatalogId(ShopCatalogConfig catalog)
+    {
+        if (catalog == null)
+            return string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(catalog.catalogId))
+            return catalog.catalogId.Trim();
+
+        return catalog.name;
     }
 }

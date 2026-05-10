@@ -65,10 +65,10 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         rb.simulated = true;
         motionMotor?.ResetMotion();
         
-        if (EnemyManager.Instance != null)
-        {
+        if (InRunDirector.ActiveInstance != null)
+            InRunDirector.ActiveInstance.RegisterBoundaryEnemy(this);
+        else if (EnemyManager.Instance != null)
             EnemyManager.Instance.RegisterEnemy(this);
-        }
     }
 
     public virtual void OnDespawn()
@@ -82,10 +82,10 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         else
             rb.velocity = Vector2.zero;
         
-        if (EnemyManager.Instance != null)
-        {
+        if (InRunDirector.ActiveInstance != null)
+            InRunDirector.ActiveInstance.UnregisterBoundaryEnemy(this);
+        else if (EnemyManager.Instance != null)
             EnemyManager.Instance.UnRegisterEnemy(this);
-        }
     }
 
     private void FixedUpdate()

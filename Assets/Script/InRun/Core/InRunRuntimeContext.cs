@@ -38,6 +38,8 @@ public class InRunRuntimeContext
         Runtime.runCurrency = 0;
         Runtime.runScoreTotal = 0;
         Runtime.lifetimeKillsThisRun = 0;
+        WarehouseRuntimeState.ResetForNewRun(Runtime);
+        ShopInventoryRuntimeState.Clear(Runtime);
         Runtime.pendingRewards.Clear();
 
         themeDrawBag.Clear();

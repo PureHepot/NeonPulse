@@ -4,22 +4,22 @@ using System.Collections.Generic;
 [Serializable]
 public class InRunRuntimeSaveData
 {
-    // 本局运行的随机种子，用于主题抽取、奖励抽取等可复现随机流程。
+    // 本局运行的随机种子。
     public int runSeed;
 
-    // 当前进行到第几个主题，0-based；-1 表示还未进入任何主题。
+    // 当前主题序号，0-based；-1 表示尚未进入主题。
     public int currentThemeIndex = -1;
 
-    // 当前进行到主题内的第几个小循环，0-based；-1 表示当前不在小循环中。
+    // 当前小循环序号，0-based；-1 表示当前不在小循环中。
     public int currentLoopIndex = -1;
 
-    // 当前 In-Run 主状态机所处阶段。
+    // 当前 InRun 主状态机阶段。
     public InRunPhase phase = InRunPhase.None;
 
-    // 本局已选出的主题 ID 列表，顺序对应主题流程顺序。
+    // 本局已选出的主题 ID 顺序。
     public List<string> selectedThemeIds = new();
 
-    // 每个主题对应的运行期存档数据。
+    // 每个主题对应的运行期状态。
     public List<ThemeRuntimeSaveData> themes = new();
 
     // 本局当前可在商店消费的货币。
@@ -31,6 +31,12 @@ public class InRunRuntimeSaveData
     // 本局累计击杀数。
     public int lifetimeKillsThisRun;
 
+    // 本局临时仓库数据。
+    public WarehouseRuntimeSaveData warehouse = new();
+
+    // 当前商店商品快照。
+    public ShopInventoryRuntimeSaveData shopInventory = new();
+
     // 本局已获得但尚未转化为局外结果的运行期奖励列表。
     public List<RunRewardSaveData> pendingRewards = new();
 }
@@ -41,13 +47,13 @@ public class ThemeRuntimeSaveData
     // 当前主题的配置 ID。
     public string themeId;
 
-    // 当前主题的 Boss 是否已被击败。
+    // 当前主题 Boss 是否已被击败。
     public bool bossDefeated;
 
-    // 当前主题中已经“正式登场/解锁展示”过的敌人 ID。
+    // 当前主题中已经正式登场过的敌人 ID。
     public List<string> introducedEnemyIds = new();
 
-    // 当前主题下各个小循环的存档数据。
+    // 当前主题下各小循环的存档数据。
     public List<CombatLoopRuntimeSaveData> loops = new();
 }
 
@@ -105,4 +111,83 @@ public class RunRewardSaveData
 
     // 该奖励附带的额外货币收益。
     public int currencyBonus;
+
+    // 奖励对应的局内物品类型。
+    public InRunItemType itemType = InRunItemType.Misc;
+
+    // 奖励对应的具体内容标识，例如 moduleId / coreId / pluginId。
+    public string itemId;
+
+    // 奖励带来的仓库容量变化。
+    public int warehouseSlotsDelta;
+}
+
+[Serializable]
+public class WarehouseRuntimeSaveData
+{
+    // 本局运行期仓库容量。
+    public int capacity = 12;
+
+    // 当前已入仓的运行期物品列表。
+    public List<WarehouseItemSaveData> items = new();
+}
+
+[Serializable]
+public class WarehouseItemSaveData
+{
+    // 仓库条目唯一标识。
+    public string rewardId;
+
+    // 物品类型。
+    public InRunItemType itemType = InRunItemType.Misc;
+
+    // 物品运行期标识，例如 moduleId / coreId / pluginId。
+    public string itemId;
+
+    // 显示名称。
+    public string displayName;
+
+    // 描述文本。
+    public string description;
+
+    // 来源，例如 LoopReward / Shop / BossReward。
+    public string source;
+}
+
+[Serializable]
+public class ShopInventoryRuntimeSaveData
+{
+    // 当前商店目录标识。
+    public string catalogId;
+
+    // 当前商店商品快照。
+    public List<ShopOfferSaveData> offers = new();
+}
+
+[Serializable]
+public class ShopOfferSaveData
+{
+    // 商品唯一 ID。
+    public string offerId;
+
+    // 商品显示名。
+    public string displayName;
+
+    // 商品说明。
+    public string description;
+
+    // 商品价格。
+    public int cost;
+
+    // 商品类型。
+    public InRunItemType itemType = InRunItemType.Misc;
+
+    // 商品内容标识。
+    public string itemId;
+
+    // 商品带来的仓库容量变化。
+    public int warehouseSlotsDelta;
+
+    // 是否已被购买。
+    public bool purchased;
 }
