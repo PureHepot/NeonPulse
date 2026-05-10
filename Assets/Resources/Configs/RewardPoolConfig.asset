@@ -9,15 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: afc26d11be5ac914b90dd6d162e0c584, type: 3}
-  m_Name: Twaves
+  m_Script: {fileID: 11500000, guid: 8de6fb26156bcbb4ab1fa01db7a0c51c, type: 3}
+  m_Name: RewardPoolConfig
   m_EditorClassIdentifier: 
-  allWaves:
-  - waveName: 'Wave '
-    enemies: []
-    groups:
-    - enemyIndex: 
-      spawnRate: []
-      groupDuration: 0
-      direction: 5
-    waveDuration: 0
+  entries: []
+  gradeRules: []

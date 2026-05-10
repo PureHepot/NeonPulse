@@ -13,6 +13,11 @@ public class BattleThemeConfig : ScriptableObject
     public List<EnemySpawnEntry> enemyPool = new();
     public List<ThemeLoopEnemyPlan> loopEnemyPlans = new();
 
+    public BossEncounterConfig bossEncounter;
+    public RewardPoolConfig loopRewardPool;
+    public RewardPoolConfig bossRewardPool;
+    public ShopCatalogConfig shopCatalog;
+
     public float difficultyMultiplier = 1f;
 }
 

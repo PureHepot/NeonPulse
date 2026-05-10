@@ -64,11 +64,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
 
         rb.simulated = true;
         motionMotor?.ResetMotion();
-
-        if (WaveManager.Instance != null)
-        {
-            WaveManager.Instance.RegisterEnemy(this);
-        }
+        
         if (EnemyManager.Instance != null)
         {
             EnemyManager.Instance.RegisterEnemy(this);
@@ -85,11 +81,7 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
             motionMotor.ResetMotion();
         else
             rb.velocity = Vector2.zero;
-
-        if (WaveManager.Instance != null)
-        {
-            WaveManager.Instance.UnregisterEnemy(this);
-        }
+        
         if (EnemyManager.Instance != null)
         {
             EnemyManager.Instance.UnRegisterEnemy(this);
@@ -167,10 +159,9 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
 
         BackgroundFXController.Instance.TriggerDistortion(transform.position);
 
-        if (WaveManager.Instance != null)
-        {
-            WaveManager.Instance.UnregisterEnemy(this);
-        }
+        if (InRunDirector.ActiveInstance != null)
+            InRunDirector.ActiveInstance.NotifyEnemyKilled(this);
+        
         ObjectPoolManager.Instance.Return(this.gameObject);
     }
 
