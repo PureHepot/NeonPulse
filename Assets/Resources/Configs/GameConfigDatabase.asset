@@ -14,7 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   allCharacters: []
   allFrames:
+  - {fileID: 11400000, guid: c1920563a0366ac489bca1fa8f00176b, type: 2}
   - {fileID: 11400000, guid: a4ce6852270831540a84f3a424c5f0b7, type: 2}
+  - {fileID: 11400000, guid: 5b8889b9dbb0e1f49bed867dd74378b0, type: 2}
+  - {fileID: 11400000, guid: 7faf0581111db9a4f885779b9480c917, type: 2}
+  - {fileID: 11400000, guid: 9b82b619308e4b34bb2e4fcfa6c11631, type: 2}
   allStatDefinitions:
   - {fileID: 11400000, guid: b4f9713909a601d4aa70573e336a21ff, type: 2}
   - {fileID: 11400000, guid: a005521775b5db34a980b3fb0e844d00, type: 2}
@@ -33,22 +37,23 @@ MonoBehaviour:
   allModuleStatSchemas:
   - {fileID: 11400000, guid: f95c5b5f2457187459497a1f242753c3, type: 2}
   - {fileID: 11400000, guid: 5d08e2b9816f892409689f47e42b069f, type: 2}
+  - {fileID: 11400000, guid: dc9d07eaf634fab4895f0a7c4f0f6e73, type: 2}
   - {fileID: 11400000, guid: 29821085cfb231744b62dacb9c8cfc0e, type: 2}
   - {fileID: 11400000, guid: c438295c9c4cbee4eafc06ae0b017fa6, type: 2}
   allModules:
   - {fileID: 11400000, guid: 6531a03a67d21b94f9b032656440fc74, type: 2}
   - {fileID: 11400000, guid: 8efed6912227dcb4f870ce89d856c0da, type: 2}
-  - {fileID: 11400000, guid: 7b9c02afe976a1c4a8d04b480f4fe15f, type: 2}
-  - {fileID: 11400000, guid: d73ffa2ad9accbd48beaf02b88e7b297, type: 2}
-  - {fileID: 11400000, guid: 3216e3711a4040d4aa84da9804a8bc38, type: 2}
-  - {fileID: 11400000, guid: 859c063ede3a6b84eb139d0cf52ae698, type: 2}
   - {fileID: 11400000, guid: 67299303e5fc6bd4a8863e3a322ecfe6, type: 2}
-  - {fileID: 11400000, guid: 3684c27ec9fac8b41a3f0c17cc8b6f50, type: 2}
   - {fileID: 11400000, guid: e438a78872fc3de4ea215c11e6c07842, type: 2}
   - {fileID: 11400000, guid: fea9c27fd439e714ea4af1d88b78537d, type: 2}
   - {fileID: 11400000, guid: d93b63cce1a8d9f41953e1dbe2dce8a6, type: 2}
   - {fileID: 11400000, guid: 3e1690c76cecee247a5f0e49b231ab5f, type: 2}
   - {fileID: 11400000, guid: c2664caaaaa4d0b498edd79557b4152f, type: 2}
+  - {fileID: 11400000, guid: 7b9c02afe976a1c4a8d04b480f4fe15f, type: 2}
+  - {fileID: 11400000, guid: 03005af6b578cb14eb8a642b1796308d, type: 2}
+  - {fileID: 11400000, guid: 82e96c4ea772997459f77c97c85ca419, type: 2}
+  - {fileID: 11400000, guid: 4336683fec4d5a64b9de2758782849e6, type: 2}
+  - {fileID: 11400000, guid: 3684c27ec9fac8b41a3f0c17cc8b6f50, type: 2}
   allCores: []
   allPlugins:
   - {fileID: 11400000, guid: e3b1d4136e7d4681ac4bd6d8dd5a4c90, type: 2}

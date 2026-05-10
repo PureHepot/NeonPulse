@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f2938850d4485ee45954e75922bd383a, type: 3}
-  m_Name: Weapon_Ranged_Base
+  m_Name: Weapon_Ranged_Shotgun
   m_EditorClassIdentifier: 
-  moduleId: base_shooter_module
-  moduleName: "\u7B80\u6613\u67AA\u68B0"
-  moduleType: 2
-  description: "\u8FD9\u662F\u4E00\u4E2A\u7B80\u5355\u7684\u67AA\u68B0\uFF0C\u53EF\u4EE5\u5C04\u51FA\u4F24\u5BB3\u654C\u4EBA\u7684\u5B50\u5F39"
-  icon: {fileID: 21300000, guid: 711eeeaf4970e0c4182166db209c2b3a, type: 3}
+  moduleId: weapon_module_shotgun
+  moduleName: "\u9730\u5F39\u67AA"
+  moduleType: 7
+  description: "\u8FD9\u662F\u4E00\u4E2A\u9730\u5F39\u67AA\uFF0C\u53EF\u4EE5\u4E00\u6B21\u6563\u5C04\u51FA\u591A\u53D1\u5B50\u5F39"
+  icon: {fileID: 0}
   categories: 3
   statSchema: {fileID: 11400000, guid: c438295c9c4cbee4eafc06ae0b017fa6, type: 2}
   defaultRarity: 0
@@ -24,21 +24,17 @@ MonoBehaviour:
   - rarity: 0
     baseStats:
     - statDefinition: {fileID: 11400000, guid: fddb1fe5ce65f514988fb97e08e9009e, type: 2}
-      value: 10
+      value: 1
     - statDefinition: {fileID: 11400000, guid: 78fd7d5dbc780f8468dfed5cc4f5b5c1, type: 2}
       value: 1
     - statDefinition: {fileID: 11400000, guid: 739ac8df719410941ba8aa457488fd3d, type: 2}
       value: 0
     - statDefinition: {fileID: 11400000, guid: 9555f464902f5ec45b09ea050f35bb62, type: 2}
       value: 110
-    - statDefinition: {fileID: 11400000, guid: 80dd2c8d7419fbf458c2cc818c58a8e6, type: 2}
-      value: 1
-    - statDefinition: {fileID: 11400000, guid: 952689803a70ace44ab440ca5e69f48b, type: 2}
-      value: 1
     maxPluginSlots: 1
     loadCost: 1
   coreSlotCount: 1
-  themeColor: {r: 1, g: 0.08282871, b: 0, a: 1}
-  runtimePrefab: {fileID: 1289084884220203822, guid: d6ecab39b607bec49b40316767da8f0b, type: 3}
-  previewPrefab: {fileID: 1289084884220203822, guid: d6ecab39b607bec49b40316767da8f0b, type: 3}
+  themeColor: {r: 0, g: 1, b: 1, a: 1}
+  runtimePrefab: {fileID: 1289084884220203822, guid: 9e9869b917aef9b47b62c2a8bb321a30, type: 3}
+  previewPrefab: {fileID: 1289084884220203822, guid: 9e9869b917aef9b47b62c2a8bb321a30, type: 3}
   unlockCost: 0
