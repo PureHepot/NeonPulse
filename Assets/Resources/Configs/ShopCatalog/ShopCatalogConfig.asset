@@ -9,11 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b2e502ef0f34d5b4d8719b1f9eca89b5, type: 3}
-  m_Name: PulseConfig
+  m_Script: {fileID: 11500000, guid: 1c92161e0b72fea41b49d4599ae33486, type: 3}
+  m_Name: ShopCatalogConfig
   m_EditorClassIdentifier: 
-  pulseKey: 114
-  pulseClearRadius: 50
-  pulseClearedEnemiesGrantScore: 0
-  pulseClearedEnemiesTriggerDrops: 0
-  pulseVfxDuration: 0.8
+  baseOffers: []
+  themeOffers: []

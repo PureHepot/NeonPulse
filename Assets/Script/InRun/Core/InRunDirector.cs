@@ -1,17 +1,26 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class InRunDirector : MonoBehaviour
 {
+    public static InRunDirector ActiveInstance { get; private set; }
+
     [SerializeField] private InRunConfigDatabase configOverride;
     [SerializeField] private int themesPerRun = 3;
     [SerializeField] private int loopsPerTheme = 3;
-    [SerializeField] private float debugLoopDurationSeconds = 30f;
+    [SerializeField] private float debugLoopDurationSeconds = 0f; //改成0就是不进行Debug测试
     [SerializeField] private float placeholderAdvanceDelaySeconds = 0.35f;
     [SerializeField] private bool showDebugHud = true;
 
     private readonly CombatLoopController combatLoopController = new();
     private readonly PulseSystem pulseSystem = new();
+    private readonly EnemySpawnDirector enemySpawnDirector = new();
+    private readonly BossEncounterDirector bossEncounterDirector = new();
+    private readonly RewardDirector rewardDirector = new();
+    private readonly ShopDirector shopDirector = new();
+    private readonly InRunFlowRunner flowRunner = new();
+    private readonly InRunResumeCoordinator resumeCoordinator = new();
 
     private Coroutine stateFlowRoutine;
     private InRunRuntimeContext context;
@@ -37,10 +46,38 @@ public class InRunDirector : MonoBehaviour
     public string CurrentThemeLabel => GetDisplayIndex(context != null ? context.CurrentThemeIndex : -1, themesPerRun);
     public string CurrentLoopLabel => GetDisplayIndex(context != null ? context.CurrentLoopIndex : -1, loopsPerTheme);
     public string CurrentLoopTimerText => $"{FormatSeconds(combatLoopController.RemainingSeconds)} / {FormatSeconds(combatLoopController.DurationSeconds)}";
-    public string CurrentPulseStatusText => CurrentPhase == InRunPhase.PulseReady
-        ? $"Ready [{CurrentPulseKeyName}]"
-        : pulseSystem.WasTriggered ? "Triggered" : "Idle";
+    public string CurrentPulseStatusText => pulseSystem.WasTriggered
+        ? "Triggered"
+        : pulseSystem.IsArmed ? $"Armed [{CurrentPulseKeyName}]" : "Idle";
     public string CurrentPulseKeyName => pulseSystem.PulseKey.ToString();
+    public int CurrentActiveEnemyCount => enemySpawnDirector.ActiveEnemyCount;
+    public float CurrentActiveThreat => enemySpawnDirector.CurrentActiveThreat;
+    public int CurrentLoopScore => currentLoop != null ? currentLoop.loopScoreRaw : 0;
+    public int CurrentLoopCurrencyGain => currentLoop != null ? currentLoop.loopCurrencyGain : 0;
+    public CombatGrade CurrentLoopGrade => currentLoop != null ? currentLoop.grade : CombatGrade.F;
+    public int CurrentRunCurrency => context != null ? context.Runtime.runCurrency : 0;
+    public int CurrentPendingRewardCount => context != null ? context.Runtime.pendingRewards.Count : 0;
+    public RewardRollResult CurrentRewardResult => rewardDirector.CurrentResult;
+    public IReadOnlyList<ShopOffer> CurrentShopOffers => shopDirector.CurrentOffers;
+    public string CurrentBossName => bossEncounterDirector.CurrentBossName;
+    public bool IsBossEncounterRunning => bossEncounterDirector.IsRunning;
+    internal InRunFlowRunner FlowRunner => flowRunner;
+    internal int ThemesPerRun => themesPerRun;
+    internal int LoopsPerTheme => loopsPerTheme;
+    internal InRunRuntimeContext RuntimeContext => context;
+    internal BattleThemeConfig CurrentTheme { get => currentTheme; set => currentTheme = value; }
+    internal CombatLoopRuntimeSaveData CurrentLoop { get => currentLoop; set => currentLoop = value; }
+
+    private void OnEnable()
+    {
+        ActiveInstance = this;
+    }
+
+    private void OnDisable()
+    {
+        if (ActiveInstance == this)
+            ActiveInstance = null;
+    }
 
     public void BeginRun(bool resumeExistingRun = false)
     {
@@ -62,13 +99,19 @@ public class InRunDirector : MonoBehaviour
         currentLoop = null;
         combatLoopController.Reset();
         pulseSystem.Reset();
+        enemySpawnDirector.Reset();
+        bossEncounterDirector.Reset();
+        rewardDirector.Reset();
+        shopDirector.Reset();
         EnsureHud();
         isSessionActive = true;
 
         if (stateFlowRoutine != null)
             StopCoroutine(stateFlowRoutine);
 
-        stateFlowRoutine = StartCoroutine(shouldResume ? ResumeStateFlow() : RunFreshStateFlow());
+        stateFlowRoutine = StartCoroutine(shouldResume
+            ? resumeCoordinator.ResumeStateFlow(this)
+            : flowRunner.RunFreshStateFlow(this));
     }
 
     public void EndRunSession()
@@ -81,6 +124,10 @@ public class InRunDirector : MonoBehaviour
 
         combatLoopController.Reset();
         pulseSystem.Reset();
+        enemySpawnDirector.Reset();
+        bossEncounterDirector.Reset();
+        rewardDirector.Reset();
+        shopDirector.Reset();
         currentTheme = null;
         currentLoop = null;
         isSessionActive = false;
@@ -93,258 +140,120 @@ public class InRunDirector : MonoBehaviour
 
         combatLoopController.Tick(Time.deltaTime);
         pulseSystem.Tick();
+
+        if (CurrentPhase == InRunPhase.CombatLoopActive)
+            enemySpawnDirector.Tick(Time.deltaTime, combatLoopController.NormalizedTime);
+        else if (CurrentPhase == InRunPhase.BossActive)
+            bossEncounterDirector.Tick();
+        else if (CurrentPhase == InRunPhase.LoopReward || CurrentPhase == InRunPhase.BossReward)
+            rewardDirector.Tick(context != null ? context.Runtime : null);
+        else if (CurrentPhase == InRunPhase.Shop)
+            shopDirector.Tick(context != null ? context.Runtime : null);
     }
 
-    private IEnumerator RunFreshStateFlow()
+    public void NotifyEnemyKilled(EnemyBase enemy)
     {
-        yield return EnterState(InRunPhase.Bootstrap);
+        if (!isSessionActive || enemy == null || currentLoop == null || context == null)
+            return;
 
-        for (int themeIndex = 0; themeIndex < themesPerRun; themeIndex++)
-            yield return RunThemeFresh(themeIndex);
+        if (CurrentPhase != InRunPhase.CombatLoopActive)
+            return;
 
-        yield return EnterState(InRunPhase.FinalSettlement);
-        yield return EnterState(InRunPhase.RunEnded);
-        stateFlowRoutine = null;
+        currentLoop.loopScoreRaw += Mathf.Max(0, enemy.scoreValue);
+        currentLoop.killCount++;
+        currentLoop.highestMultiplier = Mathf.Max(1f, currentLoop.highestMultiplier);
+        context.Runtime.lifetimeKillsThisRun++;
     }
 
-    private IEnumerator ResumeStateFlow()
-    {
-        switch (CurrentPhase)
-        {
-            case InRunPhase.Bootstrap:
-                yield return EnterState(InRunPhase.Bootstrap);
-                yield return ContinueFromTheme(Mathf.Max(0, context.CurrentThemeIndex), InRunPhase.ThemeSelecting, 0);
-                break;
-
-            case InRunPhase.ThemeSelecting:
-            case InRunPhase.ThemeIntro:
-                yield return ContinueFromTheme(Mathf.Max(0, context.CurrentThemeIndex), CurrentPhase, 0);
-                break;
-
-            case InRunPhase.CombatLoopPreparing:
-            case InRunPhase.CombatLoopActive:
-            case InRunPhase.CombatLoopComplete:
-            case InRunPhase.PulseReady:
-            case InRunPhase.PulseResolving:
-            case InRunPhase.LoopReward:
-            case InRunPhase.Shop:
-                yield return ContinueFromTheme(
-                    Mathf.Max(0, context.CurrentThemeIndex),
-                    CurrentPhase,
-                    Mathf.Clamp(context.CurrentLoopIndex, 0, Mathf.Max(0, loopsPerTheme - 1)));
-                break;
-
-            case InRunPhase.BossPreparing:
-            case InRunPhase.BossActive:
-            case InRunPhase.BossReward:
-            case InRunPhase.NextTheme:
-                yield return ContinueFromBoss(Mathf.Max(0, context.CurrentThemeIndex), CurrentPhase);
-                break;
-
-            case InRunPhase.FinalSettlement:
-                yield return EnterState(InRunPhase.FinalSettlement);
-                yield return EnterState(InRunPhase.RunEnded);
-                break;
-
-            case InRunPhase.RunEnded:
-                TransitionTo(InRunPhase.RunEnded);
-                break;
-
-            default:
-                yield return RunFreshStateFlow();
-                yield break;
-        }
-
-        stateFlowRoutine = null;
-    }
-
-    private IEnumerator ContinueFromTheme(int themeIndex, InRunPhase startPhase, int loopIndex)
-    {
-        currentTheme = context.GetOrSelectTheme(themeIndex);
-
-        if (startPhase == InRunPhase.ThemeSelecting || startPhase == InRunPhase.ThemeIntro)
-        {
-            yield return ResumeThemeIntro(themeIndex, startPhase);
-            startPhase = InRunPhase.CombatLoopPreparing;
-            loopIndex = 0;
-        }
-
-        for (int index = loopIndex; index < loopsPerTheme; index++)
-        {
-            bool isResumeLoop = index == loopIndex;
-            yield return isResumeLoop
-                ? RunLoopResume(index, startPhase)
-                : RunLoopFresh(index);
-
-            startPhase = InRunPhase.CombatLoopPreparing;
-        }
-
-        yield return RunBossFresh(themeIndex);
-        for (int nextTheme = themeIndex + 1; nextTheme < themesPerRun; nextTheme++)
-            yield return RunThemeFresh(nextTheme);
-
-        yield return EnterState(InRunPhase.FinalSettlement);
-        yield return EnterState(InRunPhase.RunEnded);
-    }
-
-    private IEnumerator ContinueFromBoss(int themeIndex, InRunPhase startPhase)
-    {
-        currentTheme = context.GetOrSelectTheme(themeIndex);
-        yield return RunBossResume(themeIndex, startPhase);
-
-        for (int nextTheme = themeIndex + 1; nextTheme < themesPerRun; nextTheme++)
-            yield return RunThemeFresh(nextTheme);
-
-        yield return EnterState(InRunPhase.FinalSettlement);
-        yield return EnterState(InRunPhase.RunEnded);
-    }
-
-    private IEnumerator RunThemeFresh(int themeIndex)
-    {
-        yield return EnterState(InRunPhase.ThemeSelecting);
-        currentTheme = context.SelectTheme(themeIndex);
-        Debug.Log($"[InRunDirector] Selected theme {themeIndex + 1}/{themesPerRun}: {DescribeTheme(currentTheme, themeIndex)}");
-
-        yield return EnterState(InRunPhase.ThemeIntro);
-        for (int loopIndex = 0; loopIndex < loopsPerTheme; loopIndex++)
-            yield return RunLoopFresh(loopIndex);
-
-        yield return RunBossFresh(themeIndex);
-    }
-
-    private IEnumerator ResumeThemeIntro(int themeIndex, InRunPhase startPhase)
+    internal IEnumerator ResumeThemeIntro(int themeIndex, InRunPhase startPhase)
     {
         if (startPhase == InRunPhase.ThemeSelecting)
             Debug.Log($"[InRunDirector] Resuming theme selection {themeIndex + 1}/{themesPerRun}: {DescribeTheme(currentTheme, themeIndex)}");
 
+        ApplyCurrentThemeVisuals();
         yield return EnterState(startPhase == InRunPhase.ThemeSelecting ? InRunPhase.ThemeSelecting : InRunPhase.ThemeIntro);
         if (startPhase == InRunPhase.ThemeSelecting)
             yield return EnterState(InRunPhase.ThemeIntro);
     }
 
-    private IEnumerator RunLoopFresh(int loopIndex)
-    {
-        currentLoop = context.BeginLoop(loopIndex);
-        currentLoop.elapsedSeconds = 0f;
-        currentLoop.pulseUsed = false;
-        currentLoop.rewardClaimed = false;
-        currentLoop.shopCompleted = false;
-
-        yield return EnterState(InRunPhase.CombatLoopPreparing);
-        yield return RunCombatLoop(false);
-        yield return RunPulseAndReward(false);
-    }
-
-    private IEnumerator RunLoopResume(int loopIndex, InRunPhase startPhase)
-    {
-        currentLoop = context.BeginLoop(loopIndex);
-
-        switch (startPhase)
-        {
-            case InRunPhase.CombatLoopPreparing:
-                yield return EnterState(InRunPhase.CombatLoopPreparing);
-                yield return RunCombatLoop(false);
-                yield return RunPulseAndReward(false);
-                break;
-
-            case InRunPhase.CombatLoopActive:
-                yield return RunCombatLoop(true);
-                yield return RunPulseAndReward(false);
-                break;
-
-            case InRunPhase.CombatLoopComplete:
-                yield return EnterState(InRunPhase.CombatLoopComplete);
-                yield return RunPulseAndReward(false);
-                break;
-
-            case InRunPhase.PulseReady:
-                yield return RunPulseAndReward(true);
-                break;
-
-            case InRunPhase.PulseResolving:
-                yield return EnterState(InRunPhase.PulseResolving);
-                yield return EnterState(InRunPhase.LoopReward);
-                currentLoop.rewardClaimed = true;
-                yield return EnterState(InRunPhase.Shop);
-                currentLoop.shopCompleted = true;
-                break;
-
-            case InRunPhase.LoopReward:
-                yield return EnterState(InRunPhase.LoopReward);
-                currentLoop.rewardClaimed = true;
-                yield return EnterState(InRunPhase.Shop);
-                currentLoop.shopCompleted = true;
-                break;
-
-            case InRunPhase.Shop:
-                yield return EnterState(InRunPhase.Shop);
-                currentLoop.shopCompleted = true;
-                break;
-
-            default:
-                yield return RunLoopFresh(loopIndex);
-                break;
-        }
-    }
-
-    private IEnumerator RunCombatLoop(bool resumeTimer)
+    internal IEnumerator RunCombatLoop(bool resumeTimer)
     {
         yield return EnterState(InRunPhase.CombatLoopActive, !resumeTimer);
         combatLoopController.StartLoop(currentLoop, ResolveLoopDurationSeconds(), resumeTimer);
-        yield return new WaitUntil(() => combatLoopController.IsComplete);
+        pulseSystem.Arm(ResolvePulseConfig(), currentLoop);
+        enemySpawnDirector.BeginLoop(
+            currentTheme,
+            ResolveLoopGlobalConfig(),
+            context != null ? Mathf.Max(0, context.CurrentThemeIndex) : 0,
+            context != null ? Mathf.Max(0, context.CurrentLoopIndex) : 0);
+
+        yield return new WaitUntil(() => combatLoopController.IsComplete || pulseSystem.WasTriggered);
+
+        if (pulseSystem.WasTriggered && !combatLoopController.IsComplete)
+            combatLoopController.CompleteNow();
+
+        enemySpawnDirector.StopLoop();
         yield return EnterState(InRunPhase.CombatLoopComplete);
     }
 
-    private IEnumerator RunPulseAndReward(bool resumePulseReady)
+    internal IEnumerator RunPulseAndReward(bool resumePulseReady)
     {
-        yield return EnterState(InRunPhase.PulseReady, !resumePulseReady);
-        pulseSystem.Arm(ResolvePulseConfig(), currentLoop);
-
-        if (currentLoop == null || !currentLoop.pulseUsed)
+        bool pulseAlreadyTriggered = currentLoop != null && currentLoop.pulseUsed;
+        if (!pulseAlreadyTriggered)
         {
+            yield return EnterState(InRunPhase.PulseReady, !resumePulseReady);
+            pulseSystem.Arm(ResolvePulseConfig(), currentLoop);
             yield return new WaitUntil(() => pulseSystem.WasTriggered);
-            pulseSystem.ClearTrigger();
         }
 
         yield return EnterState(InRunPhase.PulseResolving);
-        yield return EnterState(InRunPhase.LoopReward);
-        currentLoop.rewardClaimed = true;
-
-        yield return EnterState(InRunPhase.Shop);
-        currentLoop.shopCompleted = true;
+        pulseSystem.ClearTrigger();
+        enemySpawnDirector.DespawnAllTrackedEnemies();
+        yield return RunLoopRewardPhase(false);
+        yield return RunShopPhase(false);
     }
 
-    private IEnumerator RunBossFresh(int themeIndex)
+    internal IEnumerator RunBossFresh(int themeIndex)
     {
         yield return EnterState(InRunPhase.BossPreparing);
+        enemySpawnDirector.DespawnAllTrackedEnemies();
+        bossEncounterDirector.BeginEncounter(currentTheme, context != null ? context.CurrentThemeIndex : 0);
         yield return EnterState(InRunPhase.BossActive);
+        yield return new WaitUntil(() => bossEncounterDirector.IsComplete);
+        bossEncounterDirector.CleanupEncounter();
         context.MarkBossDefeated();
-        yield return EnterState(InRunPhase.BossReward);
+        yield return RunBossRewardPhase(false);
 
         if (themeIndex < themesPerRun - 1)
             yield return EnterState(InRunPhase.NextTheme);
     }
 
-    private IEnumerator RunBossResume(int themeIndex, InRunPhase startPhase)
+    internal IEnumerator RunBossResume(int themeIndex, InRunPhase startPhase)
     {
         switch (startPhase)
         {
             case InRunPhase.BossPreparing:
                 yield return EnterState(InRunPhase.BossPreparing);
+                bossEncounterDirector.BeginEncounter(currentTheme, context != null ? context.CurrentThemeIndex : 0);
                 yield return EnterState(InRunPhase.BossActive);
+                yield return new WaitUntil(() => bossEncounterDirector.IsComplete);
+                bossEncounterDirector.CleanupEncounter();
                 context.MarkBossDefeated();
-                yield return EnterState(InRunPhase.BossReward);
+                yield return RunBossRewardPhase(false);
                 break;
 
             case InRunPhase.BossActive:
                 yield return EnterState(InRunPhase.BossActive);
+                bossEncounterDirector.BeginEncounter(currentTheme, context != null ? context.CurrentThemeIndex : 0);
+                yield return new WaitUntil(() => bossEncounterDirector.IsComplete);
+                bossEncounterDirector.CleanupEncounter();
                 context.MarkBossDefeated();
-                yield return EnterState(InRunPhase.BossReward);
+                yield return RunBossRewardPhase(false);
                 break;
 
             case InRunPhase.BossReward:
                 context.MarkBossDefeated();
-                yield return EnterState(InRunPhase.BossReward);
+                yield return RunBossRewardPhase(true);
                 break;
 
             case InRunPhase.NextTheme:
@@ -360,14 +269,14 @@ public class InRunDirector : MonoBehaviour
             yield return EnterState(InRunPhase.NextTheme);
     }
 
-    private IEnumerator EnterState(InRunPhase phase, bool waitAfter = true)
+    internal IEnumerator EnterState(InRunPhase phase, bool waitAfter = true)
     {
         TransitionTo(phase);
         if (waitAfter && placeholderAdvanceDelaySeconds > 0f)
             yield return new WaitForSeconds(placeholderAdvanceDelaySeconds);
     }
 
-    private void TransitionTo(InRunPhase phase)
+    internal void TransitionTo(InRunPhase phase)
     {
         if (context == null)
             return;
@@ -402,6 +311,18 @@ public class InRunDirector : MonoBehaviour
         return config != null ? config.pulseConfig : null;
     }
 
+    private ScoreConfig ResolveScoreConfig()
+    {
+        var config = configOverride != null ? configOverride : InRunConfigDatabase.Instance;
+        return config != null ? config.scoreConfig : null;
+    }
+
+    private CombatLoopGlobalConfig ResolveLoopGlobalConfig()
+    {
+        var config = configOverride != null ? configOverride : InRunConfigDatabase.Instance;
+        return config != null ? config.loopGlobalConfig : null;
+    }
+
     private static string DescribeTheme(BattleThemeConfig theme, int themeIndex)
     {
         if (theme == null)
@@ -414,6 +335,52 @@ public class InRunDirector : MonoBehaviour
             return theme.themeId;
 
         return $"debug_theme_{themeIndex + 1}";
+    }
+
+    internal void ApplyCurrentThemeVisuals()
+    {
+        if (currentTheme == null || currentTheme.backgroundPreset == null || BackgroundFXController.Instance == null)
+            return;
+
+        BackgroundFXController.Instance.ApplyPresetCollection(currentTheme.backgroundPreset);
+    }
+
+    internal IEnumerator RunLoopRewardPhase(bool resumeOpen)
+    {
+        if (currentLoop == null || context == null)
+            yield break;
+
+        yield return EnterState(InRunPhase.LoopReward, !resumeOpen);
+        rewardDirector.OpenLoopReward(
+            currentTheme,
+            currentLoop,
+            ResolveScoreConfig(),
+            context.CurrentThemeIndex,
+            context.CurrentLoopIndex,
+            context.Runtime);
+        yield return new WaitUntil(() => rewardDirector.IsComplete);
+        currentLoop.rewardClaimed = true;
+    }
+
+    internal IEnumerator RunShopPhase(bool resumeOpen)
+    {
+        if (currentLoop == null || context == null)
+            yield break;
+
+        yield return EnterState(InRunPhase.Shop, !resumeOpen);
+        shopDirector.OpenShop(currentTheme, context.Runtime);
+        yield return new WaitUntil(() => shopDirector.IsComplete);
+        currentLoop.shopCompleted = true;
+    }
+
+    internal IEnumerator RunBossRewardPhase(bool resumeOpen)
+    {
+        if (context == null)
+            yield break;
+
+        yield return EnterState(InRunPhase.BossReward, !resumeOpen);
+        rewardDirector.OpenBossReward(currentTheme, context.Runtime);
+        yield return new WaitUntil(() => rewardDirector.IsComplete);
     }
 
     private static string GetDisplayIndex(int zeroBasedIndex, int totalCount)
@@ -430,5 +397,10 @@ public class InRunDirector : MonoBehaviour
         int minutes = clampedSeconds / 60;
         int remainingSeconds = clampedSeconds % 60;
         return $"{minutes:00}:{remainingSeconds:00}";
+    }
+
+    internal void MarkStateFlowFinished()
+    {
+        stateFlowRoutine = null;
     }
 }

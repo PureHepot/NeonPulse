@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55a4839db219e0e458c657f309d193bb, type: 3}
+  m_Name: ScoreConfig
+  m_EditorClassIdentifier: 
+  gradeThresholds:
+  - grade: 0
+    minScoreRatio: 0
+  - grade: 1
+    minScoreRatio: 0.2
+  - grade: 2
+    minScoreRatio: 0.35
+  - grade: 3
+    minScoreRatio: 0.5
+  - grade: 4
+    minScoreRatio: 0.65
+  - grade: 5
+    minScoreRatio: 0.8
+  - grade: 6
+    minScoreRatio: 0.95
+  - grade: 7
+    minScoreRatio: 1.1
+  comboWindowSeconds: 4
+  killsPerComboStep: 10
+  comboMultiplierStep: 0.1
+  maxComboMultiplier: 3
+  damageBreaksCombo: 1

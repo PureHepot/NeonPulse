@@ -42,6 +42,15 @@ public class CombatLoopController
         }
     }
 
+    public void CompleteNow()
+    {
+        if (currentLoop != null)
+            currentLoop.elapsedSeconds = ElapsedSeconds;
+
+        IsRunning = false;
+        IsComplete = true;
+    }
+
     public void Reset()
     {
         currentLoop = null;

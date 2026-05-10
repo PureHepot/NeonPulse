@@ -46,7 +46,6 @@ public sealed class GameMgr : MonoBehaviour
     public LoadoutManager Loadout { get; private set; }
     public PreviewManager Preview { get; private set; }
     public PlayerManager Player { get; private set; }
-    public WaveManager Wave { get; private set; }
     public CameraManager Camera { get; private set; }
     public GameManager Game { get; private set; }
 
@@ -133,7 +132,6 @@ public sealed class GameMgr : MonoBehaviour
         Loadout = GetOrCreateManager<LoadoutManager>();
         Preview = GetOrCreateManager<PreviewManager>();
         Player = GetOrCreateManager<PlayerManager>();
-        Wave = GetOrCreateManager<WaveManager>();
 
         coreManagersLoaded = true;
     }
@@ -275,9 +273,6 @@ public sealed class GameMgr : MonoBehaviour
                 break;
             case PlayerManager value:
                 PlayerManager.RegisterInstance(value);
-                break;
-            case WaveManager value:
-                WaveManager.RegisterInstance(value);
                 break;
             case CameraManager value:
                 CameraManager.RegisterInstance(value);

@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyManager : MonoBehaviour
@@ -9,70 +8,112 @@ public class EnemyManager : MonoBehaviour
     private Camera _mainCam;
     private float camHalfWidth;
     private float camHalfHeight;
-    private float minX, maxX, minY, maxY;
+    private float minX;
+    private float maxX;
+    private float minY;
+    private float maxY;
 
     public int checkPerFrame = 10;
-    private int _currentCheckIndex=0;
+    private int _currentCheckIndex = 0;
 
-    [Header("ÅäÖÃ")]
-    public float border=1f;
+    [Header("é…ç½®")]
+    public float border = 1f;
 
-    [Header("Ìù±ßÅĞ¶Ï·¶Î§")]
+    [Header("è´´è¾¹åˆ¤æ–­èŒƒå›´")]
     public float borderThreshold = 0.6f;
 
-    // ËùÓĞµĞÈËÁĞ±í
-    private List<EnemyBorderEvent> enemyList = new List<EnemyBorderEvent>();
+    // æ‰€æœ‰æ•Œäººåˆ—è¡¨
+    private readonly List<EnemyBorderEvent> enemyList = new();
 
     private void Awake()
     {
         Instance = this;
+        CacheCamera();
+    }
+
+    private void Update()
+    {
+        UpdateBounds();
+        CheckEnemiesBatch();
+    }
+
+    private void CacheCamera()
+    {
         _mainCam = Camera.main;
+        if (_mainCam == null)
+            return;
+
         float camHeight = 2f * _mainCam.orthographicSize;
         float camWidth = camHeight * _mainCam.aspect;
         camHalfWidth = camWidth / 2f;
         camHalfHeight = camHeight / 2f;
     }
 
-    // ¼ä¸ôĞÔ¼ì²âËùÓĞµĞÈË
-    private void Update()
-    {
-        CheckEnemiesBatch();
-        UpdateBounds();
-    }
     private void UpdateBounds()
     {
+        if (_mainCam == null)
+        {
+            CacheCamera();
+            if (_mainCam == null)
+                return;
+        }
+
         minX = _mainCam.transform.position.x - camHalfWidth - border;
         maxX = _mainCam.transform.position.x + camHalfWidth + border;
         minY = _mainCam.transform.position.y - camHalfHeight - border;
         maxY = _mainCam.transform.position.y + camHalfHeight + border;
     }
 
-    // ×¢²áµĞÈË
     public void RegisterEnemy(EnemyBase enemy)
     {
-        if (!enemyList.Contains(enemy.GetComponent<EnemyBorderEvent>()))
-            enemyList.Add(enemy.GetComponent<EnemyBorderEvent>());
+        if (enemy == null)
+            return;
+
+        EnemyBorderEvent borderEvent = enemy.GetComponent<EnemyBorderEvent>();
+        if (borderEvent == null)
+            return;
+
+        if (!enemyList.Contains(borderEvent))
+            enemyList.Add(borderEvent);
     }
 
-    // ÒÆ³ıµĞÈË
     public void UnRegisterEnemy(EnemyBase enemy)
     {
-        if (enemyList.Contains(enemy.GetComponent<EnemyBorderEvent>()))
-            enemyList.Remove(enemy.GetComponent<EnemyBorderEvent>());
+        if (enemy == null)
+            return;
+
+        EnemyBorderEvent borderEvent = enemy.GetComponent<EnemyBorderEvent>();
+        if (borderEvent == null)
+            return;
+
+        enemyList.Remove(borderEvent);
+        if (_currentCheckIndex >= enemyList.Count)
+            _currentCheckIndex = 0;
     }
 
-    //·ÖÅú´Î¼ì²âËùÓĞµĞÈË
     private void CheckEnemiesBatch()
     {
+        if (_mainCam == null)
+            return;
+
         if (enemyList.Count == 0)
         {
             _currentCheckIndex = 0;
             return;
         }
 
-        // ¡¾¹Ø¼ü¡¿ÇåÀíÒÑ±»Ïú»ÙµÄ null ¶ÔÏó
         enemyList.RemoveAll(e => e == null);
-        for(int i = 0; i < 10; i++)
+        if (enemyList.Count == 0)
+        {
+            _currentCheckIndex = 0;
+            return;
+        }
+
+        if (_currentCheckIndex >= enemyList.Count)
+            _currentCheckIndex = 0;
+
+        int checksThisFrame = Mathf.Min(Mathf.Max(1, checkPerFrame), enemyList.Count);
+        for (int i = 0; i < checksThisFrame; i++)
         {
             if (enemyList.Count == 0)
             {
@@ -80,23 +121,17 @@ public class EnemyManager : MonoBehaviour
                 return;
             }
 
-            // »ñÈ¡µ±Ç°Òª¼ì²âµÄµĞÈË
+            if (_currentCheckIndex >= enemyList.Count)
+                _currentCheckIndex = 0;
+
             EnemyBorderEvent enemy = enemyList[_currentCheckIndex];
-
-            // °²È«ÅĞ¶Ï
             if (enemy != null && !enemy.isFirstTimeEntering && IsAtBorder(enemy.transform.position))
-            {
                 enemy.OnBorderReached();
-            }
 
-            // Ñ­»·Ë÷Òı
             _currentCheckIndex = (_currentCheckIndex + 1) % enemyList.Count;
         }
-        // ÔÙ´ÎÅĞ¶Ï£¨ÇåÀíºó¿ÉÄÜÎª¿Õ£©
-        
     }
 
-    // ÅĞ¶ÏÊÇ·ñÌù±ß
     private bool IsAtBorder(Vector2 pos)
     {
         return pos.x <= minX + borderThreshold ||
