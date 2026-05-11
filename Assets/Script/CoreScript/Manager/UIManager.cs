@@ -1,6 +1,7 @@
 using DG.Tweening;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 
@@ -36,22 +37,39 @@ public class UIManager : MonoSingleton<UIManager>
     /// </summary>
     private void InitUIStructure()
     {
-        var canvasObj = GameObject.Find("Canvas");
+        var canvasObj = GetComponent<Canvas>() != null
+            ? gameObject
+            : GameObject.Find("Canvas");
         if (canvasObj == null)
         {
             canvasObj = new GameObject("Canvas");
             var canvas = canvasObj.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvasObj.AddComponent<CanvasScaler>();
-            canvasObj.AddComponent<GraphicRaycaster>();
         }
+
+        if (canvasObj.GetComponent<Canvas>() == null)
+            canvasObj.AddComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+
+        if (canvasObj.GetComponent<CanvasScaler>() == null)
+            canvasObj.AddComponent<CanvasScaler>();
+
+        if (canvasObj.GetComponent<GraphicRaycaster>() == null)
+            canvasObj.AddComponent<GraphicRaycaster>();
+
+        if (FindObjectOfType<EventSystem>() == null)
+        {
+            var eventSystemObj = new GameObject("EventSystem");
+            eventSystemObj.AddComponent<EventSystem>();
+            eventSystemObj.AddComponent<StandaloneInputModule>();
+        }
+
         canvasTransform = canvasObj.transform;
         DontDestroyOnLoad(canvasObj);
 
         // 创建三个层级父节点
-        layerFullScreen = transform.Find("Layer_FullScreen") ?? CreateLayer("Layer_FullScreen", 0);
-        layerPanel = transform.Find("Layer_Panel") ?? CreateLayer("Layer_Panel", 100);
-        layerPopup = transform.Find("Layer_Popup") ?? CreateLayer("Layer_Popup", 200);
+        layerFullScreen = canvasTransform.Find("Layer_FullScreen") ?? CreateLayer("Layer_FullScreen", 0);
+        layerPanel = canvasTransform.Find("Layer_Panel") ?? CreateLayer("Layer_Panel", 100);
+        layerPopup = canvasTransform.Find("Layer_Popup") ?? CreateLayer("Layer_Popup", 200);
     }
 
     private Transform CreateLayer(string name, int sortOrder)

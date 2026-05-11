@@ -5,13 +5,13 @@ public class EnemyElectric : EnemyBase
     [Header("Electric Settings")]
     public Vector3 enemyScale = new Vector3(0.8f, 0.8f, 1f);
 
-    [Header("ÒÆ¶¯²ÎÊı")]
+    [Header("ç§»åŠ¨å‚æ•°")]
     public float moveSpeedToCenter = 2f;
     public float reachDistance = 0.3f;
     public float centerStayOffset = 8f;
 
-    [Header("µçÁ÷³¡")]
-    public GameObject electricAuraObj; // µçÁ÷·¶Î§ÌØĞ§+´¥·¢Æ÷
+    [Header("ç”µæµåœº")]
+    public GameObject electricAuraObj; // ç”µæµèŒƒå›´ç‰¹æ•ˆ+è§¦å‘å™¨
 
     private float camHalfWidth;
     private float camHalfHeight;
@@ -24,7 +24,7 @@ public class EnemyElectric : EnemyBase
         base.OnSpawn();
 
         transform.localScale = enemyScale;
-        rb.velocity = Vector2.zero;
+        StopMovementDrive(true);
         isReachCenter = false;
 
         InitCameraBounds();
@@ -45,7 +45,7 @@ public class EnemyElectric : EnemyBase
     {
         if (isDead)
         {
-            rb.velocity = Vector2.zero;
+            StopMovementDrive();
             return;
         }
 
@@ -55,19 +55,19 @@ public class EnemyElectric : EnemyBase
             return;
         }
 
-        rb.velocity = Vector2.zero;
+        StopMovementDrive(true);
     }
 
     private void MoveToCenter()
     {
         Vector2 direction = (targetCenterPos - transform.position).normalized;
-        rb.velocity = direction * moveSpeedToCenter;
+        DriveVelocity(direction * moveSpeedToCenter, 1.2f);
 
         float distance = Vector2.Distance(transform.position, targetCenterPos);
         if (distance < reachDistance)
         {
             isReachCenter = true;
-            rb.velocity = Vector2.zero;
+            StopMovementDrive(true);
             transform.position = targetCenterPos;
 
             DeployElectricField();
@@ -107,7 +107,7 @@ public class EnemyElectric : EnemyBase
     {
         base.OnDespawn();
 
-        rb.velocity = Vector2.zero;
+        StopMovementDrive(true);
         isReachCenter = false;
 
         if (electricAuraObj != null)

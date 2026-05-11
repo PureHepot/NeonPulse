@@ -1,16 +1,16 @@
-using DG.Tweening; // 需要 DoTween
+using DG.Tweening; // 闇€瑕?DoTween
 using UnityEngine;
 
 public class EnemyCrasher : EnemyBase
 {
     [Header("Movement Settings")]
-    public float enterSpeed = 5f;    // 入场速度
+    public float enterSpeed = 5f;    // 鍏ュ満閫熷害
     public Vector2 safeAreaSize = new Vector2(8, 5);
 
     [Header("Dasher Settings")]
-    public float aimDuration = 1.0f; // 瞄准/预警时间
-    public float dashSpeed = 20f;    // 冲刺速度
-    public float dashDistance = 30f; // 冲刺多远
+    public float aimDuration = 1.0f; // 鐬勫噯/棰勮鏃堕棿
+    public float dashSpeed = 20f;    // 鍐插埡閫熷害
+    public float dashDistance = 30f; // 鍐插埡澶氳繙
     public float dashDuration = 2.0f;
 
     [Header("Homing Settings")]
@@ -19,7 +19,7 @@ public class EnemyCrasher : EnemyBase
     [Header("References")]
     public LineRenderer warningLine;
 
-    // 状态
+    // 鐘舵€?
     private enum State { Entering, Spawning, Aiming, Dashing, Idle }
     private State currentState;
     private Vector2 dashDirection;
@@ -73,7 +73,7 @@ public class EnemyCrasher : EnemyBase
             UpdateWarningLine();
         }
 
-        // 可以在这里播放一个蓄力音效
+        // 鍙互鍦ㄨ繖閲屾挱鏀句竴涓搫鍔涢煶鏁?
     }
 
     void StartEntering()
@@ -116,7 +116,7 @@ public class EnemyCrasher : EnemyBase
         }
         else
         {
-            dashDirection = Vector2.left; // 没玩家就向左
+            dashDirection = Vector2.left; // 娌＄帺瀹跺氨鍚戝乏
         }
 
         UpdateWarningLine();
@@ -131,10 +131,10 @@ public class EnemyCrasher : EnemyBase
     {
         if (warningLine == null) return;
 
-        // 起点：自己
+        // 璧风偣锛氳嚜宸?
         warningLine.SetPosition(0, transform.position);
 
-        // 终点：沿冲刺方向延伸 dashDistance 这么远
+        // 缁堢偣锛氭部鍐插埡鏂瑰悜寤朵几 dashDistance 杩欎箞杩?
         Vector3 endPos = transform.position + (Vector3)dashDirection * dashDistance;
         warningLine.SetPosition(1, endPos);
     }
@@ -146,7 +146,7 @@ public class EnemyCrasher : EnemyBase
 
         if (warningLine) warningLine.enabled = false;
 
-        // 播放冲刺动画
+        // 鎾斁鍐插埡鍔ㄧ敾
         transform.DOPunchScale(new Vector3(0.5f, -0.2f, 0), 0.2f, 10, 1); 
     }
 
@@ -170,10 +170,10 @@ public class EnemyCrasher : EnemyBase
     {
         stateTimer -= Time.deltaTime;
 
-        // 修正方向
+        // 淇鏂瑰悜
         if (playerTransform != null && homingStrength > 0)
         {
-            // 计算理想的目标方向
+            // 璁＄畻鐞嗘兂鐨勭洰鏍囨柟鍚?
             Vector2 targetDir = (playerTransform.position - transform.position).normalized;
 
             float maxRadiansDelta = homingStrength * Time.deltaTime;
@@ -182,7 +182,7 @@ public class EnemyCrasher : EnemyBase
             dashDirection = newDir.normalized;
         }
 
-        rb.velocity = dashDirection * dashSpeed;
+        DriveVelocity(dashDirection * dashSpeed, 3f);
 
         RotateTowards(dashDirection);
 

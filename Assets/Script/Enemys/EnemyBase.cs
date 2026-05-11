@@ -2,6 +2,7 @@ using DG.Tweening;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(Collider2D))]
 public abstract class EnemyBase : MonoBase, IPoolable
 {
     [Header("Enemy Specific")]
@@ -19,6 +20,7 @@ public abstract class EnemyBase : MonoBase, IPoolable
     protected Rigidbody2D rb;
     protected Transform playerTransform;
     public bool isInScene;
+    public bool scared;
 
     protected override void Awake()
     {
@@ -40,20 +42,19 @@ public abstract class EnemyBase : MonoBase, IPoolable
         if (playerObj != null) playerTransform = playerObj.transform;
 
         rb.simulated = true;
-
-        if (WaveManager.Instance != null) WaveManager.Instance.RegisterEnemy(this);
-        if (EnemyManager.Instance != null) EnemyManager.Instance.RegisterEnemy(this);
-    }
+if (InRunDirector.ActiveInstance != null)
+            InRunDirector.ActiveInstance.RegisterBoundaryEnemy(this);if (WaveManager.Instance != null) WaveManager.Instance.RegisterEnemy(this);
+if (EnemyManager.Instance != null) EnemyManager.Instance.RegisterEnemy(this);    }
 
     public virtual void OnDespawn()
     {
+        Debug.Log("我被OnDespawn了");
         transform.DOKill();
         if (bodyRenderer != null) { bodyRenderer.DOKill(); bodyRenderer.material.DOKill(); }
-        rb.velocity = Vector2.zero;
+rb.velocity = Vector2.zero;
 
         if (WaveManager.Instance != null) WaveManager.Instance.UnregisterEnemy(this);
-        if (EnemyManager.Instance != null) EnemyManager.Instance.UnRegisterEnemy(this);
-    }
+        if (EnemyManager.Instance != null) EnemyManager.Instance.UnRegisterEnemy(this);    }
 
     private void FixedUpdate()
     {
@@ -62,7 +63,10 @@ public abstract class EnemyBase : MonoBase, IPoolable
         CheckOutView();
     }
 
-    protected abstract void MoveBehavior();
+    protected virtual void MoveBehavior()
+    {
+        
+    }
 
     // 覆写击退相关的方法
     public override void TakeDamage(int amount, Vector3 hitPoint, Vector3 hitNormal)
@@ -79,21 +83,20 @@ public abstract class EnemyBase : MonoBase, IPoolable
 
     protected virtual void ApplyKnockback(Vector3 forceDir, float force)
     {
-        isKnockbacking = true;
+isKnockbacking = true;
         rb.velocity = Vector2.zero;
         rb.AddForce(forceDir.normalized * force, ForceMode2D.Impulse);
         rb.AddTorque(Random.Range(-knockbackTorque, knockbackTorque), ForceMode2D.Impulse);
-        Timer.Register(0.2f, () => isKnockbacking = false);
-    }
+        Timer.Register(0.2f, () => isKnockbacking = false);    }
 
+    
     protected override void Die()
     {
         base.Die(); // 播放特效和音效
         rb.simulated = false;
 
-        if (UpgradeManager.Instance != null) UpgradeManager.Instance.AddExperience(enemyExp);
-        ObjectPoolManager.Instance.Return(gameObject); // 普通敌人使用对象池回收
-    }
+if (UpgradeManager.Instance != null) UpgradeManager.Instance.AddExperience(enemyExp);
+        ObjectPoolManager.Instance.Return(gameObject); // 普通敌人使用对象池回收    }
 
     protected virtual void OnCollisionEnter2D(Collision2D collision)
     {
@@ -110,4 +113,5 @@ public abstract class EnemyBase : MonoBase, IPoolable
         Vector2 p = Camera.main.WorldToViewportPoint(transform.position);
         isInScene = !(p.x < 0 || p.x > 1 || p.y < 0 || p.y > 1);
     }
+  
 }

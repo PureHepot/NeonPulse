@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3a3728f9e81b6d41ae0ea6e65b3c910, type: 3}
+  m_Name: Schema_Health
+  m_EditorClassIdentifier: 
+  schemaId: health
+  displayName: "\u751F\u547D\u6A21\u5757\u8BCD\u6761\u7EC4"
+  description: "\u751F\u547D\u6A21\u5757\u8BCD\u6761\u7EC4"
+  allowedCategories: 128
+  availableStats:
+  - {fileID: 11400000, guid: 14c01b01d1953c249907e5d7f1eed946, type: 2}
+  - {fileID: 11400000, guid: da89ff98cbf3c414c81fa1b3bba0a6c1, type: 2}

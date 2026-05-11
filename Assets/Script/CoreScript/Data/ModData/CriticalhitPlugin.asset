@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b322f07dab4f7684eb9fbdac20c5c22a, type: 3}
+  m_Name: CriticalhitPlugin
+  m_EditorClassIdentifier: 
+  ModType: 3
+  ModName: CriticalhitPlugin
+  ModPrefab: {fileID: 9050721202625575455, guid: f40f2afb35429bd4491e1c43f2d540e1, type: 3}
+  maxEquipCount: 1
+  icon: {fileID: 0}
+  Description: "\u63D0\u534730%\u66B4\u51FB\u7387"

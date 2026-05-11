@@ -1,9 +1,13 @@
 using System.Collections;
-using UnityEngine;
 using DG.Tweening;
+using UnityEngine;
 
 public class HealthModule : PlayerModule
 {
+    private const string MaxHpStatId = "health.addtionalhp";
+    private const string HealthRegenStatId = "health.healthregen";
+    private const string InvincibilityDurationStatId = "health.invinciduration";
+
     public int MaxHp { get; private set; }
     public float CurrentHp { get; private set; }
     public float RegenPerSecond { get; private set; }
@@ -15,81 +19,32 @@ public class HealthModule : PlayerModule
     public Color hurtColor = Color.red;
     public Color normalColor = Color.white;
 
-    [Header("Hurt Collision")]
-    public bool disableColliderDuringHurt = false;
+    public bool IsInvincible { get; set; }
+    private float regenAccumulator;
 
-    private bool isInvincible = false;
-    public bool IsInvincible
+    protected override void OnInitialize()
     {
-        get
-        {
-            return isInvincible;
-        }
-        set
-        {
-            isInvincible = value;
-        }
-    }
-    private float regenTimer;
-    private float regenAccumulator = 0f;
-
-    public override void Initialize(PlayerController _player)
-    {
-        base.Initialize(_player);
-
         RecalculateStats();
-
         CurrentHp = MaxHp;
-
-        int displayHp = CurrentHp <= 0 ? 0 : Mathf.Max(1, Mathf.FloorToInt(CurrentHp));
-        if(!player.isPreview)
-            PlayerManager.Instance.SyncHp(displayHp, MaxHp);
-
-        Debug.Log($"[HealthModule] 初始化 HP={CurrentHp}/{MaxHp} Regen={RegenPerSecond}/s");
+        SyncUI();
     }
 
     public override void OnModuleUpdate()
     {
-        base.OnModuleUpdate();
-        if (player == null || player.isPreview) return;
+        if (player == null)
+            return;
+
         HandleRegen();
-    }
-
-    private void HandleRegen()
-    {
-        if (RegenPerSecond <= 0f) return;
-        if (CurrentHp >= MaxHp) return;
-
-        regenAccumulator += RegenPerSecond * Time.deltaTime;
-
-        if (regenAccumulator < 1f) return;
-
-        int heal = Mathf.FloorToInt(regenAccumulator);
-        regenAccumulator -= heal;
-
-        CurrentHp = Mathf.Min(CurrentHp + heal, MaxHp);
-
-        SyncUI();
-
-        Debug.Log($"[HealthModule] 回血 +{heal} => {CurrentHp}/{MaxHp}");
-    }
-    private void SyncUI()
-    {
-        int displayHp = CurrentHp <= 0 ? 0 : Mathf.Max(1, Mathf.FloorToInt(CurrentHp));
-        PlayerManager.Instance.SyncHp(displayHp, MaxHp);
     }
 
     public void TakeDamage(int amount, Transform attacker)
     {
-        if (isInvincible || player.IsDead) return;
+        if (IsInvincible || player == null || player.IsDead)
+            return;
 
-        CurrentHp -= amount;
-        CurrentHp = Mathf.Clamp(CurrentHp, 0, MaxHp);
+        CurrentHp = Mathf.Clamp(CurrentHp - amount, 0, MaxHp);
         AudioManager.Instance.PlayEffect("PlayerHit");
-
-        PlayerManager.Instance.SyncHp(Mathf.RoundToInt(CurrentHp), MaxHp);
-
-        Debug.Log($"[HealthModule] 受伤 -{amount} => {CurrentHp}/{MaxHp}");
+        SyncUI();
 
         if (CurrentHp <= 0)
         {
@@ -100,40 +55,61 @@ public class HealthModule : PlayerModule
         StartCoroutine(HurtRoutine(attacker));
     }
 
-    IEnumerator HurtRoutine(Transform attacker)
+    private void HandleRegen()
+    {
+        if (RegenPerSecond <= 0f || CurrentHp >= MaxHp)
+            return;
+
+        regenAccumulator += RegenPerSecond * DeltaTime;
+        if (regenAccumulator < 1f)
+            return;
+
+        int heal = Mathf.FloorToInt(regenAccumulator);
+        regenAccumulator -= heal;
+        CurrentHp = Mathf.Min(CurrentHp + heal, MaxHp);
+        SyncUI();
+    }
+
+    private void SyncUI()
+    {
+        if (!IsPrimaryPlayer || PlayerManager.Instance == null)
+            return;
+
+        int displayHp = CurrentHp <= 0 ? 0 : Mathf.Max(1, Mathf.FloorToInt(CurrentHp));
+        PlayerManager.Instance.SyncHp(displayHp, MaxHp);
+    }
+
+    private IEnumerator HurtRoutine(Transform attacker)
     {
         player.IsStunned = true;
-        isInvincible = true;
-        bool colliderDisabled = false;
-
+        IsInvincible = true;
         PlayHurtVisuals();
 
-        if (attacker != null)
+        if (attacker != null && player.Colli2d != null && player.Rigid2d != null)
         {
             Vector2 knockbackDir = (player.transform.position - attacker.position).normalized;
-            if (disableColliderDuringHurt && player.Colli2d != null)
-            {
-                player.Colli2d.enabled = false;
-                colliderDisabled = true;
-            }
-            player.Rigid2d.AddForce(knockbackDir * knockbackForce, ForceMode2D.Impulse);
+            player.Colli2d.enabled = false;
+            player.AddImpulse(knockbackDir * knockbackForce);
         }
 
         yield return new WaitForSeconds(stunDuration);
         player.IsStunned = false;
 
-        yield return new WaitForSeconds(Mathf.Max(0f, invincibilityDuration - stunDuration));
+        yield return new WaitForSeconds(invincibilityDuration - stunDuration);
 
-        if (colliderDisabled && player.Colli2d != null)
-        {
+        if (player.Colli2d != null)
             player.Colli2d.enabled = true;
-        }
-        isInvincible = false;
-        player.BodyRenderer.color = normalColor;
+
+        IsInvincible = false;
+        if (player.BodyRenderer != null)
+            player.BodyRenderer.color = normalColor;
     }
 
-    void PlayHurtVisuals()
+    private void PlayHurtVisuals()
     {
+        if (player.BodyRenderer == null)
+            return;
+
         player.BodyRenderer.DOKill();
         player.BodyRenderer.DOColor(hurtColor, 0.05f).OnComplete(() =>
         {
@@ -141,48 +117,31 @@ public class HealthModule : PlayerModule
         });
 
         player.BodyRenderer.DOFade(0.5f, 0.1f).SetLoops(5, LoopType.Yoyo);
-        player.transform.DOPunchScale(new Vector3(-0.2f, 0.2f, 0), 0.2f, 10, 1);
+        player.transform.DOPunchScale(new Vector3(-0.2f, 0.2f, 0f), 0.2f, 10, 1f);
     }
 
-    void Die()
+    private void Die()
     {
+        if (player == null)
+            return;
+
         player.IsDead = true;
-        player.SetVelocity(Vector2.zero);
+        player.StopMovement(true);
         player.OnDeath?.Invoke();
         AudioManager.Instance.PlayEffect("PlayerDie");
-        Time.timeScale = 0f;
-        UIManager.Instance.Open<GameOverUI>();
-        Debug.Log("Player Died");
-    }
 
-    public override void UpgradeModule(ModuleType moduleType, StatType statType)
-    {
-        RecalculateStats();
-
-        CurrentHp = Mathf.Min(CurrentHp, MaxHp);
-        if(statType == StatType.MaxHP)
+        if (IsPrimaryPlayer)
         {
-            CurrentHp = MaxHp;
+            Time.timeScale = 0f;
+            UIManager.Instance.Open<GameOverUI>();
         }
-        if(!player.isPreview)
-            PlayerManager.Instance.SyncHp(Mathf.RoundToInt(CurrentHp), MaxHp);
-
-        Debug.Log($"[HealthModule] 升级刷新 HP={CurrentHp}/{MaxHp} Regen={RegenPerSecond}/s");
     }
 
     private void RecalculateStats()
     {
-        MaxHp = Mathf.RoundToInt(
-            UpgradeManager.Instance.GetStat(ModuleType.Health, StatType.MaxHP)
-        );
-
-        RegenPerSecond =
-            UpgradeManager.Instance.GetStat(ModuleType.Health, StatType.HealthRegen);
-
-        invincibilityDuration = UpgradeManager.Instance.GetStat(ModuleType.Health, StatType.InvinciDuration);
-
-        if (MaxHp <= 0) MaxHp = 10;
-
-        Debug.Log($"[HealthModule] Recalc MaxHp={MaxHp} Regen={RegenPerSecond}/s");
+        MaxHp = Mathf.RoundToInt(GetStat(MaxHpStatId, 10f));
+        RegenPerSecond = GetStat(HealthRegenStatId, 0f);
+        invincibilityDuration = GetStat(InvincibilityDurationStatId, invincibilityDuration);
+        MaxHp = Mathf.Max(MaxHp, 1);
     }
 }

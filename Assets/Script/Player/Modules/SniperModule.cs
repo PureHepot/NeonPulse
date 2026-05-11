@@ -2,6 +2,10 @@ using UnityEngine;
 
 public class SniperModule : PlayerModule
 {
+    private const string SnipeFireRateStatId = "weapon.snipefirerate";
+    private const string SnipeDamageStatId = "weapon.snipedamage";
+    private const string SnipePenetrationStatId = "weapon.snipepenetration";
+
     [Header("Refs")]
     public Transform muzzle;
     public Transform partToRotate;
@@ -14,81 +18,63 @@ public class SniperModule : PlayerModule
     private int damage;
     private int penetration;
     private float cooldown;
+    private bool hasFiredThisCycle;
 
-    private bool hasFiredThisCycle = false;
-
-    public override void Initialize(PlayerController _player)
+    protected override void OnInitialize()
     {
-        base.Initialize(_player);
         if (muzzle != null)
             muzzle.gameObject.SetActive(false);
+
         RecalculateStats();
     }
 
-    public override void OnActivate()
+    protected override void OnActivate()
     {
-        base.OnActivate();
         if (muzzle != null)
             muzzle.gameObject.SetActive(true);
     }
 
-    public override void OnDeactivate()
+    protected override void OnDeactivate()
     {
         if (muzzle != null)
             muzzle.gameObject.SetActive(false);
-        base.OnDeactivate();
     }
 
     public override void OnModuleUpdate()
     {
-        if (player == null || player.IsDead || player.isPreview) return;
+        if (player == null || player.IsDead)
+            return;
 
         HandleRotation();
 
-        if (cooldown > 0)
+        if (cooldown > 0f)
         {
-            cooldown -= Time.deltaTime;
-            hasFiredThisCycle = false;  
+            cooldown -= DeltaTime;
+            hasFiredThisCycle = false;
         }
 
-        if (Input.GetMouseButton(0) && cooldown <= 0 && !hasFiredThisCycle)
+        if (HasControl && Input.GetMouseButton(0) && cooldown <= 0f && !hasFiredThisCycle)
         {
             Fire();
             hasFiredThisCycle = true;
         }
     }
 
-    public override void UpgradeModule(ModuleType moduleType, StatType statType)
+    private void RecalculateStats()
     {
-        if (moduleType != ModuleType.Sniper) return;
-        RecalculateStats();
+        fireRate = GetStat(SnipeFireRateStatId, 1.8f);
+        damage = Mathf.RoundToInt(GetStat(SnipeDamageStatId, 4f));
+        penetration = Mathf.Max(1, Mathf.RoundToInt(GetStat(SnipePenetrationStatId, 2f)));
     }
 
-    void RecalculateStats()
+    private void Fire()
     {
-        fireRate = UpgradeManager.Instance.GetStat(ModuleType.Sniper, StatType.SnipeFireRate);
-        if (fireRate <= 0) fireRate = 1.8f;
-
-        damage = (int)UpgradeManager.Instance.GetStat(ModuleType.Sniper, StatType.SnipeDamage);
-        if (damage <= 0) damage = 4;
-
-        penetration = (int)UpgradeManager.Instance.GetStat(ModuleType.Sniper, StatType.SnipePenetration);
-        if (penetration <= 0) penetration = 2;
-    }
-
-    void Fire()
-    {
-        if (muzzle == null) return;
+        if (muzzle == null)
+            return;
 
         cooldown = fireRate;
-
         AudioManager.Instance.PlayEffect("SniperShoot");
-        GameObject bullet = ObjectPoolManager.Instance.Get(
-            sniperBulletPrefab,
-            muzzle.position,
-            muzzle.rotation
-        );
-
+        GameObject bullet = ObjectPoolManager.Instance.Get(sniperBulletPrefab, muzzle.position, muzzle.rotation);
         var bulletScript = bullet.GetComponent<PlayerSniperBullet>();
         if (bulletScript != null)
         {
@@ -97,19 +83,15 @@ public class SniperModule : PlayerModule
         }
     }
 
-    void HandleRotation()
+    private void HandleRotation()
     {
-        if (partToRotate == null) return;
+        if (partToRotate == null)
+            return;
 
-        Vector3 mousePos = MUtils.GetMouseWorldPosition();
+        Vector3 mousePos = HasControl ? MUtils.GetMouseWorldPosition() : partToRotate.position + partToRotate.right;
         Vector2 dir = mousePos - partToRotate.position;
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         Quaternion target = Quaternion.AngleAxis(angle, Vector3.forward);
-
-        partToRotate.rotation = Quaternion.Slerp(
-            partToRotate.rotation,
-            target,
-            rotationSpeed * Time.deltaTime
-        );
+        partToRotate.rotation = Quaternion.Slerp(partToRotate.rotation, target, rotationSpeed * DeltaTime);
     }
 }

@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 611ef3eb560340d1ae1b2c9926be7835, type: 3}
+  m_Name: Plugin_Weapon_ExtraMuzzle
+  m_EditorClassIdentifier: 
+  pluginId: plugin_weapon_extra_muzzle
+  displayName: "\u6269\u5C55\u67AA\u53E3"
+  description: "\u4E3A\u8FDC\u7A0B\u6B66\u5668\u589E\u52A0\u989D\u5916\u53D1\u5C04\u70B9\u3002param1=\u989D\u5916\u67AA\u53E3\u6570\uff0Cparam2=\u67AA\u53E3\u95F4\u8DDD"
+  pluginType: 1
+  icon: {fileID: 0}
+  effectId: ExtraMuzzle
+  effectRarityValues:
+    common:
+      param1: 1
+      param2: 0.18
+      param3: 0
+    uncommon:
+      param1: 1
+      param2: 0.22
+      param3: 0
+    rare:
+      param1: 2
+      param2: 0.22
+      param3: 0
+    epic:
+      param1: 2
+      param2: 0.26
+      param3: 0
+    legendary:
+      param1: 3
+      param2: 0.28
+      param3: 0
+  restrictedToModules: []
+  restrictedToCategories: 3
+  dropWeight: 100

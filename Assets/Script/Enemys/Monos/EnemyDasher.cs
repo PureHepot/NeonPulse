@@ -25,6 +25,14 @@ public class EnemyDasher : EnemyBase
 
     protected override void MoveBehavior()
     {
+        
+        if (scared)
+        {
+            timer = dashInterval;
+            rb.velocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+            return;
+        }
         // 始终让怪物朝向玩家 (几何风格常见设定)
         if (playerTransform != null)
         {
@@ -61,7 +69,7 @@ public class EnemyDasher : EnemyBase
 
         Vector2 targetVelocity = (tangentDir * moveSpeed) + (radialDir * distanceCorrectionSpeed);
 
-        rb.velocity = Vector2.Lerp(rb.velocity, targetVelocity, Time.fixedDeltaTime * 5f);
+        DriveVelocity(targetVelocity, 1.2f);
 
         timer -= Time.fixedDeltaTime;
         if (timer <= 0)
@@ -72,7 +80,7 @@ public class EnemyDasher : EnemyBase
 
     private void HandleDashState()
     {
-        rb.velocity = Vector2.Lerp(rb.velocity, Vector2.zero, Time.fixedDeltaTime * dashDrag);
+        DriveVelocity(Vector2.zero, dashDrag);
 
         // 当速度降到一定程度以下
         if (rb.velocity.magnitude < 2f)
@@ -90,9 +98,8 @@ public class EnemyDasher : EnemyBase
 
         Vector2 dir = (playerTransform.position - transform.position).normalized;
 
-        rb.velocity = Vector2.zero;
-
-        rb.AddForce(dir * dashForce, ForceMode2D.Impulse);
+        StopMovementDrive();
+        ApplyImpulse(dir * dashForce);
 
         // 可以在这里播放音效或粒子
         // ObjectPoolManager.Instance.Get(dashEffect, transform.position...);

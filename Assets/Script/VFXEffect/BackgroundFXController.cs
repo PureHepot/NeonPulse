@@ -65,10 +65,24 @@ public class BackgroundFXController : MonoSingleton<BackgroundFXController>
 
     private void Start()
     {
-        if (presets.allPresets.Count > 0)
+        if (presets != null && presets.allPresets.Count > 0)
         {
             ApplyPresetImmediate(presets.allPresets[0]);
         }
+    }
+
+    public void ApplyPresetCollection(SOVisualThemePresets presetCollection, int presetIndex = 0, bool immediate = true)
+    {
+        if (presetCollection == null || presetCollection.allPresets == null || presetCollection.allPresets.Count == 0)
+            return;
+
+        presets = presetCollection;
+        currentPresetIndex = Mathf.Clamp(presetIndex, 0, presets.allPresets.Count - 1);
+
+        if (immediate)
+            ApplyPresetImmediate(presets.allPresets[currentPresetIndex]);
+        else
+            SwitchToTheme(currentPresetIndex);
     }
 
     /// <summary>
@@ -77,6 +91,9 @@ public class BackgroundFXController : MonoSingleton<BackgroundFXController>
     /// <param name="index"></param>
     public void SwitchToTheme(int index)
     {
+        if (presets == null || presets.allPresets == null)
+            return;
+
         if (index < 0 || index >= presets.allPresets.Count) return;
         if (index == currentPresetIndex) return;
 
@@ -106,6 +123,9 @@ public class BackgroundFXController : MonoSingleton<BackgroundFXController>
 
     public void SwitchToTheme(string name)
     {
+        if (presets == null || presets.allPresets == null)
+            return;
+
         for (int i = 0; i < presets.allPresets.Count; i++)
         {
             if (presets.allPresets[i].themeName == name)
@@ -118,6 +138,9 @@ public class BackgroundFXController : MonoSingleton<BackgroundFXController>
 
     public void SwitchToNextTheme()
     {
+        if (presets == null || presets.allPresets == null || presets.allPresets.Count == 0)
+            return;
+
         int nextIndex = (currentPresetIndex + 1) % presets.allPresets.Count;
         SwitchToTheme(nextIndex);
     }

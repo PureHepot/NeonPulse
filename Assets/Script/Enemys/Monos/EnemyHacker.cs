@@ -22,7 +22,7 @@ public class EnemyHacker : EnemyBase
     {
         if (playerTransform == null)
         {
-            rb.velocity = Vector2.zero;
+            StopMovementDrive();
             return;
         }
 
@@ -31,12 +31,12 @@ public class EnemyHacker : EnemyBase
 
         Vector2 dir = toPlayer.normalized;
 
-        // æ‡¿Î–ﬁ’˝
+        // Ë∑ùÁ¶ª‰øÆÊ≠£
         float distanceFactor = Mathf.Clamp(dist - keepDistance, -1f, 1f);
 
         Vector2 radialDir = dir * distanceFactor;
 
-        // ª∑»∆»≈∂Ø
+        // ÁéØÁªïÊâ∞Âä®
         Vector2 perpendicular = new Vector2(-dir.y, dir.x);
         float wave = Mathf.Sin(Time.time * waveFrequency + noiseOffset) * waveMagnitude;
 
@@ -44,6 +44,6 @@ public class EnemyHacker : EnemyBase
 
         Vector2 desiredVelocity = finalDir * moveSpeed;
 
-        rb.velocity = Vector2.Lerp(rb.velocity, desiredVelocity, Time.deltaTime * 6f);
+        DriveVelocity(desiredVelocity, 1.2f);
     }
 }

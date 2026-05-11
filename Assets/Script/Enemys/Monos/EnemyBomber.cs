@@ -9,19 +9,19 @@ public class EnemyBomber : EnemyBase
         Explode
     }
 
-    [Header("¼ì²â²ÎÊı")]
+    [Header("æ£€æµ‹å‚æ•°")]
     public float detectRadius = 1f;
     public LayerMask playerLayer;
 
-    [Header("Òı±¬²ÎÊı")]
+    [Header("å¼•çˆ†å‚æ•°")]
     public float warningTime = 2f;
     public float explodeRadius = 2f;
     public int explodeDamage = 2;
 
-    [Header("ÉÁË¸Ğ§¹û")]
+    [Header("é—ªçƒæ•ˆæœ")]
     public float blinkSpeed = 15f;
 
-    [Header("±¬Õ¨ÌØĞ§")]
+    [Header("çˆ†ç‚¸ç‰¹æ•ˆ")]
     public GameObject explodeFxPrefab;
 
     private BomberState state;
@@ -62,10 +62,10 @@ public class EnemyBomber : EnemyBase
         Vector2 dir = (playerTransform.position - transform.position).normalized;
 
         Vector2 targetVel = dir * moveSpeed;
-        rb.velocity = Vector2.Lerp(rb.velocity, targetVel, Time.fixedDeltaTime * 6f);
+        DriveVelocity(targetVel, 1.2f);
     }
 
-    // ¼ì²â
+    // æ£€æµ‹
     private void CheckPlayer()
     {
         Collider2D hit = Physics2D.OverlapCircle(transform.position, detectRadius, playerLayer);
@@ -76,11 +76,11 @@ public class EnemyBomber : EnemyBase
         }
     }
 
-    // Ô¤¾¯
+    // é¢„è­¦
     private void EnterWarning()
     {
         state = BomberState.Warning;
-        rb.velocity = Vector2.zero;
+        StopMovementDrive();
         warningTimer = warningTime;
     }
 
@@ -97,7 +97,7 @@ public class EnemyBomber : EnemyBase
         }
     }
 
-    // ±¬Õ¨
+    // çˆ†ç‚¸
     private void Explode()
     {
         state = BomberState.Explode;

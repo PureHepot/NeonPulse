@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f4c0e7ec778d964d9121709639021c5, type: 3}
+  m_Name: InRunConfigDatabase
+  m_EditorClassIdentifier: 
+  allThemes:
+  - {fileID: 11400000, guid: 0f551dabba278d741b0e76c4eab3c045, type: 2}
+  loopGlobalConfig: {fileID: 11400000, guid: 0e9f74d672cc40f4ba7957d0e504e390, type: 2}
+  scoreConfig: {fileID: 11400000, guid: 07f2ed29c638549498f245c9b622eb2c, type: 2}
+  pulseConfig: {fileID: 11400000, guid: 5b6c817b392fa874bb4282c8d90d5fdb, type: 2}

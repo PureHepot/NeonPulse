@@ -1,14 +1,23 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using DG.Tweening;
 
-public class OriginShooterModule : PlayerModule
+public class OriginShooterModule : RangedWeaponModule
 {
+    private const string WeaponDamageStatId = "weapon.damage";
+    private const string WeaponShotSpeedStatId = "weapon.attackspeed";
+    private const string WeaponCritChanceStatId = "weapon.critchance";
+    private const string WeaponCritDamageStatId = "weapon.critdamage";
+    private const string WeaponGunCountStatId = "weapon.weaponcount";
+    private const string WeaponGunPierceCount = "weapon.piercecount";
+    private const float DefaultFireInterval = 0.8f;
+    private const int DefaultDamage = 2;
+    private const float DefaultProjectileSpeed = 20f;
+    private const float DefaultProjectileLifetime = 2f;
+    private const float MuzzleAngleStep = 15f;
+    private const float DefaultPrototypeRadius = 0.5f;
+
     [Header("Hierarchy Refs")]
     public Transform partToRotate;
-
-    //拖入muzzles: index 0=中, 1=左, 2=右
     public List<Transform> muzzles;
     public GameObject bulletPrefab;
 
@@ -17,239 +26,330 @@ public class OriginShooterModule : PlayerModule
 
     [Header("Combat Settings")]
     public float sequenceDelay = 0.01f;
+    public float recoilImpulse = 0.55f;
 
-    //---属性---
-    private float baseFireRate;
-    private float fireRateMultiplier = 1f;
-
-    private int baseDamage;
-    private float damageMultiplier = 1f;
-
-    [Header("State")]
     public int currentLevel = 1;
 
-    private float globalCooldown = 0f;
-    private bool isFiring = false;
+    private float fireInterval = DefaultFireInterval;
+    private int damagePerShot = DefaultDamage;
+    private int activeMuzzleCount = 1;
+    private float critChance;
+    private float critDamageMultiplier = 1f;
+    private float projectileSpeed = DefaultProjectileSpeed;
+    private float projectileLifetime = DefaultProjectileLifetime;
+    private LayerMask projectileHitLayer;
+    private LayerMask projectileWallLayer;
+    private readonly List<Transform> generatedMuzzles = new();
+    private float prototypeRadius = DefaultPrototypeRadius;
 
-    private List<float> muzzleVisualProgress = new();
-
-    public override void Initialize(PlayerController _player)
+    protected override void OnWeaponInitialize()
     {
-        base.Initialize(_player);
-
-        partToRotate.gameObject.SetActive(true);
-
-        muzzleVisualProgress.Clear();
-        foreach (var m in muzzles)
-            muzzleVisualProgress.Add(1f);
-
-        RecalculateStats();
+        enabled = false;
+        CacheProjectileDefaults();
+        CachePrototypeRadius();
+        RefreshWeaponStats();
     }
 
-    public override void OnActivate()
+    protected override void OnActivate()
     {
-        base.OnActivate();
-        UpdateMuzzleVisibility();
+        RefreshWeaponStats();
+        SyncGeneratedMuzzles();
+        UpdateMuzzleVisuals();
+        enabled = true;
     }
 
-    public override void OnDeactivate()
+    protected override void OnDeactivate()
     {
-        base.OnDeactivate();
-        foreach (var m in muzzles)
+        enabled = false;
+        HideAllMuzzleVisuals();
+    }
+
+    private void OnDestroy()
+    {
+        ClearGeneratedMuzzleClones();
+    }
+
+    protected override void OnWeaponUpdate()
+    {
+        RotateTowardsAim(partToRotate != null ? partToRotate : transform, rotationSpeed);
+        UpdateMuzzleVisuals();
+
+        if (WantsPrimaryFire && CanFire)
+            Fire();
+    }
+
+    private void RefreshWeaponStats()
+    {
+        damagePerShot = Mathf.Max(1, Mathf.RoundToInt(GetStat(WeaponDamageStatId, DefaultDamage)));
+        critChance = NormalizeChance(GetStat(WeaponCritChanceStatId, 0f));
+        critDamageMultiplier = ResolveCritDamageMultiplier(GetStat(WeaponCritDamageStatId, 100f));
+
+        fireInterval = Mathf.Max(0.01f, ResolveFireInterval());
+
+        activeMuzzleCount = ResolveMuzzleCount();
+        currentLevel = activeMuzzleCount;
+        SyncGeneratedMuzzles();
+    }
+
+    private void Fire()
+    {
+        SetCooldown(fireInterval);
+
+        var fallbackOrigin = partToRotate != null ? partToRotate : transform;
+        var aimTarget = ResolveAimTarget(fallbackOrigin);
+        ApplyFireRecoil(aimTarget);
+        var muzzlePlan = BuildShooterMuzzlePlan(aimTarget, activeMuzzleCount);
+        var fireContext = new WeaponFireContext(this, muzzlePlan.Count);
+        ApplyMuzzlePlanEffects(fireContext, muzzlePlan);
+        fireContext.totalShots = muzzlePlan.Count;
+
+        for (int index = 0; index < muzzlePlan.Count; index++)
         {
-            if (m != null)
-                m.gameObject.SetActive(false);
+            fireContext.shotIndex = index;
+            fireContext.currentMuzzle = muzzlePlan[index];
+            SpawnBullet(fireContext);
         }
     }
 
-    public override void OnModuleUpdate()
+    private void SpawnBullet(WeaponFireContext fireContext)
     {
-        if (player == null || player.IsDead || player.isPreview) return;
-
-        HandleRotation();
-
-        HandleReloadVisuals();
-
-        if (globalCooldown > 0) globalCooldown -= Time.deltaTime;
-
-        if (InputManager.Instance.Mouse0() && !isFiring && globalCooldown <= 0)
-        {
-            StartCoroutine(FireSequenceRoutine());
-        }
-    }
-
-    public override void UpgradeModule(ModuleType moduleType, StatType statType)
-    {
-        if (moduleType == ModuleType.Shooter)
-        {
-            switch (statType)
-            {
-                case StatType.BaseDamage:
-                    baseDamage = (int)UpgradeManager.Instance.GetStat(moduleType, statType);
-                    break;
-                case StatType.BaseFireRate:
-                    baseFireRate = UpgradeManager.Instance.GetStat(moduleType, statType);
-                    break;
-                case StatType.DamageRateMultiplier:
-                    damageMultiplier = UpgradeManager.Instance.GetStat(moduleType, statType);
-                    break;
-                case StatType.FireRateMultiplier:
-                    fireRateMultiplier = UpgradeManager.Instance.GetStat(moduleType, statType);
-                    break;
-                case StatType.ShooterCount:
-                    currentLevel = (int)UpgradeManager.Instance.GetStat(moduleType, statType);
-                    break;
-            }
-        }
-    }
-
-    private void RecalculateStats()
-    {
-        baseFireRate =
-            UpgradeManager.Instance.GetStat(ModuleType.Shooter, StatType.BaseFireRate);
-        if (baseFireRate <= 0) baseFireRate = 0.8f;
-
-        baseDamage =
-            (int)UpgradeManager.Instance.GetStat(ModuleType.Shooter, StatType.BaseDamage);
-        if (baseDamage <= 0) baseDamage = 2;
-
-        fireRateMultiplier = UpgradeManager.Instance.GetStat(ModuleType.Shooter, StatType.FireRateMultiplier);
-        damageMultiplier = UpgradeManager.Instance.GetStat(ModuleType.Shooter, StatType.DamageRateMultiplier);
-        currentLevel = (int)UpgradeManager.Instance.GetStat(ModuleType.Shooter, StatType.ShooterCount);
-    }
-
-    private float GetFinalFireRate()
-    {
-        return baseFireRate * fireRateMultiplier;
-    }
-
-    private float GetFinalDamage()
-    {
-        return baseDamage * damageMultiplier;
-    }
-
-    void HandleRotation()
-    {
-        if (partToRotate == null) return;
-
-        Vector3 mousePos = MUtils.GetMouseWorldPosition();
-
-        Vector2 direction = mousePos - partToRotate.position;
-
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-
-        Quaternion targetRotation = Quaternion.AngleAxis(angle, Vector3.forward);
-
-        partToRotate.rotation =
-            Quaternion.Slerp(partToRotate.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-    }
-
-    void HandleReloadVisuals()
-    {
-        if (!isUnlocked || muzzleVisualProgress == null || muzzleVisualProgress.Count != muzzles.Count)
+        if (bulletPrefab == null || fireContext?.currentMuzzle == null)
             return;
 
-        float recoverSpeed = 1f / GetFinalFireRate();
-
-        for (int i = 0; i < muzzles.Count; i++)
+        int finalDamage = RollCriticalDamage();
+        AudioManager.Instance?.PlayEffect("Shootershoot", 0.4f, 1f);
+        var spawnData = new ProjectileSpawnData
         {
-            if (muzzleVisualProgress[i] < 1f)
-            {
-                muzzleVisualProgress[i] += Time.deltaTime * recoverSpeed;
-                if (muzzleVisualProgress[i] > 1f) muzzleVisualProgress[i] = 1f;
-            }
+            prefab = bulletPrefab,
+            position = fireContext.currentMuzzle.position,
+            rotation = fireContext.currentMuzzle.rotation,
+            damage = finalDamage,
+            speed = projectileSpeed,
+            lifeTime = projectileLifetime,
+            hitLayer = projectileHitLayer,
+            wallLayer = projectileWallLayer
+        };
 
-            bool isActive = false;
-            if (currentLevel == 1 && i == 0) isActive = true;
-            if (currentLevel == 2 && i <= 1) isActive = true;
-            if (currentLevel == 3 && i <= 2) isActive = true;
+        SpawnProjectile(spawnData, fireContext);
+    }
 
-            if (isActive)
-            {
-                if (!muzzles[i].gameObject.activeSelf)
-                    muzzles[i].gameObject.SetActive(true);
+    private void UpdateMuzzleVisuals()
+    {
+        if (activeMuzzleCount <= 0)
+        {
+            HideAllMuzzleVisuals();
+            return;
+        }
 
-                float finalScale = DOVirtual.EasedValue(0, 1, muzzleVisualProgress[i], Ease.OutBack);
-                muzzles[i].localScale = Vector3.one * finalScale;
-            }
-            else
-            {
-                if (muzzles[i].gameObject.activeSelf)
-                    muzzles[i].gameObject.SetActive(false);
-            }
+        SyncGeneratedMuzzles();
+
+        var aimTarget = ResolveAimTarget(partToRotate != null ? partToRotate : transform);
+        var muzzlePlan = BuildShooterMuzzlePlan(aimTarget, activeMuzzleCount);
+        for (int index = 0; index < generatedMuzzles.Count; index++)
+        {
+            var muzzle = generatedMuzzles[index];
+            if (muzzle == null)
+                continue;
+
+            bool active = index < muzzlePlan.Count;
+            muzzle.gameObject.SetActive(active);
+            if (!active)
+                continue;
+
+            muzzle.position = muzzlePlan[index].position;
+            muzzle.rotation = muzzlePlan[index].rotation;
         }
     }
 
-    IEnumerator FireSequenceRoutine()
+    private void CacheProjectileDefaults()
     {
-        isFiring = true;
+        if (bulletPrefab == null)
+            return;
 
-        globalCooldown = GetFinalFireRate();
+        var bulletDefaults = bulletPrefab.GetComponent<PlayerBullet>();
+        if (bulletDefaults == null)
+            return;
 
-        List<int> activeIndices = new();
-
-        if (currentLevel == 1)
-        {
-            if (muzzles.Count > 0) activeIndices.Add(0);
-        }
-        else if(currentLevel == 2)
-        {
-            if (muzzles.Count > 0) activeIndices.Add(0);
-            if (muzzles.Count > 1) activeIndices.Add(1);
-        }
-        else
-        {
-            if (muzzles.Count > 0) activeIndices.Add(0);
-            if (muzzles.Count > 1) activeIndices.Add(1);
-            if (muzzles.Count > 2) activeIndices.Add(2);
-        }
-
-        foreach (int index in activeIndices)
-        {
-            Transform muzzleT = muzzles[index];
-
-            muzzleVisualProgress[index] = 0f;
-
-            muzzleT.localScale = Vector3.one * 1.5f;
-
-            yield return new WaitForSeconds(0.01f);
-
-            SpawnBullet(muzzleT);
-
-            if (activeIndices.Count > 1)
-                yield return new WaitForSeconds(sequenceDelay);
-        }
-
-        isFiring = false;
+        projectileSpeed = bulletDefaults.speed;
+        projectileLifetime = bulletDefaults.lifeTime;
+        projectileHitLayer = bulletDefaults.hitLayer;
+        projectileWallLayer = bulletDefaults.WallLayer;
     }
 
-    void SpawnBullet(Transform muzzlePoint)
+    private int ResolveMuzzleCount()
     {
-        AudioManager.Instance.PlayEffect("Shootershoot",0.4f,1f);
+        int statCount = GetIntStat(WeaponGunCountStatId, 1);
+        if (statCount > 0)
+            return Mathf.Max(1, statCount);
 
-        GameObject bullet = ObjectPoolManager.Instance.Get(
-            bulletPrefab,
-            muzzlePoint.position,
-            muzzlePoint.rotation
-        );
-
-        PlayerBullet bulletScript = bullet.GetComponent<PlayerBullet>();
-        if (bulletScript)
-            bulletScript.damage = (int)GetFinalDamage();
+        return 1;
     }
 
-    private void UpdateMuzzleVisibility()
+    private float ResolveFireInterval()
     {
-        if (muzzles == null || muzzles.Count == 0) return;
+        float defaultInterval = DefaultFireInterval;
+        float shotSpeedValue = GetStat(WeaponShotSpeedStatId, 0f);
+        if (shotSpeedValue <= 0f)
+            return defaultInterval;
 
-        for (int i = 0; i < muzzles.Count; i++)
+        if (shotSpeedValue > 10f)
+            return defaultInterval * (100f / shotSpeedValue);
+
+        return 1f / shotSpeedValue;
+    }
+
+    private Vector3 ResolveAimTarget(Transform fallbackOrigin)
+    {
+        if (HasControl)
+            return MUtils.GetMouseWorldPosition();
+
+        var origin = fallbackOrigin != null ? fallbackOrigin : transform;
+        return origin.position + origin.right * 10f;
+    }
+
+    private List<WeaponMuzzlePoint> BuildShooterMuzzlePlan(Vector3 aimTarget, int requestedCount)
+    {
+        requestedCount = Mathf.Max(1, requestedCount);
+
+        Vector3 center = player != null ? player.transform.position : transform.position;
+        Vector3 aimDirection = aimTarget - center;
+        if (aimDirection.sqrMagnitude <= Mathf.Epsilon)
+            aimDirection = partToRotate != null ? partToRotate.right : transform.right;
+
+        aimDirection.Normalize();
+        float aimAngle = Mathf.Atan2(aimDirection.y, aimDirection.x) * Mathf.Rad2Deg;
+        Quaternion aimRotation = Quaternion.AngleAxis(aimAngle, Vector3.forward);
+        var muzzlePlan = new List<WeaponMuzzlePoint>(requestedCount);
+
+        for (int index = 0; index < requestedCount; index++)
         {
-            bool shouldBeActive = false;
-            if (currentLevel == 1 && i == 0) shouldBeActive = true;
-            if (currentLevel == 2 && i <= 1) shouldBeActive = true;
-            if (currentLevel == 3 && i <= 2) shouldBeActive = true;
-
-            muzzles[i].gameObject.SetActive(shouldBeActive);
+            float centeredIndex = index - (requestedCount - 1) * 0.5f;
+            float angleOffset = centeredIndex * MuzzleAngleStep;
+            Vector3 muzzleOffset = aimRotation * (Quaternion.AngleAxis(angleOffset, Vector3.forward) * (Vector3.right * prototypeRadius));
+            Vector3 muzzlePosition = center + muzzleOffset;
+            muzzlePlan.Add(new WeaponMuzzlePoint
+            {
+                position = muzzlePosition,
+                rotation = aimRotation,
+                visualTransform = index < generatedMuzzles.Count ? generatedMuzzles[index] : null,
+                isVirtual = index != 0
+            });
         }
+
+        return muzzlePlan;
+    }
+
+    private Transform GetPrototypeMuzzle()
+    {
+        if (muzzles == null)
+            return null;
+
+        for (int index = 0; index < muzzles.Count; index++)
+        {
+            if (muzzles[index] != null)
+                return muzzles[index];
+        }
+
+        return null;
+    }
+
+    private void CachePrototypeRadius()
+    {
+        var prototypeMuzzle = GetPrototypeMuzzle();
+        if (prototypeMuzzle == null)
+        {
+            prototypeRadius = DefaultPrototypeRadius;
+            return;
+        }
+
+        Vector3 center = player != null ? player.transform.position : transform.position;
+        float radius = Vector3.Distance(center, prototypeMuzzle.position);
+        prototypeRadius = radius > 0.001f ? radius : DefaultPrototypeRadius;
+    }
+
+    private int RollCriticalDamage()
+    {
+        if (critChance <= 0f || Random.value > critChance)
+            return damagePerShot;
+
+        return Mathf.Max(1, Mathf.RoundToInt(damagePerShot * critDamageMultiplier));
+    }
+
+    private static float NormalizeChance(float rawChance)
+    {
+        if (rawChance <= 0f)
+            return 0f;
+
+        return rawChance > 1f ? rawChance / 100f : rawChance;
+    }
+
+    private static float ResolveCritDamageMultiplier(float rawValue)
+    {
+        if (rawValue <= 0f)
+            return 1f;
+
+        if (rawValue > 10f)
+            return rawValue / 100f;
+
+        return rawValue;
+    }
+
+    private void ApplyFireRecoil(Vector3 aimTarget)
+    {
+        if (player == null || recoilImpulse <= 0f)
+            return;
+
+        Vector2 aimDirection = aimTarget - player.transform.position;
+        if (aimDirection.sqrMagnitude <= Mathf.Epsilon)
+            return;
+
+        float recoilScale = 1f + Mathf.Max(0, activeMuzzleCount - 1) * 0.2f;
+        player.AddImpulse(-aimDirection.normalized * (recoilImpulse * recoilScale));
+    }
+
+    private void SyncGeneratedMuzzles()
+    {
+        var prototypeMuzzle = GetPrototypeMuzzle();
+        if (prototypeMuzzle == null)
+            return;
+
+        if (generatedMuzzles.Count == 0)
+            generatedMuzzles.Add(prototypeMuzzle);
+
+        while (generatedMuzzles.Count < activeMuzzleCount)
+        {
+            var cloneObject = Instantiate(prototypeMuzzle.gameObject, prototypeMuzzle.parent);
+            cloneObject.name = $"{prototypeMuzzle.name}_RuntimeClone_{generatedMuzzles.Count}";
+            generatedMuzzles.Add(cloneObject.transform);
+        }
+
+        for (int index = 0; index < generatedMuzzles.Count; index++)
+        {
+            var muzzle = generatedMuzzles[index];
+            if (muzzle == null)
+                continue;
+
+            muzzle.gameObject.SetActive(index < activeMuzzleCount);
+        }
+    }
+
+    private void HideAllMuzzleVisuals()
+    {
+        for (int index = 0; index < generatedMuzzles.Count; index++)
+        {
+            if (generatedMuzzles[index] != null)
+                generatedMuzzles[index].gameObject.SetActive(false);
+        }
+    }
+
+    private void ClearGeneratedMuzzleClones()
+    {
+        for (int index = generatedMuzzles.Count - 1; index >= 1; index--)
+        {
+            if (generatedMuzzles[index] != null)
+                Destroy(generatedMuzzles[index].gameObject);
+        }
+
+        generatedMuzzles.Clear();
     }
 }

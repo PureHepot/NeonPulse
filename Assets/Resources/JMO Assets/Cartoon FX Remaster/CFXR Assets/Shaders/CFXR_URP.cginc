@@ -197,7 +197,7 @@ int GetPerObjectLightIndex(uint index)
 /////////////////////////////////////////////////////////////////////////////////////////////
 #elif !defined(SHADER_API_GLES)
     // since index is uint shader compiler will implement
-    // div & mod as bitfield ops (shift and mask).
+    // div & Mod as bitfield ops (shift and mask).
     
     // TODO: Can we index a float4? Currently compiler is
     // replacing unity_LightIndicesX[i] with a dp4 with identity matrix.

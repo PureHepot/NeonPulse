@@ -39,7 +39,7 @@ public class GameOverUI : UIBase
     private void OnClickRestart()
     {
         // 结算本局：死亡，记录到达的波次
-        int waveReached = WaveManager.Instance.currentWaveIndex;
+        int waveReached = 0;
         DataManager.Instance.EndRun(false, waveReached);
 
         Time.timeScale = 1f;
@@ -53,7 +53,7 @@ public class GameOverUI : UIBase
 
     private void OnClickQuit()
     {
-        int waveReached = WaveManager.Instance.currentWaveIndex;
+        int waveReached = 0;
         DataManager.Instance.EndRun(false, waveReached);
         // ֱ���˳���Ϸ
 #if UNITY_EDITOR

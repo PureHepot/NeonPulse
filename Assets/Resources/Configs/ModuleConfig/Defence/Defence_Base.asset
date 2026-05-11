@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2938850d4485ee45954e75922bd383a, type: 3}
+  m_Name: Defence_Base
+  m_EditorClassIdentifier: 
+  moduleId: defense_module_base
+  moduleName: "\u57FA\u7840\u9632\u5FA1\u6A21\u5757"
+  moduleType: 3
+  description: "\u57FA\u7840\u7684\u9632\u5FA1\u6A21\u5757\uFF0C\u53EF\u4EE5\u7ED9\u673A\u4F53\u63D0\u4F9B\u4E00\u5B9A\u7684\u9632\u5FA1\u80FD\u529B\uFF0C\u4E0D\u88C5\u6709\u60E9\u7F5A\u54E6~"
+  icon: {fileID: 21300000, guid: 4ab8b6c3ba045534db78e43cac5965e2, type: 3}
+  categories: 16
+  statSchema: {fileID: 11400000, guid: f95c5b5f2457187459497a1f242753c3, type: 2}
+  defaultRarity: 0
+  rarityProfiles:
+  - rarity: 0
+    baseStats:
+    - statDefinition: {fileID: 11400000, guid: b4f9713909a601d4aa70573e336a21ff, type: 2}
+      value: 100
+    maxPluginSlots: 1
+    loadCost: 1
+  coreSlotCount: 1
+  themeColor: {r: 1, g: 0.57323545, b: 0, a: 1}
+  runtimePrefab: {fileID: 2507184547672687053, guid: b3adb1b1c9e115f49a5a90038ca0006d, type: 3}
+  previewPrefab: {fileID: 2507184547672687053, guid: b3adb1b1c9e115f49a5a90038ca0006d, type: 3}
+  unlockCost: 0

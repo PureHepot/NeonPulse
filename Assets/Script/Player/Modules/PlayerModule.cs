@@ -1,56 +1,134 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public enum ModuleType
 {
-    Movement,
-    Health,
-    Shooter,
-    Shield,
-    Dash,
-    LaserDrone,
-    Sniper,
-    Shotgun,
-    SawBlade,
+    Movement = 0,
+    Health = 1,
+    Shooter = 2,
+    Shield = 3,
+    Dash = 4,
+    LaserDrone = 5,
+    Sniper = 6,
+    Shotgun = 7,
+    SawBlade = 8,
+    Magnet = 9,
+    OddMovement = 10,
+    None = 11
 }
-
 
 public abstract class PlayerModule : MonoBehaviour
 {
-    [Header("Base Settings")]
-    public ModuleType moduleType;
-    public bool isUnlocked = false;
-
     protected PlayerController player;
+    private LoadoutModuleRuntimeData runtimeData;
 
-    //初始化
-    public virtual void Initialize(PlayerController _player)
+    public ModuleType moduleType { get; private set; } = ModuleType.None;
+    public bool isUnlocked => IsActiveModule;
+    public bool IsInitialized { get; private set; }
+    public bool IsActiveModule { get; private set; }
+    public string SlotId => runtimeData != null ? runtimeData.slotId : string.Empty;
+    public LoadoutModuleRuntimeData RuntimeData => runtimeData;
+    public ModuleConfig ModuleConfig => runtimeData != null ? runtimeData.moduleConfig : null;
+    public CoreConfig CoreConfig => runtimeData != null ? runtimeData.coreConfig : null;
+
+    protected float DeltaTime => player != null ? player.ModuleDeltaTime : Time.deltaTime;
+    protected bool HasControl => player != null && player.AcceptsInput;
+    protected bool IsPrimaryPlayer => player != null && player.IsPrimaryRuntimePlayer;
+
+    public void Initialize(PlayerController playerController, LoadoutModuleRuntimeData moduleRuntimeData)
     {
-        this.player = _player;
-        if (!isUnlocked) OnDeactivate();
+        player = playerController;
+        runtimeData = moduleRuntimeData;
+        moduleType = moduleRuntimeData != null ? moduleRuntimeData.moduleType : ModuleType.None;
+        IsInitialized = true;
+        OnInitialize();
+    }
+
+    public void ActivateModule()
+    {
+        if (!IsInitialized)
+            return;
+
+        IsActiveModule = true;
+        enabled = true;
+        OnActivate();
+    }
+
+    public void DeactivateModule()
+    {
+        OnDeactivate();
+        IsActiveModule = false;
+        enabled = false;
     }
 
     public virtual void OnModuleUpdate()
     {
-        // 子类重写此方法来实现每帧逻辑
-        
     }
 
-    public virtual void OnActivate()
+    protected virtual void OnInitialize()
     {
-        isUnlocked = true;
-        this.enabled = true; // 启用组件
     }
 
-    public virtual void OnDeactivate()
+    protected virtual void OnActivate()
     {
-        this.enabled = false;
     }
 
-
-    public virtual void UpgradeModule(ModuleType moduleType, StatType statType)
+    protected virtual void OnDeactivate()
     {
-        // 子类重写此方法来实现升级逻辑
+    }
+
+    protected float GetStat(StatDefinition statDefinition, float fallbackValue = 0f)
+    {
+        if (runtimeData == null || statDefinition == null)
+            return fallbackValue;
+
+        float value = runtimeData.GetFinalStat(statDefinition);
+        return Mathf.Approximately(value, 0f) ? fallbackValue : value;
+    }
+
+    protected float GetStat(string statId, float fallbackValue = 0f)
+    {
+        if (runtimeData == null || string.IsNullOrWhiteSpace(statId))
+            return fallbackValue;
+
+        float value = runtimeData.GetFinalStat(statId);
+        return Mathf.Approximately(value, 0f) ? fallbackValue : value;
+    }
+
+    protected int GetIntStat(StatDefinition statDefinition, int fallbackValue = 0)
+    {
+        return Mathf.RoundToInt(GetStat(statDefinition, fallbackValue));
+    }
+
+    protected int GetIntStat(string statId, int fallbackValue = 0)
+    {
+        return Mathf.RoundToInt(GetStat(statId, fallbackValue));
+    }
+
+    protected bool HasPlugin(string effectId)
+    {
+        return runtimeData != null && runtimeData.HasPlugin(effectId);
+    }
+
+    protected bool HasPlugin(PluginType pluginType)
+    {
+        return runtimeData != null && runtimeData.HasPlugin(pluginType);
+    }
+
+    protected bool TryGetPlugin(string effectId, out LoadoutPluginRuntimeData pluginRuntime)
+    {
+        if (runtimeData != null)
+            return runtimeData.TryGetPlugin(effectId, out pluginRuntime);
+
+        pluginRuntime = null;
+        return false;
+    }
+
+    protected bool TryGetPlugin(PluginType pluginType, out LoadoutPluginRuntimeData pluginRuntime)
+    {
+        if (runtimeData != null)
+            return runtimeData.TryGetPlugin(pluginType, out pluginRuntime);
+
+        pluginRuntime = null;
+        return false;
     }
 }

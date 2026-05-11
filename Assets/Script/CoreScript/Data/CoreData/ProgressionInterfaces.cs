@@ -1,45 +1,88 @@
 using System;
 
+// ============================================================
+// 装配系统数据接口
+// 面向联机适配：读写分离，远程玩家只暴露只读接口
+// ============================================================
+
 // --------------------------------------------------------
-// 数据读取接口 (IStatReader)
-// 作用：战斗系统（伤害计算、血量计算）和 UI 刷新只依赖这个接口。
-// 联机意义：不管是本地玩家，还是通过网络同步过来的远程玩家，
-// 他们的 PlayerManager 都持有这个接口。战斗逻辑不需要关心数据是从存档读的还是从网络包解出来的。
+// 只读接口：战斗系统、UI刷新只依赖此接口
+// 联机意义：远程玩家数据从网络包同步，也实现此接口
 // --------------------------------------------------------
-public interface IStatReader
+
+/// <summary>
+/// 装配数据只读接口：获取最终计算后的数值
+/// </summary>
+public interface ILoadoutReader
 {
-    /// <summary> 获取局外永久强化的基础等级 </summary>
-    int GetMetaBaseLevel(ModuleType module, StatType stat);
+    /// <summary> 当前装备的框架ID </summary>
+    string FrameId { get; }
 
-    /// <summary> 获取局内获得的临时等级 </summary>
-    int GetRunLevel(ModuleType module, StatType stat);
+    /// <summary> 获取指定插槽中模块的类型（None=空槽） </summary>
+    ModuleType GetSlotModuleType(string slotId);
 
-    /// <summary> 获取最终计算的总等级 (Meta + Run) </summary>
-    int GetTotalLevel(ModuleType module, StatType stat);
+    /// <summary> 获取指定属性的最终值（模块基础 + 核心加成 + 插槽修正，全部叠加后） </summary>
+    float GetFinalStat(string statId);
 
-    /// <summary> 获取该属性在局内的最高可升等级（由局外科技树决定上限） </summary>
-    int GetRunMaxLevelCap(ModuleType module, StatType stat);
+    /// <summary> 获取指定模块上所有配件的效果ID列表（用于战斗系统触发） </summary>
+    string[] GetActivePluginEffectIds(string slotId);
+
+    /// <summary> 获取框架所有固有特效 </summary>
+    FrameInherentEffect[] GetFrameInherentEffects();
+
+    /// <summary> 该插槽是否已装备模块 </summary>
+    bool IsSlotOccupied(string slotId);
 }
 
 // --------------------------------------------------------
-// 数据修改接口 (IProgressionMutator)
-// 作用：只允许拥有授权的系统（如本地的 UpgradeManager）调用。
-// 联机意义：远程玩家的实例不会实现或暴露这个接口，防止本地误改远程玩家的数据。
+// 修改接口：只允许本地授权系统调用
+// 联机意义：远程玩家不实现此接口，防止误改
 // --------------------------------------------------------
-public interface IProgressionMutator
-{
-    /// <summary> 尝试在局外升级（消耗 Meta 货币） </summary>
-    bool TryUpgradeMeta(ModuleType module, StatType stat, int cost);
 
-    /// <summary> 尝试在局内升级（消耗局内拾取物/经验） </summary>
-    bool TryUpgradeRun(ModuleType module, StatType stat);
+/// <summary>
+/// 装配数据修改接口：局内装配操作
+/// </summary>
+public interface ILoadoutMutator
+{
+    /// <summary> 选择框架（新局开始时） </summary>
+    bool SelectFrame(string frameId);
+
+    /// <summary> 将模块装备到指定插槽 </summary>
+    bool EquipModule(string slotId, ModuleType moduleType);
+
+    bool EquipModule(string slotId, string moduleId);
+
+    /// <summary> 从指定插槽卸下模块 </summary>
+    bool UnequipModule(string slotId);
+
+    /// <summary> 为指定插槽的模块插入核心（替换已有核心） </summary>
+    bool InsertCore(string slotId, string coreId);
+
+    /// <summary> 移除指定插槽模块的核心 </summary>
+    bool RemoveCore(string slotId);
+
+    /// <summary> 为指定插槽的模块插入配件 </summary>
+    bool InsertPlugin(string slotId, string pluginId, PluginRarity rarity);
+
+    /// <summary> 移除指定插槽模块的指定配件 </summary>
+    bool RemovePlugin(string slotId, int pluginIndex);
+
+    /// <summary> 清空当前装配（死亡/重开时） </summary>
+    void ClearLoadout();
 }
 
 // --------------------------------------------------------
-// 综合数据提供者 (服务定位器或依赖注入使用)
+// 综合数据提供者
 // --------------------------------------------------------
-public interface IProgressionDataProvider : IStatReader, IProgressionMutator
+
+/// <summary>
+/// 装配数据完整提供者（只读 + 修改 + 事件）
+/// </summary>
+public interface ILoadoutDataProvider : ILoadoutReader, ILoadoutMutator
 {
-    // 可以添加一些事件用于 UI 响应式刷新
-    event Action<ModuleType, StatType> OnStatUpgraded;
+    /// <summary> 插槽内容变更时触发（装备/卸载/核心/配件变化） </summary>
+    event Action<string> OnSlotChanged;
+
+    /// <summary> 框架变更时触发 </summary>
+    event Action<string> OnFrameChanged;
 }

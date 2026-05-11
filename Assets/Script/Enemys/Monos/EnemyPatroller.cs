@@ -1,26 +1,26 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-// Ñ²ÂßĞÍµĞÈËAI
+// å·¡é€»å‹æ•ŒäººAI
 public class EnemyPatroller : EnemyBase
 {
     [Header("Patroller Settings")]
     public List<Transform> patrolPoints = new List<Transform>();
     public float patrolSpeed;
-    [Header("Æ½»¬Â·¾¶²ÎÊı")]
-    public float curveSmoothness = 0.5f; // ÇúÏßÆ½»¬¶È
-    public int curveSampleCount = 20;    // Ã¿¸öÂ·¾¶¶ÎµÄ²åÖµµãÊı
+    [Header("å¹³æ»‘è·¯å¾„å‚æ•°")]
+    public float curveSmoothness = 0.5f; // æ›²çº¿å¹³æ»‘åº¦
+    public int curveSampleCount = 20;    // æ¯ä¸ªè·¯å¾„æ®µçš„æ’å€¼ç‚¹æ•°
     [Header("Random Noise Settings")]
-    public float noiseStrength = 0.2f;   // Æ«ÒÆ·ù¶È
-    public float noiseFrequency = 2f;  // ÔëÉù±ä»¯ËÙ¶È
+    public float noiseStrength = 0.2f;   // åç§»å¹…åº¦
+    public float noiseFrequency = 2f;  // å™ªå£°å˜åŒ–é€Ÿåº¦
     private float noiseSeedX;
     private float noiseSeedY;
 
     private Transform currentTargetPoint;
-    private int currentPointIndex = 0; // µ±Ç°Ñ²ÂßµãµÄË÷Òı
+    private int currentPointIndex = 0; // å½“å‰å·¡é€»ç‚¹çš„ç´¢å¼•
     public Vector3 enemyScale = new Vector3(0.4f, 0.4f, 1f);
 
-    private List<Vector2> smoothPathPoints; // ´æ´¢²åÖµºóµÄÆ½»¬Â·¾¶µã
+    private List<Vector2> smoothPathPoints; // å­˜å‚¨æ’å€¼åçš„å¹³æ»‘è·¯å¾„ç‚¹
     private int currentPathIndex = 0;      
 
     public override void OnSpawn()
@@ -32,11 +32,11 @@ public class EnemyPatroller : EnemyBase
         {
             currentTargetPoint = GetClosestPatrolPoint();
             currentPointIndex = patrolPoints.IndexOf(currentTargetPoint);
-            GenerateSmoothPath(); // Éú³ÉÆ½»¬Â·¾¶
+            GenerateSmoothPath(); // ç”Ÿæˆå¹³æ»‘è·¯å¾„
         }
         else
         {
-            Debug.LogWarning("Î´ÅäÖÃÑ²Âßµã");
+            Debug.LogWarning("æœªé…ç½®å·¡é€»ç‚¹");
         }
         if (patrolSpeed > 0) moveSpeed = patrolSpeed;
         noiseSeedX = Random.Range(0f, 1000f);
@@ -62,20 +62,20 @@ public class EnemyPatroller : EnemyBase
     {
         if (isDead || patrolPoints == null || patrolPoints.Count == 0)
         {
-            rb.velocity = Vector2.zero;
+            StopMovementDrive();
             return;
         }
 
         SmoothPatrolMovement(); 
     }
 
-    // Éú³ÉCatmull-RomÆ½»¬Â·¾¶
+    // ç”ŸæˆCatmull-Romå¹³æ»‘è·¯å¾„
     private void GenerateSmoothPath()
     {
         smoothPathPoints = new List<Vector2>();
         if (patrolPoints.Count < 2) return;
 
-        // ±éÀúËùÓĞÑ²Âßµã¶Î
+        // éå†æ‰€æœ‰å·¡é€»ç‚¹æ®µ
         for (int i = 0; i < patrolPoints.Count; i++)
         {
             Transform p0 = patrolPoints[(i - 1 + patrolPoints.Count) % patrolPoints.Count]; 
@@ -85,7 +85,7 @@ public class EnemyPatroller : EnemyBase
 
             if (p0 == null || p1 == null || p2 == null || p3 == null) continue;
 
-            // ¶ÔÃ¿¸ö¶ÎÉú³É²åÖµµã£¬ĞÎ³ÉÆ½»¬ÇúÏß
+            // å¯¹æ¯ä¸ªæ®µç”Ÿæˆæ’å€¼ç‚¹ï¼Œå½¢æˆå¹³æ»‘æ›²çº¿
             for (int j = 0; j < curveSampleCount; j++)
             {
                 float t = j / (float)curveSampleCount;
@@ -101,13 +101,13 @@ public class EnemyPatroller : EnemyBase
         }
     }
 
-    // Catmull-RomÇúÏß²åÖµ¼ÆËã
+    // Catmull-Romæ›²çº¿æ’å€¼è®¡ç®—
     private Vector2 CatmullRomInterpolation(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float t)
     {
         float t2 = t * t;
         float t3 = t2 * t;
 
-        // Catmull-Rom¹«Ê½
+        // Catmull-Romå…¬å¼
         Vector2 a = 0.5f * (2f * p1);
         Vector2 b = 0.5f * (p2 - p0);
         Vector2 c = 0.5f * (2f * p0 - 5f * p1 + 4f * p2 - p3);
@@ -116,7 +116,7 @@ public class EnemyPatroller : EnemyBase
         return a + (b * t) + (c * t2) + (d * t3);
     }
 
-    // Æ½»¬Ñ²ÂßÒÆ¶¯Âß¼­
+    // å¹³æ»‘å·¡é€»ç§»åŠ¨é€»è¾‘
     private void SmoothPatrolMovement()
     {
         if (smoothPathPoints == null || smoothPathPoints.Count == 0)
@@ -136,7 +136,7 @@ public class EnemyPatroller : EnemyBase
         Vector2 noisyTarget = baseTarget + noiseOffset;
 
         Vector2 desiredVelocity = (noisyTarget - (Vector2)transform.position).normalized * moveSpeed;
-        rb.velocity = Vector2.Lerp(rb.velocity, desiredVelocity, Time.deltaTime * 8f);
+        DriveVelocity(desiredVelocity, 1.6f);
 
         float distanceToBase = Vector2.Distance(transform.position, baseTarget);
 
@@ -146,30 +146,30 @@ public class EnemyPatroller : EnemyBase
         }
     }
 
-    // Ö±ÏßÑ²ÂßÂß¼­
+    // ç›´çº¿å·¡é€»é€»è¾‘
     private void PatrolMovement()
     {
         if (currentTargetPoint == null)
         {
-            rb.velocity = Vector2.zero;
+            StopMovementDrive();
             return;
         }
 
-        // ¼ÆËã³¯Ïòµ±Ç°Ä¿±êµãµÄ·½Ïò
+        // è®¡ç®—æœå‘å½“å‰ç›®æ ‡ç‚¹çš„æ–¹å‘
         Vector2 directionToTarget = (currentTargetPoint.position - transform.position).normalized;
 
-        rb.velocity = directionToTarget * moveSpeed;
+        DriveVelocity(directionToTarget * moveSpeed, 1.3f);
 
         float distanceToTarget = Vector2.Distance(transform.position, currentTargetPoint.position);
         if (distanceToTarget < 0.1f)
         {
-            // ±éÀúÑ­»·ÁĞ±í£¬ÇĞ»»µ½ÏÂÒ»¸öÑ²Âßµã
+            // éå†å¾ªç¯åˆ—è¡¨ï¼Œåˆ‡æ¢åˆ°ä¸‹ä¸€ä¸ªå·¡é€»ç‚¹
             currentPointIndex = (currentPointIndex + 1) % patrolPoints.Count;
             currentTargetPoint = patrolPoints[currentPointIndex];
         }
     }
 
-    // ÕÒ×î½üÑ²Âßµã
+    // æ‰¾æœ€è¿‘å·¡é€»ç‚¹
     private Transform GetClosestPatrolPoint()
     {
         Transform closestPoint = null;
@@ -191,15 +191,15 @@ public class EnemyPatroller : EnemyBase
     public override void OnDespawn()
     {
         base.OnDespawn();
-        rb.velocity = Vector2.zero;
+        StopMovementDrive(true);
         currentPointIndex = 0;
-        currentPathIndex = 0; // ÖØÖÃÂ·¾¶Ë÷Òı
+        currentPathIndex = 0; // é‡ç½®è·¯å¾„ç´¢å¼•
     }
 
-    // Gizmos»æÖÆ
+    // Gizmosç»˜åˆ¶
     private void OnDrawGizmos()
     {
-        // »æÖÆÖ±ÏßÑ²ÂßµãÁ¬Ïß£¨ºìÉ«£©
+        // ç»˜åˆ¶ç›´çº¿å·¡é€»ç‚¹è¿çº¿ï¼ˆçº¢è‰²ï¼‰
         if (patrolPoints == null || patrolPoints.Count < 2) return;
 
         Gizmos.color = Color.red;
@@ -214,7 +214,7 @@ public class EnemyPatroller : EnemyBase
             }
         }
 
-        // »æÖÆÆ½»¬Â·¾¶£¨ÂÌÉ«£©
+        // ç»˜åˆ¶å¹³æ»‘è·¯å¾„ï¼ˆç»¿è‰²ï¼‰
         if (smoothPathPoints != null && smoothPathPoints.Count > 1)
         {
             Gizmos.color = Color.green;

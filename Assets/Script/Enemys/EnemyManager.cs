@@ -1,107 +1,44 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyManager : MonoBehaviour
 {
     public static EnemyManager Instance;
 
-    private Camera _mainCam;
-    private float camHalfWidth;
-    private float camHalfHeight;
-    private float minX, maxX, minY, maxY;
-
+    [Header("è¾¹ç•Œæ£€æµ‹")]
     public int checkPerFrame = 10;
-    private int _currentCheckIndex=0;
 
-    [Header("ÅäÖÃ")]
-    public float border=1f;
-
-    [Header("Ìù±ßÅÐ¶Ï·¶Î§")]
+    [Header("è´´è¾¹åˆ¤æ–­èŒƒå›´")]
     public float borderThreshold = 0.6f;
 
-    // ËùÓÐµÐÈËÁÐ±í
-    private List<EnemyBorderEvent> enemyList = new List<EnemyBorderEvent>();
+    private readonly EnemyBoundaryService boundaryService = new();
 
     private void Awake()
     {
         Instance = this;
-        _mainCam = Camera.main;
-        float camHeight = 2f * _mainCam.orthographicSize;
-        float camWidth = camHeight * _mainCam.aspect;
-        camHalfWidth = camWidth / 2f;
-        camHalfHeight = camHeight / 2f;
+        boundaryService.Configure(checkPerFrame, borderThreshold);
     }
 
-    // ¼ä¸ôÐÔ¼ì²âËùÓÐµÐÈË
     private void Update()
     {
-        CheckEnemiesBatch();
-        UpdateBounds();
-    }
-    private void UpdateBounds()
-    {
-        minX = _mainCam.transform.position.x - camHalfWidth - border;
-        maxX = _mainCam.transform.position.x + camHalfWidth + border;
-        minY = _mainCam.transform.position.y - camHalfHeight - border;
-        maxY = _mainCam.transform.position.y + camHalfHeight + border;
+        boundaryService.Configure(checkPerFrame, borderThreshold);
+        boundaryService.Tick(Time.deltaTime, Camera.main);
     }
 
-    // ×¢²áµÐÈË
     public void RegisterEnemy(EnemyBase enemy)
     {
-        if (!enemyList.Contains(enemy.GetComponent<EnemyBorderEvent>()))
-            enemyList.Add(enemy.GetComponent<EnemyBorderEvent>());
+        boundaryService.RegisterEnemy(enemy);
     }
 
-    // ÒÆ³ýµÐÈË
     public void UnRegisterEnemy(EnemyBase enemy)
     {
-        if (enemyList.Contains(enemy.GetComponent<EnemyBorderEvent>()))
-            enemyList.Remove(enemy.GetComponent<EnemyBorderEvent>());
+        boundaryService.UnregisterEnemy(enemy);
     }
 
-    //·ÖÅú´Î¼ì²âËùÓÐµÐÈË
-    private void CheckEnemiesBatch()
+    private void OnDisable()
     {
-        if (enemyList.Count == 0)
-        {
-            _currentCheckIndex = 0;
-            return;
-        }
+        if (Instance == this)
+            Instance = null;
 
-        // ¡¾¹Ø¼ü¡¿ÇåÀíÒÑ±»Ïú»ÙµÄ null ¶ÔÏó
-        enemyList.RemoveAll(e => e == null);
-        for(int i = 0; i < 10; i++)
-        {
-            if (enemyList.Count == 0)
-            {
-                _currentCheckIndex = 0;
-                return;
-            }
-
-            // »ñÈ¡µ±Ç°Òª¼ì²âµÄµÐÈË
-            EnemyBorderEvent enemy = enemyList[_currentCheckIndex];
-
-            // °²È«ÅÐ¶Ï
-            if (enemy != null && !enemy.isFirstTimeEntering && IsAtBorder(enemy.transform.position))
-            {
-                enemy.OnBorderReached();
-            }
-
-            // Ñ­»·Ë÷Òý
-            _currentCheckIndex = (_currentCheckIndex + 1) % enemyList.Count;
-        }
-        // ÔÙ´ÎÅÐ¶Ï£¨ÇåÀíºó¿ÉÄÜÎª¿Õ£©
-        
-    }
-
-    // ÅÐ¶ÏÊÇ·ñÌù±ß
-    private bool IsAtBorder(Vector2 pos)
-    {
-        return pos.x <= minX + borderThreshold ||
-               pos.x >= maxX - borderThreshold ||
-               pos.y <= minY + borderThreshold ||
-               pos.y >= maxY - borderThreshold;
+        boundaryService.Reset();
     }
 }
