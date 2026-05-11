@@ -10,8 +10,8 @@ public enum SpawnDirection
     Top,    // 上方
     Bottom, // 下方
     Left,   // 左侧
-    Right,   // 右侧
-    TopCenter //
+    Right,  // 右侧
+    TopCenter
 }
 
 [System.Serializable]
@@ -25,7 +25,6 @@ public class WaveGroup
 }
 
 [System.Serializable]
-
 public class WaveData
 {
     public string waveName = "Wave ";
@@ -44,7 +43,6 @@ public class WaveManager : MonoSingleton<WaveManager>
     public float spawnPadding = 1.5f;   // 刷怪点距离屏幕边缘的额外距离
 
     // --- UI需要用的 ---
-    // 参数1: 当前波次索引, 参数2: 波次名字
     public Action<int, string> OnWaveIncoming;
     public Action OnAllWavesCleared; // 通关事件
 
@@ -79,9 +77,6 @@ public class WaveManager : MonoSingleton<WaveManager>
         camWidth = camHeight * mainCam.aspect;
     }
 
-    /// <summary>
-    /// 从存档恢复波次索引
-    /// </summary>
     public void InitFromSaveData()
     {
         var run = DataManager.Instance.Run;
@@ -89,9 +84,6 @@ public class WaveManager : MonoSingleton<WaveManager>
         currentWaveIndex = run.wave.currentWaveIndex;
     }
 
-    /// <summary>
-    /// 将当前波次状态写入 DataManager
-    /// </summary>
     public void SyncToSaveData()
     {
         var run = DataManager.Instance.Run;
@@ -100,22 +92,19 @@ public class WaveManager : MonoSingleton<WaveManager>
     }
 
     // --- 核心游戏循环 ---
-    //在GameManager的MainGameState状态里调用此协程启动游戏循环
     public IEnumerator GameLoopRoutine()
     {
-        // 稍微等待一下游戏初始化
         yield return new WaitForSeconds(1f);
 
         while (currentWaveIndex < wavesData.allWaves.Count)
         {
             WaveData currentWave = wavesData.allWaves[currentWaveIndex];
 
-            //触发 UI 弹窗事件
             if (currentWave.waveName == "Survive")
             {
                 BackgroundFXController.Instance.SwitchToTheme($"Fast_{currentWaveIndex % 5}");
             }
-            else if(currentWave.waveName == "AirCraft" || currentWave.waveName == "Singer")
+            else if (currentWave.waveName == "AirCraft" || currentWave.waveName == "Singer")
             {
                 BackgroundFXController.Instance.SwitchToTheme($"Boss");
             }
@@ -126,7 +115,6 @@ public class WaveManager : MonoSingleton<WaveManager>
             OnWaveIncoming?.Invoke(currentWaveIndex + 1, currentWave.waveName);
             Debug.Log($"<color=cyan>--- {currentWave.waveName} 即将开始 ---</color>");
 
-            //波次休息时间
             yield return new WaitForSeconds(timeBetweenWaves);
 
             runningGroupRoutines.Clear();
@@ -135,12 +123,9 @@ public class WaveManager : MonoSingleton<WaveManager>
             float waveTimer = 0f;
             bool isTimedWave = currentWave.waveDuration > 0;
 
-
-            //每帧检查有没有怪，还有就继续循环等下一帧
             while (true)
             {
                 bool allClear = activeEnemies.Count == 0 && !isSpawning;
-
                 bool timeUp = isTimedWave && waveTimer >= currentWave.waveDuration;
 
                 if (allClear)
@@ -175,12 +160,26 @@ public class WaveManager : MonoSingleton<WaveManager>
             SyncToSaveData();
         }
 
-        // 所有波次结束
-        OnAllWavesCleared?.Invoke();
-        UIManager.Instance.Open<EndUI>();
-        Debug.Log("所有波次已清空！胜利！");
+        // 修改点：循环结束后，不再直接调用胜利 UI，而是等待 Boss 死亡来触发。
+        Debug.Log("所有常规波次已生成完毕，等待击败最终 Boss...");
     }
 
+    // ==========================================
+    // --- 新增：专门用于触发最终胜利的 API ---
+    // ==========================================
+    public void TriggerVictory()
+    {
+        OnAllWavesCleared?.Invoke();
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.Open<EndUI>();
+        }
+
+        // 可选：清理场上残余的其他小怪
+        ClearAllEnemies();
+
+        Debug.Log("<color=yellow>最终 Boss 已被击败！通关！</color>");
+    }
 
     // --- 刷怪逻辑 ---
     IEnumerator SpawnWaveRoutine(WaveData wave)
@@ -188,9 +187,9 @@ public class WaveManager : MonoSingleton<WaveManager>
         for (int i = 0; i < wave.groups.Count; i++)
         {
             var currentGroup = wave.groups[i];
-            for(int j = 0; j < currentGroup.enemyIndex.Count; j++)
+            for (int j = 0; j < currentGroup.enemyIndex.Count; j++)
             {
-                runningGroupRoutines.Add(StartCoroutine(SpawnGroupRoutine(wave, currentGroup,j)));
+                runningGroupRoutines.Add(StartCoroutine(SpawnGroupRoutine(wave, currentGroup, j)));
             }
 
             foreach (var routine in runningGroupRoutines)
@@ -199,43 +198,38 @@ public class WaveManager : MonoSingleton<WaveManager>
             }
             runningGroupRoutines.Clear();
         }
-
     }
 
-    IEnumerator SpawnGroupRoutine(WaveData wave,WaveGroup group,int index)
+    IEnumerator SpawnGroupRoutine(WaveData wave, WaveGroup group, int index)
     {
-        activeSpawnerCount++; // 标记有一个刷怪进程开始
+        activeSpawnerCount++;
 
-        float timer=0;
+        float timer = 0;
         while (timer < group.groupDuration)
         {
             SpawnEnemy(wave.enemies[group.enemyIndex[index]], group.direction);
             yield return new WaitForSeconds(group.spawnRate[index]);
-            timer+= group.spawnRate[index];
+            timer += group.spawnRate[index];
         }
 
-        activeSpawnerCount--; // 标记这个刷怪进程结束
+        activeSpawnerCount--;
     }
 
     void SpawnEnemy(GameObject prefab, SpawnDirection dir)
     {
         Vector3 spawnPos = GetSpawnPosition(dir);
-
         ObjectPoolManager.Instance.Get(prefab, spawnPos, Quaternion.identity);
     }
 
     Vector3 GetSpawnPosition(SpawnDirection dir)
     {
         Vector3 pos = Vector3.zero;
-
-        // 获取屏幕边界 (正交相机)
         float halfHeight = mainCam.orthographicSize;
         float halfWidth = halfHeight * mainCam.aspect;
 
         float xLimit = halfWidth + spawnPadding;
         float yLimit = halfHeight + spawnPadding;
 
-        // 尝试获取玩家位置
         Vector3 playerPos = Vector3.zero;
         bool playerFound = false;
         GameObject p = GameObject.FindGameObjectWithTag("Player");
@@ -253,65 +247,45 @@ public class WaveManager : MonoSingleton<WaveManager>
         switch (dir)
         {
             case SpawnDirection.Top:
-                // 墙的位置：y = yLimit
-                // 检查玩家是否靠近上墙
                 if (playerFound && Mathf.Abs(playerPos.y - yLimit) < wallProximityCheck)
                 {
-                    // 玩家在上墙附近，X轴需要避开玩家的X
                     float safeX = GetSafeRandomCoord(-xLimit, xLimit, playerPos.x, playerSafetyRadius);
                     pos = new Vector3(safeX, yLimit, 0);
                 }
-                else
-                {
-                    pos = new Vector3(Random.Range(-xLimit, xLimit), yLimit, 0);
-                }
+                else pos = new Vector3(Random.Range(-xLimit, xLimit), yLimit, 0);
                 break;
 
             case SpawnDirection.Bottom:
-                // 墙的位置：y = -yLimit
                 if (playerFound && Mathf.Abs(playerPos.y - (-yLimit)) < wallProximityCheck)
                 {
                     float safeX = GetSafeRandomCoord(-xLimit, xLimit, playerPos.x, playerSafetyRadius);
                     pos = new Vector3(safeX, -yLimit, 0);
                 }
-                else
-                {
-                    pos = new Vector3(Random.Range(-xLimit, xLimit), -yLimit, 0);
-                }
+                else pos = new Vector3(Random.Range(-xLimit, xLimit), -yLimit, 0);
                 break;
 
             case SpawnDirection.Left:
-                // 墙的位置：x = -xLimit
                 if (playerFound && Mathf.Abs(playerPos.x - (-xLimit)) < wallProximityCheck)
                 {
-                    // 玩家在左墙附近，Y轴需要避开玩家的Y
                     float safeY = GetSafeRandomCoord(-yLimit, yLimit, playerPos.y, playerSafetyRadius);
                     pos = new Vector3(-xLimit, safeY, 0);
                 }
-                else
-                {
-                    pos = new Vector3(-xLimit, Random.Range(-yLimit, yLimit), 0);
-                }
+                else pos = new Vector3(-xLimit, Random.Range(-yLimit, yLimit), 0);
                 break;
 
             case SpawnDirection.Right:
-                // 墙的位置：x = xLimit
                 if (playerFound && Mathf.Abs(playerPos.x - xLimit) < wallProximityCheck)
                 {
                     float safeY = GetSafeRandomCoord(-yLimit, yLimit, playerPos.y, playerSafetyRadius);
                     pos = new Vector3(xLimit, safeY, 0);
                 }
-                else
-                {
-                    pos = new Vector3(xLimit, Random.Range(-yLimit, yLimit), 0);
-                }
+                else pos = new Vector3(xLimit, Random.Range(-yLimit, yLimit), 0);
                 break;
 
             case SpawnDirection.TopCenter:
                 pos = new Vector3(0, halfHeight - 1.5f, 0);
                 break;
         }
-
         return pos;
     }
 
@@ -320,39 +294,20 @@ public class WaveManager : MonoSingleton<WaveManager>
         float avoidMin = avoidCenter - radius;
         float avoidMax = avoidCenter + radius;
 
-        // 计算两个安全区段：
-        // 左/下段: [min, avoidMin]
-        // 右/上段: [avoidMax, max]
-
         bool seg1Valid = avoidMin > min;
         bool seg2Valid = avoidMax < max;
 
         if (seg1Valid && seg2Valid)
         {
-            // 两边都有空间，按长度比例随机选一边
             float len1 = avoidMin - min;
             float len2 = max - avoidMax;
 
-            // 扔硬币决定去哪边
-            if (Random.value < (len1 / (len1 + len2)))
-                return Random.Range(min, avoidMin);
-            else
-                return Random.Range(avoidMax, max);
+            if (Random.value < (len1 / (len1 + len2))) return Random.Range(min, avoidMin);
+            else return Random.Range(avoidMax, max);
         }
-        else if (seg1Valid)
-        {
-            // 只有左边有空间 (玩家靠右/上顶死了)
-            return Random.Range(min, avoidMin);
-        }
-        else if (seg2Valid)
-        {
-            // 只有右边有空间
-            return Random.Range(avoidMax, max);
-        }
-        else
-        {
-            return Random.Range(min, max);
-        }
+        else if (seg1Valid) return Random.Range(min, avoidMin);
+        else if (seg2Valid) return Random.Range(avoidMax, max);
+        else return Random.Range(min, max);
     }
 
     private void ClearAllEnemies()
@@ -367,26 +322,17 @@ public class WaveManager : MonoSingleton<WaveManager>
 
     public void RegisterEnemy(EnemyBase enemy)
     {
-        if (!activeEnemies.Contains(enemy))
-        {
-            activeEnemies.Add(enemy);
-        }
+        if (!activeEnemies.Contains(enemy)) activeEnemies.Add(enemy);
     }
 
     public void UnregisterEnemy(EnemyBase enemy)
     {
-        if (activeEnemies.Contains(enemy))
-        {
-            activeEnemies.Remove(enemy);
-        }
+        if (activeEnemies.Contains(enemy)) activeEnemies.Remove(enemy);
     }
 
     public void RegisterEnemyDeath()
     {
         totalEnemiesAlive--;
-        if (totalEnemiesAlive < 0)
-        {
-            totalEnemiesAlive = 0;
-        }
+        if (totalEnemiesAlive < 0) totalEnemiesAlive = 0;
     }
 }

@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Enemy
   - Reflector
+  - Shield
+  - Bullet
   layers:
   - Default
   - TransparentFX
@@ -22,7 +24,7 @@ TagManager:
   - EnemyBullet
   - UI_Model
   - EnemyReflector
-  - 
+  - EnemyShield
   - 
   - 
   - 

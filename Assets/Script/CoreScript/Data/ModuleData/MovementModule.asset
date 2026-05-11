@@ -16,7 +16,7 @@ MonoBehaviour:
   moduleType: 0
   baseStats:
   - type: 3
-    value: 4
+    value: 15
   unlockLevel: 1
   statUpgrades:
   - statType: 3

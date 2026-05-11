@@ -13,7 +13,7 @@ public class CameraManager : MonoSingleton<CameraManager>
     private ProCamera2DShake shake;
 
     // 状态记录
-    private float defaultSize = 5f;
+    private float defaultSize = 8f;
     private Tween zoomTween; // 记录当前的缩放Tween，防止冲突
 
     protected void Awake()

@@ -16,7 +16,7 @@ MonoBehaviour:
   moduleType: 1
   baseStats:
   - type: 1
-    value: 10
+    value: 999
   - type: 2
     value: 0.05
   - type: 28

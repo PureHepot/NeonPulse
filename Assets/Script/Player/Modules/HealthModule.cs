@@ -15,6 +15,9 @@ public class HealthModule : PlayerModule
     public Color hurtColor = Color.red;
     public Color normalColor = Color.white;
 
+    [Header("Hurt Collision")]
+    public bool disableColliderDuringHurt = false;
+
     private bool isInvincible = false;
     public bool IsInvincible
     {
@@ -101,22 +104,30 @@ public class HealthModule : PlayerModule
     {
         player.IsStunned = true;
         isInvincible = true;
+        bool colliderDisabled = false;
 
         PlayHurtVisuals();
 
         if (attacker != null)
         {
             Vector2 knockbackDir = (player.transform.position - attacker.position).normalized;
-            player.Colli2d.enabled = false;
+            if (disableColliderDuringHurt && player.Colli2d != null)
+            {
+                player.Colli2d.enabled = false;
+                colliderDisabled = true;
+            }
             player.Rigid2d.AddForce(knockbackDir * knockbackForce, ForceMode2D.Impulse);
         }
 
         yield return new WaitForSeconds(stunDuration);
         player.IsStunned = false;
 
-        yield return new WaitForSeconds(invincibilityDuration - stunDuration);
+        yield return new WaitForSeconds(Mathf.Max(0f, invincibilityDuration - stunDuration));
 
-        player.Colli2d.enabled = true;
+        if (colliderDisabled && player.Colli2d != null)
+        {
+            player.Colli2d.enabled = true;
+        }
         isInvincible = false;
         player.BodyRenderer.color = normalColor;
     }

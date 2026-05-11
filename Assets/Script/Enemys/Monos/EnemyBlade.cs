@@ -177,7 +177,7 @@ public class EnemyBlade : EnemyBase
             EnterMissRecovery();
         }
     }
-
+    
     void EnterMissRecovery()
     {
         currentState = State.Recovering;

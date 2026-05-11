@@ -14,10 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   allWaves:
   - waveName: 'Wave '
-    enemies: []
+    enemies:
+    - {fileID: 6625929125906488479, guid: 59709767c1be0cf4cb62e7e35c991938, type: 3}
     groups:
-    - enemyIndex: 
-      spawnRate: []
-      groupDuration: 0
+    - enemyIndex: 00000000
+      spawnRate:
+      - 1
+      groupDuration: 1
       direction: 5
-    waveDuration: 0
+    waveDuration: 1200

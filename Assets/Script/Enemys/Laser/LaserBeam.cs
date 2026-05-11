@@ -5,106 +5,160 @@ using UnityEngine;
 [RequireComponent(typeof(LineRenderer))]
 public class LaserBeam : MonoBehaviour
 {
-    [Header("¼¤¹â»ù´¡ÉèÖÃ")]
+    [Header("æ¿€å…‰åŸºç¡€è®¾ç½®")]
     public float warningTime = 1.0f;
     public float activeTime = 0.5f;
     public float maxDistance = 25f;
 
-    [Tooltip("¼¤¹âµÄÊÓ¾õ¿í¶È (LineRendereräÖÈ¾¿í¶È)")]
+    [Tooltip("æ¿€å…‰çš„è§†è§‰å®½åº¦ (LineRendereræ¸²æŸ“å®½åº¦)")]
     public float laserWidth = 1.5f;
 
-    [Header("ÉËº¦ÅĞ¶¨ÓÅ»¯")]
-    [Tooltip("ÅĞ¶¨¿ò¿í¶ÈËõ·ÅÏµÊı (0.1~1.0)\nµ÷Ğ¡Õâ¸öÖµ£¬ÈÃÉËº¦ÅĞ¶¨Ö»¸²¸Ç¼¤¹âÖĞĞÄÊµĞÄ²¿·Ö")]
+    [Header("ä¼¤å®³åˆ¤å®šä¼˜åŒ–")]
+    [Tooltip("åˆ¤å®šæ¡†å®½åº¦ç¼©æ”¾ç³»æ•° (0.1~1.0)\nè°ƒå°è¿™ä¸ªå€¼ï¼Œè®©ä¼¤å®³åˆ¤å®šåªè¦†ç›–æ¿€å…‰ä¸­å¿ƒå®å¿ƒéƒ¨åˆ†")]
     [Range(0.1f, 1f)]
     public float hitboxScale = 0.5f;
 
     public int damage = 1;
+    [Tooltip("ä¼¤å®³é¢‘ç‡ï¼šæ¯éš”å¤šå°‘ç§’é€ æˆä¸€æ¬¡ä¼¤å®³ï¼ˆé˜²æ­¢ä¸€ç§’æ‰£60æ¬¡è¡€ï¼‰")]
+    public float damageTickRate = 0.1f;
     public LayerMask hitLayer;
 
-    [Header("µ÷ÊÔ")]
+    [Header("è°ƒè¯•")]
     public bool showDebugHitbox = true;
 
     private LineRenderer lr;
+    private bool isFiring = false;
+    private bool isActivePhase = false; // æ˜¯å¦å¤„äºçœŸå®ä¼¤å®³é˜¶æ®µ
 
+    // --- è¿½è¸ªè¿½è¸ªå˜é‡ ---
+    private Transform shooterTransform; // å‘å°„è€…(Boss)
+    private float dirMultiplier = 1f;
+    private float fireOffset = 1.5f;    // ç‚®å£åç§»é‡
+    private float nextDamageTime = 0f;  // ä¼¤å®³è®¡æ—¶å™¨
+
+    // åŸç‰ˆå¼€ç«æ–¹æ³• (é™æ€æ–¹å‘)
     public void Fire(Vector3 startPos, Vector3 direction)
     {
         transform.position = startPos;
+        transform.up = -direction;
+        InitLaser();
+        StartCoroutine(Routine());
+    }
 
+    public void FireTracking(Transform shooter, float offset, bool reverseDirection = false)
+    {
+        shooterTransform = shooter;
+        fireOffset = offset;
+        // å¦‚æœå¼€å¯åå‘ï¼Œæ–¹å‘å€ç‡è®¾ä¸º -1
+        dirMultiplier = reverseDirection ? -1f : 1f;
+        InitLaser();
+        StartCoroutine(Routine());
+    }
+
+    private void InitLaser()
+    {
         lr = GetComponent<LineRenderer>();
         lr.positionCount = 2;
         lr.useWorldSpace = true;
+        isFiring = true;
+        isActivePhase = false;
+
+        // é¢„è­¦ç‰¹æ•ˆ (ç»†çº¿)
+        lr.widthMultiplier = 0.1f;
+    }
+
+    private void Update()
+    {
+        if (!isFiring || lr == null) return;
+
+        Vector3 startPos = transform.position;
+        Vector3 direction = transform.up * -1f;
+
+        if (shooterTransform != null)
+        {
+            // ã€æ ¸å¿ƒä¿®æ”¹ã€‘ï¼šä¹˜ä¸Š dirMultiplierã€‚æ­£å¸¸æ˜¯ -upï¼Œåå‘å‘å°„æ—¶å˜æˆ +up
+            direction = shooterTransform.up * -1f * dirMultiplier;
+            startPos = shooterTransform.position + direction * fireOffset;
+
+            transform.position = startPos;
+            transform.up = -direction;
+        }
 
         Vector3 endPos = startPos + direction * maxDistance;
 
         lr.SetPosition(0, startPos);
         lr.SetPosition(1, endPos);
 
-        StartCoroutine(Routine(startPos, endPos, direction));
+        if (isActivePhase)
+        {
+            CheckHit(startPos, direction);
+        }
     }
 
-    IEnumerator Routine(Vector3 start, Vector3 end, Vector3 dir)
+    IEnumerator Routine()
     {
-        // === Ô¤¾¯½×¶Î ===
-        lr.startWidth = 0.1f;
-        lr.endWidth = 0.1f;
-        lr.startColor = new Color(1, 0, 0, 0.4f);
-        lr.endColor = new Color(1, 0, 0, 0.4f);
-        lr.SetPosition(0, start);
-        lr.SetPosition(1, end);
+        // --- é¢„è­¦é˜¶æ®µ ---
+        float t = 0;
+        while (t < warningTime)
+        {
+            t += Time.deltaTime;
+            yield return null;
+        }
 
-        yield return new WaitForSeconds(warningTime);
+        // --- æ¿€æ´»çˆ†å‘é˜¶æ®µ ---
+        isActivePhase = true;
+        lr.widthMultiplier = laserWidth; // æ¿€å…‰ç¬é—´å˜ç²—
 
-        // === ÉËº¦½×¶Î (ÊÓ¾õ) ===
-        // ÕâÀïÊ¹ÓÃÍêÕûµÄÊÓ¾õ¿í¶È
-        lr.startWidth = laserWidth;
-        lr.endWidth = laserWidth;
-        lr.startColor = Color.red;
-        lr.endColor = Color.white;
-        lr.SetPosition(0, start);
-        lr.SetPosition(1, end);
+        t = 0;
+        while (t < activeTime)
+        {
+            t += Time.deltaTime;
+            yield return null;
+        }
 
-        // === ÉËº¦ÅĞ¶¨ (ÎïÀí) ===
-        CheckDamage(start, end, dir);
-
-        yield return new WaitForSeconds(activeTime);
+        // --- ç»“æŸ ---
+        isFiring = false;
         Destroy(gameObject);
     }
 
-    void CheckDamage(Vector3 start, Vector3 end, Vector3 dir)
+    private void CheckHit(Vector3 startPos, Vector3 dir)
     {
-        Vector3 center = start + dir * (maxDistance / 2f);
-        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+        // é¢‘ç‡æ§åˆ¶ï¼šè¿˜æ²¡åˆ°ä¸‹æ¬¡æ‰£è¡€æ—¶é—´ï¼Œç›´æ¥è·³è¿‡æ£€æµ‹
+        if (Time.time < nextDamageTime) return;
 
-        // ¡¾ºËĞÄĞŞ¸Ä¡¿¼ÆËãÊµ¼ÊÅĞ¶¨¿í¶È
-        // Ê¹ÓÃ ÊÓ¾õ¿í¶È * Ëõ·ÅÏµÊı
         float actualHitboxWidth = laserWidth * hitboxScale;
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+        Vector2 center = (Vector2)startPos + (Vector2)dir * (maxDistance * 0.5f);
         Vector2 size = new Vector2(maxDistance, actualHitboxWidth);
 
-        // ·¢Éä¼ì²â
-        RaycastHit2D[] hits = Physics2D.BoxCastAll(center, size, angle, dir, 0f, hitLayer);
+        Collider2D[] hits = Physics2D.OverlapBoxAll(center, size, angle, hitLayer);
 
-        // »­³öÅĞ¶¨¿ò (ÇàÉ«) ·½±ãÄãÔÚ Scene ´°¿Ú¶Ô±È
         if (showDebugHitbox)
-        {
-            DebugDrawBox(center, size, angle, Color.cyan, 1.0f);
-        }
+            DebugDrawBox(center, size, angle, Color.cyan, 0.05f);
 
+        bool hitPlayer = false;
         if (hits.Length > 0)
         {
             foreach (var hit in hits)
             {
-                if (hit.collider != null)
+                if (hit != null)
                 {
-                    var hp = hit.collider.GetComponentInChildren<HealthModule>();
+                    var hp = hit.GetComponentInChildren<HealthModule>();
                     if (hp != null)
                     {
                         hp.TakeDamage(damage, transform);
+                        hitPlayer = true;
                     }
                 }
             }
         }
-    }
 
+        // å¦‚æœæ‰«åˆ°äº†ç©å®¶ï¼Œé‡ç½®å†·å´è®¡æ—¶å™¨
+        if (hitPlayer)
+        {
+            nextDamageTime = Time.time + damageTickRate;
+        }
+    }
     void DebugDrawBox(Vector2 center, Vector2 size, float angle, Color color, float duration)
     {
         Vector2 halfSize = size / 2f;

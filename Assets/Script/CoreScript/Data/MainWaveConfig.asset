@@ -263,7 +263,8 @@ MonoBehaviour:
       direction: 0
     waveDuration: 0
   - waveName: Singer
-    enemies: []
+    enemies:
+    - {fileID: 0}
     groups:
     - enemyIndex: 
       spawnRate: []
