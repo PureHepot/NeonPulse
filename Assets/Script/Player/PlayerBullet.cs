@@ -82,7 +82,10 @@ public class PlayerBullet : MonoBehaviour, IPoolable, IProjectileSpawnReceiver
         {
             var enemy = other.GetComponent<EnemyBase>();
             if (enemy != null)
-                enemy.TakeDamage(damage, hitPoint, transform.right, impactForce, impactTorque);
+            {
+                //enemy.TakeDamage(damage, hitPoint, transform.right, impactForce, impactTorque);
+            }
+                
             else
                 target.TakeDamage(damage, hitPoint, transform.right);
 

@@ -135,9 +135,9 @@ public class BossSinger : EnemyBase, IDamageable
     public float HairCenterY => (hairTopY + hairBottomY) / 2f;
     public float HairAmplitude => (hairTopY - hairBottomY) / 2f;
 
-    private void Awake()
+    protected override void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
+        base.Awake();
         if (bodyRenderer == null) bodyRenderer = GetComponentInChildren<SpriteRenderer>();
         if (screenRotator == null) screenRotator = FindObjectOfType<GameScreenRotator>();
 

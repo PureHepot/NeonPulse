@@ -1,4 +1,4 @@
-using DG.Tweening;
+﻿using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,10 +31,10 @@ public class BossAirCraft : EnemyBase
 
     [Header("Laser Settings")]
     public GameObject laserBeamObj;
-    public float laserWidth = 2.0f;       // 激光判定宽度
-    public float laserMaxDist = 20.0f;    // 激光最大长度
-    public int laserDamage = 5;           // 激光伤害
-    public float laserTickRate = 0.1f;    // 伤害频率
+    public float laserWidth = 2.0f;       // 婵€鍏夊垽瀹氬搴?
+    public float laserMaxDist = 20.0f;    // 婵€鍏夋渶澶ч暱搴?
+    public int laserDamage = 5;           // 婵€鍏変激瀹?
+    public float laserTickRate = 0.1f;    // 浼ゅ棰戠巼
     public LayerMask laserHitLayer;
     public float laserModeSpawnInterval = 1.5f;
 
@@ -48,25 +48,25 @@ public class BossAirCraft : EnemyBase
 
     public Vector2 CurrentVelocity;
 
-    [Tooltip("悬浮速度：数值越大上下动得越快")]
+    [Tooltip("Hover speed.")]
     public float hoverSpeed = 1.0f;
-    [Tooltip("悬浮幅度：上下移动的最大距离")]
+    [Tooltip("Hover distance.")]
     public float hoverDistance = 0.5f;
 
-    [Tooltip("大生成间隔：两波大生成之间的等待时间")]
+    [Tooltip("澶х敓鎴愰棿闅旓細涓ゆ尝澶х敓鎴愪箣闂寸殑绛夊緟鏃堕棿")]
     public float majorSpawnInterval = 5.0f;
 
-    [Tooltip("小生成间隔：一次大生成内部，连续生成小怪的间隔")]
+    [Tooltip("灏忕敓鎴愰棿闅旓細涓€娆″ぇ鐢熸垚鍐呴儴锛岃繛缁敓鎴愬皬鎬殑闂撮殧")]
     public float minorSpawnInterval = 1.0f;
 
-    [Tooltip("每次大生成包含几次小生成")]
+    [Tooltip("姣忔澶х敓鎴愬寘鍚嚑娆″皬鐢熸垚")]
     public int wavesPerMajor = 3;
 
-    // --- 状态机 ---
+    // --- 鐘舵€佹満 ---
     private BossState currentState;
-    public Vector3 HoverAnchorPos { get; set; } // 悬浮的基准点
+    public Vector3 HoverAnchorPos { get; set; } // 鎮诞鐨勫熀鍑嗙偣
 
-    // 状态实例
+    // 鐘舵€佸疄渚?
     public StateEntrance stateEntrance;
     public StateIdle stateIdle;
     public StateSpawn stateSpawn;
@@ -82,12 +82,12 @@ public class BossAirCraft : EnemyBase
     private int brokenTurretCount = 0;
     private bool bodyShieldBroken = false;
 
-    // 【新增】记录悬浮的中心点位置
+    // 銆愭柊澧炪€戣褰曟偓娴殑涓績鐐逛綅缃?
     private Vector3 hoverAnchorPos;
 
-    private void Awake()
+    protected override void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
+        base.Awake();
         if (bodyRenderer == null) bodyRenderer = GetComponentInChildren<SpriteRenderer>();
 
         if (!bodyPart) bodyPart = transform.FindDeepChild("aircraft_body")?.GetComponent<BossPart>();
@@ -100,7 +100,7 @@ public class BossAirCraft : EnemyBase
         if (!leftTurret) leftTurret = transform.FindDeepChild("canotower_left")?.GetComponent<BossTurret>();
         if (!rightTurret) rightTurret = transform.FindDeepChild("canotower_right")?.GetComponent<BossTurret>();
 
-        // 监听部位破坏（可选，用于状态切换判断）
+        // 鐩戝惉閮ㄤ綅鐮村潖锛堝彲閫夛紝鐢ㄤ簬鐘舵€佸垏鎹㈠垽鏂級
         if (leftWing) leftWing.OnPartBroken += OnWingBroken;
         if (rightWing) rightWing.OnPartBroken += OnWingBroken;
     }
@@ -117,7 +117,7 @@ public class BossAirCraft : EnemyBase
         bodyShieldBroken = false;
         if (laserBeamObj) laserBeamObj.SetActive(false);
 
-        // 初始化状态
+        // 鍒濆鍖栫姸鎬?
         stateEntrance = new StateEntrance(this);
         stateIdle = new StateIdle(this);
         stateSpawn = new StateSpawn(this);
@@ -125,7 +125,7 @@ public class BossAirCraft : EnemyBase
         stateWild = new StateWild(this);
         stateLaser = new StateLaser(this);
 
-        // 初始状态：入场
+        // 鍒濆鐘舵€侊細鍏ュ満
         ChangeState(stateEntrance);
     }
 
@@ -172,11 +172,11 @@ public class BossAirCraft : EnemyBase
     }
 
 
-    // --- 部位破坏回调 ---
+    // --- 閮ㄤ綅鐮村潖鍥炶皟 ---
     private void OnWingBroken(BossPart part)
     {
         Debug.Log($"Boss Wing Broken: {part.name}");
-        // 可以在这里播放特定的断裂特效
+        // 鍙互鍦ㄨ繖閲屾挱鏀剧壒瀹氱殑鏂鐗规晥
         BackgroundFXController.Instance.TriggerDistortion(part.transform.position);
     }
 
@@ -186,7 +186,7 @@ public class BossAirCraft : EnemyBase
 
         bool isLeftBroken = (brokenPart == leftTurretPart);
 
-        Debug.Log($"炮塔破坏: {(isLeftBroken ? "左" : "右")}, 当前破坏数: {brokenTurretCount}");
+        Debug.Log($"Turret broken: {(isLeftBroken ? "Left" : "Right")}, count: {brokenTurretCount}");
 
         if (brokenTurretCount == 1)
         {
@@ -219,7 +219,7 @@ public class BossAirCraft : EnemyBase
         }
 
         ChangeState(stateLaser);
-        Debug.Log("Boss 胸甲破碎，进入激光终极模式！");
+        Debug.Log("Boss 鑳哥敳鐮寸锛岃繘鍏ユ縺鍏夌粓鏋佹ā寮忥紒");
 
         //BackgroundFXController.Instance.TriggerDistortion(transform.position);
         BackgroundFXController.Instance.SwitchToTheme("Boss");
@@ -229,7 +229,7 @@ public class BossAirCraft : EnemyBase
     {
         if (bodyRenderer != null)
         {
-            // 假设我们在Shader里定义了 "_HitFlashStrength"
+            // 鍋囪鎴戜滑鍦⊿hader閲屽畾涔変簡 "_HitFlashStrength"
             bodyRenderer.material.DOKill();
             bodyRenderer.material.SetFloat("_HitFlashStrength", 2f);
             bodyRenderer.material.DOFloat(0.1f, "_HitFlashStrength", 0.8f);
@@ -271,15 +271,15 @@ public class BossAirCraft : EnemyBase
         return minionPrefabs[Random.Range(0, minionPrefabs.Count)];
     }
 
-    // --- 辅助方法：生成一只小怪 ---
+    // --- 杈呭姪鏂规硶锛氱敓鎴愪竴鍙皬鎬?---
     public void SpawnSingleMinion(Transform spawnPoint)
     {
         activeMinions.RemoveAll(x => x == null || !x.activeInHierarchy);
 
-        // 然后再判断数量
+        // 鐒跺悗鍐嶅垽鏂暟閲?
         if (activeMinions.Count >= maxMinions) return;
 
-        // 检查部位破坏
+        // 妫€鏌ラ儴浣嶇牬鍧?
         if (spawnPoint == null || !spawnPoint.gameObject.activeInHierarchy) return;
 
         GameObject prefab = GetRandomMinionPrefab();
@@ -299,41 +299,41 @@ public class BossAirCraft : EnemyBase
 
     private void OnDrawGizmosSelected()
     {
-        // 如果没有开启激光相关的引用或参数，就不画
+        // 濡傛灉娌℃湁寮€鍚縺鍏夌浉鍏崇殑寮曠敤鎴栧弬鏁帮紝灏变笉鐢?
         if (laserWidth <= 0 || laserMaxDist <= 0) return;
 
         Gizmos.color = Color.red;
 
-        // 1. 获取对应 StateLaser 中 BoxCast 的参数
-        Vector3 startPos = transform.position; // 起点
-        Vector2 boxSize = new Vector2(laserWidth, 0.1f); // 判定盒大小 (StateLaser里写的是0.1高)
-        Vector3 direction = Vector3.down; // 方向
-        float distance = laserMaxDist; // 最大距离
+        // 1. 鑾峰彇瀵瑰簲 StateLaser 涓?BoxCast 鐨勫弬鏁?
+        Vector3 startPos = transform.position; // 璧风偣
+        Vector2 boxSize = new Vector2(laserWidth, 0.1f); // 鍒ゅ畾鐩掑ぇ灏?(StateLaser閲屽啓鐨勬槸0.1楂?
+        Vector3 direction = Vector3.down; // 鏂瑰悜
+        float distance = laserMaxDist; // 鏈€澶ц窛绂?
 
-        // 为了演示实际击中位置，我们可以尝试进行一次真实的射线检测 (仅在编辑器模式下)
-        // 注意：这可能会稍微影响编辑器性能，但能看到实际挡在哪了
+        // 涓轰簡婕旂ず瀹為檯鍑讳腑浣嶇疆锛屾垜浠彲浠ュ皾璇曡繘琛屼竴娆＄湡瀹炵殑灏勭嚎妫€娴?(浠呭湪缂栬緫鍣ㄦā寮忎笅)
+        // 娉ㄦ剰锛氳繖鍙兘浼氱◢寰奖鍝嶇紪杈戝櫒鎬ц兘锛屼絾鑳界湅鍒板疄闄呮尅鍦ㄥ摢浜?
         /*
         RaycastHit2D hit = Physics2D.BoxCast(startPos, boxSize, 0f, direction, distance, laserHitLayer);
         if (hit.collider != null)
         {
-            distance = hit.distance; // 如果打中东西，只画到打中点
-            Gizmos.color = Color.yellow; // 打中时变黄
+            distance = hit.distance; // 濡傛灉鎵撲腑涓滆タ锛屽彧鐢诲埌鎵撲腑鐐?
+            Gizmos.color = Color.yellow; // 鎵撲腑鏃跺彉榛?
         }
         */
 
-        // 2. 绘制起点盒子
+        // 2. 缁樺埗璧风偣鐩掑瓙
         Gizmos.DrawWireCube(startPos, boxSize);
 
-        // 3. 绘制终点盒子
+        // 3. 缁樺埗缁堢偣鐩掑瓙
         Vector3 endPos = startPos + direction * distance;
         Gizmos.DrawWireCube(endPos, boxSize);
 
-        // 4. 绘制连接线 (模拟扫过的区域)
+        // 4. 缁樺埗杩炴帴绾?(妯℃嫙鎵繃鐨勫尯鍩?
         Vector3 halfWidth = Vector3.right * (laserWidth * 0.5f);
-        Gizmos.DrawLine(startPos - halfWidth, endPos - halfWidth); // 左边缘
-        Gizmos.DrawLine(startPos + halfWidth, endPos + halfWidth); // 右边缘
+        Gizmos.DrawLine(startPos - halfWidth, endPos - halfWidth); // 宸﹁竟缂?
+        Gizmos.DrawLine(startPos + halfWidth, endPos + halfWidth); // 鍙宠竟缂?
 
-        // 5. 绘制中心线
+        // 5. 缁樺埗涓績绾?
         Gizmos.color = new Color(1, 0, 0, 0.3f);
         Gizmos.DrawLine(startPos, endPos);
     }
@@ -365,19 +365,19 @@ public class BossAirCraft : EnemyBase
     //{
     //    if (isDead) return;
 
-    //    // 使用 Sin 函数计算当前的 Y 轴偏移量
-    //    // Time.time * hoverSpeed 控制频率
-    //    // * hoverDistance 控制幅度
+    //    // 浣跨敤 Sin 鍑芥暟璁＄畻褰撳墠鐨?Y 杞村亸绉婚噺
+    //    // Time.time * hoverSpeed 鎺у埗棰戠巼
+    //    // * hoverDistance 鎺у埗骞呭害
     //    float newY = hoverAnchorPos.y + Mathf.Sin(Time.time * hoverSpeed) * hoverDistance;
 
-    //    // 保持 X 轴位置不变（即 hoverAnchorPos.x），只改变 Y
+    //    // 淇濇寔 X 杞翠綅缃笉鍙橈紙鍗?hoverAnchorPos.x锛夛紝鍙敼鍙?Y
     //    Vector2 targetPos = new Vector2(hoverAnchorPos.x, newY);
 
-    //    // 使用 MovePosition 移动刚体
+    //    // 浣跨敤 MovePosition 绉诲姩鍒氫綋
     //    rb.MovePosition(targetPos);
     //}
 
-    //// --- 生成逻辑控制 ---
+    //// --- 鐢熸垚閫昏緫鎺у埗 ---
     //void HandleSpawningTimer()
     //{
     //    if (isSpawningWave) return;
@@ -421,7 +421,7 @@ public class BossAirCraft : EnemyBase
 
     //    activeMinions.RemoveAll(item => item == null || !item.activeInHierarchy);
 
-    //    // 检查翅膀是否存活 + 数量限制
+    //    // 妫€鏌ョ繀鑶€鏄惁瀛樻椿 + 鏁伴噺闄愬埗
     //    if (leftSpawnPoint != null && leftSpawnPoint.gameObject.activeInHierarchy && activeMinions.Count < maxMinions)
     //        CreateMinion(leftSpawnPoint.position);
 

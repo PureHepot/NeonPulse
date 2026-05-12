@@ -4,8 +4,6 @@ using UnityEngine;
 
 public abstract class BossBase : MonoBase
 {
-    
-
     [Header("Boss Core Settings")]
     public string bossName = "Unknown Boss";
     public int enemyExp = 100;
@@ -13,8 +11,7 @@ public abstract class BossBase : MonoBase
     [Header("Boss Parts Management")]
     public List<BossPart> bossParts = new List<BossPart>();
     protected Dictionary<string, BossPart> partDictionary = new Dictionary<string, BossPart>();
-
-    // ×´Ì¬»ú
+    
     protected BossBaseState currentState;
 
     protected virtual void Start()
@@ -47,7 +44,7 @@ public abstract class BossBase : MonoBase
 
     public virtual void SwitchState(BossBaseState newState)
 {
-    // ¡¾¹Ø¼ü¡¿£ºÔÚÇÐ»»Ç°£¬µ÷ÓÃ¾É×´Ì¬µÄÍË³öÂß¼­
+    // ï¿½ï¿½ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½Ã¾ï¿½×´Ì¬ï¿½ï¿½ï¿½Ë³ï¿½ï¿½ß¼ï¿½
     if (currentState != null)
     {
         currentState.Exit(); 
@@ -64,27 +61,17 @@ public abstract class BossBase : MonoBase
     public override void TakeDamage(int amount, Vector3 hitPoint, Vector3 hitNormal)
     {
         base.TakeDamage(amount, hitPoint, hitNormal);
-        if (!isDead) CheckPhaseTransition(); // Ã¿´ÎÊÜ»÷¼ì²éÊÇ·ñÐèÒª×ª½×¶Î
+        if (!isDead) CheckPhaseTransition(); // Ã¿ï¿½ï¿½ï¿½Ü»ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Òª×ªï¿½×¶ï¿½
     }
 
     protected abstract void CheckPhaseTransition();
 
-    [Header("ÊÇ·ñÊÇ×îÖÕ¹Ø¿¨Boss")]
-    public bool isFinalBoss = false; // ÔÚ Inspector Ãæ°åÀï¹´Ñ¡Õâ¸ö
+    [Header("ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¹Ø¿ï¿½Boss")]
+    public bool isFinalBoss = false; // ï¿½ï¿½ Inspector ï¿½ï¿½ï¿½ï¿½ï¹´Ñ¡ï¿½ï¿½ï¿½
 
     protected override void Die()
     {
         base.Die();
-
-        // Èç¹ûÕâ¸öÊµÌåÊÇ¹Ø¿¨µÄ×îÖÕ Boss£¬ËüµÄËÀÍö½«´¥·¢ÓÎÏ·Ê¤Àû
-        if (isFinalBoss)
-        {
-            if (WaveManager.Instance != null)
-            {
-                WaveManager.Instance.TriggerVictory();
-            }
-        }
-
         Destroy(gameObject, 2f);
     }
 

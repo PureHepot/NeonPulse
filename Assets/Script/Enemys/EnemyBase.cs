@@ -3,6 +3,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
+[RequireComponent(typeof(ContinuousPhysicsMotor2D))]
 public abstract class EnemyBase : MonoBase, IPoolable
 {
     [Header("Enemy Specific")]
@@ -17,15 +18,25 @@ public abstract class EnemyBase : MonoBase, IPoolable
     public float knockbackForce = 8f;
     public float knockbackTorque = 20f;
 
+    [Header("Movement Motor")]
+    [SerializeField] protected float locomotionResponse = 12f;
+    [SerializeField] protected float angularDamping = 10f;
+
     protected Rigidbody2D rb;
+    protected ContinuousPhysicsMotor2D motionMotor;
     protected Transform playerTransform;
     public bool isInScene;
     public bool scared;
 
     protected override void Awake()
     {
-        base.Awake(); // 调用 EntityBase 的 Awake
+        base.Awake();
         rb = GetComponent<Rigidbody2D>();
+        motionMotor = GetComponent<ContinuousPhysicsMotor2D>();
+        if (motionMotor == null)
+            motionMotor = gameObject.AddComponent<ContinuousPhysicsMotor2D>();
+
+        motionMotor.Configure(locomotionResponse, angularDamping);
         isInScene = false;
     }
 
@@ -33,85 +44,164 @@ public abstract class EnemyBase : MonoBase, IPoolable
     {
         currentHp = maxHp;
         isDead = false;
+        isKnockbacking = false;
         gameObject.layer = LayerMask.NameToLayer("Enemy");
 
-        if (bodyRenderer != null) bodyRenderer.color = normalColor;
+        if (bodyRenderer != null)
+            bodyRenderer.color = normalColor;
+
         transform.localScale = Vector3.one;
 
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null) playerTransform = playerObj.transform;
+        if (playerObj != null)
+            playerTransform = playerObj.transform;
 
         rb.simulated = true;
-if (InRunDirector.ActiveInstance != null)
-            InRunDirector.ActiveInstance.RegisterBoundaryEnemy(this);if (WaveManager.Instance != null) WaveManager.Instance.RegisterEnemy(this);
-if (EnemyManager.Instance != null) EnemyManager.Instance.RegisterEnemy(this);    }
+        ResetMovementDrive();
+
+        if (InRunDirector.ActiveInstance != null)
+            InRunDirector.ActiveInstance.RegisterBoundaryEnemy(this);
+
+        if (EnemyManager.Instance != null)
+            EnemyManager.Instance.RegisterEnemy(this);
+    }
 
     public virtual void OnDespawn()
     {
-        Debug.Log("我被OnDespawn了");
         transform.DOKill();
-        if (bodyRenderer != null) { bodyRenderer.DOKill(); bodyRenderer.material.DOKill(); }
-rb.velocity = Vector2.zero;
+        if (bodyRenderer != null)
+        {
+            bodyRenderer.DOKill();
+            bodyRenderer.material.DOKill();
+        }
 
-        if (WaveManager.Instance != null) WaveManager.Instance.UnregisterEnemy(this);
-        if (EnemyManager.Instance != null) EnemyManager.Instance.UnRegisterEnemy(this);    }
+        StopMovementDrive(true);
+
+        if (EnemyManager.Instance != null)
+            EnemyManager.Instance.UnRegisterEnemy(this);
+    }
 
     private void FixedUpdate()
     {
-        if (isDead || isKnockbacking) return;
+        if (isDead || isKnockbacking)
+            return;
+
         MoveBehavior();
         CheckOutView();
     }
 
     protected virtual void MoveBehavior()
     {
-        
     }
 
-    // 覆写击退相关的方法
     public override void TakeDamage(int amount, Vector3 hitPoint, Vector3 hitNormal)
     {
         base.TakeDamage(amount, hitPoint, hitNormal);
-        if (!isDead && canKnockback) ApplyKnockback(hitNormal, knockbackForce);
+        if (!isDead && canKnockback)
+            ApplyKnockback(hitNormal, knockbackForce);
     }
 
     public override void TakeDamage(int amount, Vector3 hitPoint, Vector3 knockbackDir, float customForce)
     {
         base.TakeDamage(amount, hitPoint, knockbackDir, customForce);
-        if (!isDead && canKnockback && customForce > 0) ApplyKnockback(knockbackDir, customForce);
+        if (!isDead && canKnockback && customForce > 0f)
+            ApplyKnockback(knockbackDir, customForce);
     }
 
     protected virtual void ApplyKnockback(Vector3 forceDir, float force)
     {
-isKnockbacking = true;
-        rb.velocity = Vector2.zero;
-        rb.AddForce(forceDir.normalized * force, ForceMode2D.Impulse);
-        rb.AddTorque(Random.Range(-knockbackTorque, knockbackTorque), ForceMode2D.Impulse);
-        Timer.Register(0.2f, () => isKnockbacking = false);    }
+        isKnockbacking = true;
+        StopMovementDrive(true);
+        ApplyImpulse(forceDir.normalized * force, Random.Range(-knockbackTorque, knockbackTorque));
+        Timer.Register(0.2f, () => isKnockbacking = false);
+    }
 
-    
     protected override void Die()
     {
-        base.Die(); // 播放特效和音效
+        base.Die();
+        StopMovementDrive(true);
         rb.simulated = false;
 
-if (UpgradeManager.Instance != null) UpgradeManager.Instance.AddExperience(enemyExp);
-        ObjectPoolManager.Instance.Return(gameObject); // 普通敌人使用对象池回收    }
+        if (InRunDirector.ActiveInstance != null)
+            InRunDirector.ActiveInstance.NotifyEnemyKilled(this);
+
+        ObjectPoolManager.Instance.Return(gameObject);
+    }
 
     protected virtual void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.GetComponent<ShieldController>() != null) return;
+        if (collision.gameObject.GetComponent<ShieldController>() != null)
+            return;
 
         if (collision.gameObject.CompareTag("Player"))
-        {
             collision.gameObject.GetComponentInChildren<HealthModule>()?.TakeDamage(contactDamage, transform);
-        }
     }
 
     private void CheckOutView()
     {
         Vector2 p = Camera.main.WorldToViewportPoint(transform.position);
-        isInScene = !(p.x < 0 || p.x > 1 || p.y < 0 || p.y > 1);
+        isInScene = !(p.x < 0f || p.x > 1f || p.y < 0f || p.y > 1f);
     }
-  
+
+    protected void DriveVelocity(Vector2 velocity, float responseScale = 1f)
+    {
+        if (motionMotor != null)
+        {
+            motionMotor.SetDesiredVelocity(velocity, responseScale);
+            return;
+        }
+
+        rb.velocity = velocity;
+    }
+
+    protected void SnapVelocity(Vector2 velocity)
+    {
+        if (motionMotor != null)
+        {
+            motionMotor.SnapVelocity(velocity);
+            return;
+        }
+
+        rb.velocity = velocity;
+    }
+
+    protected void StopMovementDrive(bool immediate = false)
+    {
+        if (motionMotor != null)
+        {
+            motionMotor.StopDriving(immediate);
+            if (immediate)
+                rb.angularVelocity = 0f;
+            return;
+        }
+
+        rb.velocity = Vector2.zero;
+        if (immediate)
+            rb.angularVelocity = 0f;
+    }
+
+    protected void ResetMovementDrive()
+    {
+        if (motionMotor != null)
+        {
+            motionMotor.ResetMotion();
+            return;
+        }
+
+        rb.velocity = Vector2.zero;
+        rb.angularVelocity = 0f;
+    }
+
+    protected void ApplyImpulse(Vector2 impulse, float angularImpulse = 0f)
+    {
+        if (motionMotor != null)
+        {
+            motionMotor.AddImpulse(impulse, angularImpulse);
+            return;
+        }
+
+        rb.AddForce(impulse, ForceMode2D.Impulse);
+        if (!Mathf.Approximately(angularImpulse, 0f))
+            rb.AddTorque(angularImpulse, ForceMode2D.Impulse);
+    }
 }

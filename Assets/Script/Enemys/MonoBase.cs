@@ -23,11 +23,11 @@ public abstract class MonoBase : MonoBehaviour, IDamageable
     protected virtual void Awake()
     {
         if (bodyRenderer == null) bodyRenderer = GetComponentInChildren<SpriteRenderer>();
-        // ÔÚ Awake Ê±¼ÇÂ¼ÏÂ Inspector ÖÐÉèÖÃµÄ´óÐ¡
+        // ï¿½ï¿½ Awake Ê±ï¿½ï¿½Â¼ï¿½ï¿½ Inspector ï¿½ï¿½ï¿½ï¿½ï¿½ÃµÄ´ï¿½Ð¡
         baseScale = transform.localScale;
     }
 
-    // --- IDamageable ½Ó¿ÚÊµÏÖ ---
+    // --- IDamageable ï¿½Ó¿ï¿½Êµï¿½ï¿½ ---
     public virtual void TakeDamage(int amount)
     {
         TakeDamage(amount, transform.position, Vector3.zero);
@@ -46,7 +46,7 @@ public abstract class MonoBase : MonoBehaviour, IDamageable
         }
         else
         {
-            // ²¥·ÅÍ¨ÓÃÊÜ»÷ÒôÐ§
+            // ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½Ü»ï¿½ï¿½ï¿½Ð§
             if (AudioManager.Instance != null)
                 AudioManager.Instance.PlayEffect("EnemyHit1", 2f, 1f);
         }
@@ -54,29 +54,29 @@ public abstract class MonoBase : MonoBehaviour, IDamageable
 
     public virtual void TakeDamage(int amount, Vector3 hitPoint, Vector3 knockbackDir, float customForce)
     {
-        // Ä¬ÈÏÊµÏÖÓëÉÏÃæÒ»ÖÂ£¬´øÓÐ»÷ÍËÐèÇóµÄ×ÓÀà£¨ÈçEnemyBase£©»áÖØÐ´´Ë·½·¨
+        // Ä¬ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Â£ï¿½ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½à£¨ï¿½ï¿½EnemyBaseï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½Ë·ï¿½ï¿½ï¿½
         TakeDamage(amount, hitPoint, knockbackDir);
     }
 
-    // --- Í¨ÓÃÊÓ¾õ±íÏÖ ---
+    // --- Í¨ï¿½ï¿½ï¿½Ó¾ï¿½ï¿½ï¿½ï¿½ï¿½ ---
     protected virtual void PlayHitEffect(Vector3 pos, Vector3 normal)
     {
         if (bodyRenderer != null)
         {
-            // ²ÄÖÊ¸ßÁÁÉÁË¸
+            // ï¿½ï¿½ï¿½Ê¸ï¿½ï¿½ï¿½ï¿½ï¿½Ë¸
             bodyRenderer.material.DOKill();
             bodyRenderer.material.SetFloat("_HitFlashStrength", 2f);
             bodyRenderer.material.DOFloat(0.1f, "_HitFlashStrength", 0.8f);
 
-            // ³ß´çQµ¯·´À¡
+            // ï¿½ß´ï¿½Qï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             transform.DOKill();
-            // ¡¾ÐÞ¸Äµã¡¿£ºÊ¹ÓÃ¼ÇÂ¼µÄ baseScale Ìæ´ú Vector3.one
+            // ï¿½ï¿½ï¿½Þ¸Äµã¡¿ï¿½ï¿½Ê¹ï¿½Ã¼ï¿½Â¼ï¿½ï¿½ baseScale ï¿½ï¿½ï¿½ Vector3.one
             transform.localScale = baseScale;
-            // ¡¾ÐÞ¸Äµã¡¿£º½« Punch µÄÁ¦¶È³ËÒÔ baseScale£¬ÕâÑùÈç¹û Boss ºÜ´ó£¬µ¯ÐÔµÄ·ù¶ÈÒ²»áµÈ±È·Å´ó
+            // ï¿½ï¿½ï¿½Þ¸Äµã¡¿ï¿½ï¿½ï¿½ï¿½ Punch ï¿½ï¿½ï¿½ï¿½ï¿½È³ï¿½ï¿½ï¿½ baseScaleï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Boss ï¿½Ü´ó£¬µï¿½ï¿½ÔµÄ·ï¿½ï¿½ï¿½Ò²ï¿½ï¿½È±È·Å´ï¿½
             transform.DOPunchScale(baseScale * 0.15f, 0.1f);
         }
 
-        // ²¥·ÅÊÜ»÷Á£×Ó
+        // ï¿½ï¿½ï¿½ï¿½ï¿½Ü»ï¿½ï¿½ï¿½ï¿½ï¿½
         if (hitParticlePrefab == null) hitParticlePrefab = Resources.Load<GameObject>("ParticleSystem/PS_HitSparks");
         if (hitParticlePrefab != null && ObjectPoolManager.Instance != null)
         {
@@ -111,10 +111,8 @@ public abstract class MonoBase : MonoBehaviour, IDamageable
             ParticleSystem ps = particleObj.GetComponent<ParticleSystem>();
             if (ps != null)
             {
-                // 1. ÏÈÓÃ±äÁ¿°Ñ main Ä£¿é»º´æÏÂÀ´
                 var mainModule = ps.main;
-
-                // 2. ÔÙÐÞ¸Ä±äÁ¿µÄÊôÐÔ
+                
                 mainModule.startColor = normalColor;
 
                 ps.Play();
