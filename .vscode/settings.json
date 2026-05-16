@@ -56,5 +56,6 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "NeonPulse.sln"
+    "dotnet.defaultSolution": "NeonPulse.sln",
+    "dotnet.preferCSharpExtension": true
 }

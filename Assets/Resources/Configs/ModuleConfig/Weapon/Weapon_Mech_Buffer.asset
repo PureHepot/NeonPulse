@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2938850d4485ee45954e75922bd383a, type: 3}
+  m_Name: Weapon_Mech_Buffer
+  m_EditorClassIdentifier: 
+  moduleId: weapon_module_buffer
+  moduleName: "\u57CE\u5899"
+  moduleType: 11
+  description: "\u8FD9\u662F\u4E00\u4E2A\u53EC\u5524\u7269\u6B66\u5668\uFF0C\u53EF\u4EE5\u53EC\u5524\u51FA\u4E09\u4E2A\u9632\u5FA1\u6027\u7684\u53EC\u5524\u7269"
+  icon: {fileID: 0}
+  categories: 9
+  statSchema: {fileID: 11400000, guid: 1925fd0b9763d5f49a5f4486660bfa1c, type: 2}
+  defaultRarity: 0
+  rarityProfiles:
+  - rarity: 0
+    baseStats:
+    - statDefinition: {fileID: 11400000, guid: 80dd2c8d7419fbf458c2cc818c58a8e6, type: 2}
+      value: 1
+    maxPluginSlots: 1
+    loadCost: 1
+  coreSlotCount: 1
+  themeColor: {r: 0, g: 1, b: 1, a: 1}
+  runtimePrefab: {fileID: 5652730276955115373, guid: 5ecd46dabd2d847438052308552d3cd2, type: 3}
+  previewPrefab: {fileID: 5652730276955115373, guid: 5ecd46dabd2d847438052308552d3cd2, type: 3}
+  unlockCost: 0

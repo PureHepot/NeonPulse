@@ -24,11 +24,11 @@ MonoBehaviour:
   - rarity: 0
     baseStats:
     - statDefinition: {fileID: 11400000, guid: fddb1fe5ce65f514988fb97e08e9009e, type: 2}
-      value: 1
+      value: 30
     - statDefinition: {fileID: 11400000, guid: 78fd7d5dbc780f8468dfed5cc4f5b5c1, type: 2}
       value: 1
     - statDefinition: {fileID: 11400000, guid: 739ac8df719410941ba8aa457488fd3d, type: 2}
-      value: 0
+      value: 30
     - statDefinition: {fileID: 11400000, guid: 9555f464902f5ec45b09ea050f35bb62, type: 2}
       value: 110
     maxPluginSlots: 1

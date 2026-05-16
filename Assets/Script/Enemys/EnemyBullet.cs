@@ -70,6 +70,13 @@ public class EnemyBullet : MonoBehaviour, IPoolable, IReflectableProjectile
                     ObjectPoolManager.Instance.Return(this.gameObject);
                 }
             }
+            else if (other.TryGetComponent<MechBase>(out var mech))
+            {
+                Vector3 hitPoint = other.ClosestPoint(transform.position);
+                Vector3 hitNormal = (transform.position - hitPoint).normalized;
+                mech.TakeDamage(damage, hitPoint, hitNormal);
+                ObjectPoolManager.Instance.Return(gameObject);
+            }
             else if (other.GetComponent<ShieldController>())
             {
                 Reflect(other.transform.position);
