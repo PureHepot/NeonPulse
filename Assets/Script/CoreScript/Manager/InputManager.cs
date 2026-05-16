@@ -35,6 +35,7 @@ public class InputManager : MonoSingleton<InputManager>
     public KeyCode DownKey = KeyCode.DownArrow;
     public KeyCode PauseKey = KeyCode.Escape;
     public KeyCode SpaceKey = KeyCode.Space;
+    public KeyCode GKey = KeyCode.G;
     public KeyCode MouseKey0 = KeyCode.Mouse0;
     public KeyCode MouseKey1 = KeyCode.Mouse1;
 
@@ -160,6 +161,12 @@ public class InputManager : MonoSingleton<InputManager>
     {
         if (LockMove) return false;
         return Input.GetKeyDown(QKey);
+    }
+
+    public bool G()
+    {
+        if (LockMove) return false;
+        return Input.GetKeyDown(GKey);
     }
 
     public bool Map()

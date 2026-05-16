@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2938850d4485ee45954e75922bd383a, type: 3}
+  m_Name: Utility_Magnet
+  m_EditorClassIdentifier: 
+  moduleId: utility_module_magnet
+  moduleName: "\u63A7\u5236"
+  moduleType: 9
+  description: "\u8FD9\u662F\u4E00\u4E2A\u63A7\u5236\u6027\u7684\u8F85\u52A9\u6280\u80FD\uFF0C\u53EF\u4EE5\u5C06\u654C\u4EBA\u805A\u5F80\u4E00\u4E2A\u65B9\u5411"
+  icon: {fileID: 0}
+  categories: 32
+  statSchema: {fileID: 11400000, guid: 03904e106b874e641b67df7946f798c3, type: 2}
+  defaultRarity: 0
+  rarityProfiles:
+  - rarity: 0
+    baseStats:
+    - statDefinition: {fileID: 11400000, guid: 4f428d97f3b77334c9dd8a0885dda97a, type: 2}
+      value: 3
+    - statDefinition: {fileID: 11400000, guid: f99855a37723dc84eac4e3b8f06e380a, type: 2}
+      value: 10
+    - statDefinition: {fileID: 11400000, guid: a4ab81b96cd97ab40aa3e67126e4666c, type: 2}
+      value: 4
+    maxPluginSlots: 1
+    loadCost: 1
+  coreSlotCount: 1
+  themeColor: {r: 0, g: 1, b: 1, a: 1}
+  runtimePrefab: {fileID: 0}
+  previewPrefab: {fileID: 1289084884220203822, guid: 1cb1e5a319711bc4390a190e6ef2709c, type: 3}
+  unlockCost: 0

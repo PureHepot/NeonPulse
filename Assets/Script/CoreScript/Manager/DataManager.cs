@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class DataManager : MonoSingleton<DataManager>
 {
-    private const string DefaultFrameId = "RecklessFrame";
+    private const string DefaultFrameId = "UtilityFrame";
     private static readonly string[] DefaultModuleIds =
     {
         "base_move_module",
@@ -18,7 +18,9 @@ public class DataManager : MonoSingleton<DataManager>
         "defense_module_energy",
         "weapon_module_sawblade",
         "scrollwheel_move_module",
-        "weapon_module_laserdrones"
+        "weapon_module_laserdrones",
+        "utility_module_magnet",
+        "weapon_module_buffer"
     };
 
     private SaveRoot saveRoot;

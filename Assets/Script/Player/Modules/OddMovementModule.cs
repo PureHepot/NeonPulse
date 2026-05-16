@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class OddMovementModule : PlayerModule
 {
@@ -21,21 +21,20 @@ public class OddMovementModule : PlayerModule
     {
         if (player == null || player.IsStunned || player.IsDead || player.IsDashing || !HasControl)
             return;
-
+        Vector2 targetVelocity=Vector2.zero;
         float scrollDelta = Input.GetAxis("Mouse ScrollWheel");
-        if (Mathf.Approximately(scrollDelta, 0f))
-            return;
-
-        Vector2 mouseWorld = MUtils.GetMouseWorldPosition();
-        Vector2 lookDir = (mouseWorld - (Vector2)player.transform.position).normalized;
-        Vector2 targetVelocity = lookDir * scrollDelta * 100f * GetFinalSpeed();
-        currentVelocity = Vector2.SmoothDamp(
-            currentVelocity,
-            targetVelocity,
-            ref refVelocity,
-            smoothTime);
-
-        player.SetVelocity(currentVelocity);
+        if (!Mathf.Approximately(scrollDelta, 0f))
+        {
+            Vector2 mouseWorld = MUtils.GetMouseWorldPosition();
+            Vector2 lookDir = (mouseWorld - (Vector2)player.transform.position).normalized;
+            targetVelocity = lookDir * scrollDelta * 100f * GetFinalSpeed();
+            /*currentVelocity = Vector2.SmoothDamp(
+                currentVelocity,
+                targetVelocity,
+                ref refVelocity,
+                smoothTime);*/
+        }
+        player.SetVelocity(targetVelocity);
     }
 
     private void RecalculateStats()

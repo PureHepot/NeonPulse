@@ -59,8 +59,15 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
         if (bodyRenderer != null) bodyRenderer.color = normalColor;
         transform.localScale = Vector3.one;
 
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null) playerTransform = playerObj.transform;
+        if (MechTaunt.HasActiveTaunt)
+        {
+            playerTransform = MechTaunt.TauntTarget;
+        }
+        else
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null) playerTransform = playerObj.transform;
+        }
 
         rb.simulated = true;
         motionMotor?.ResetMotion();
@@ -170,7 +177,14 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     {
         var shield = collision.collider.gameObject.GetComponent<ShieldController>();
         if (shield != null)
+            return;
+
+        MechBase mech = collision.collider.gameObject.GetComponent<MechBase>();
+        if (mech != null)
         {
+            Vector3 hitPoint = collision.contacts.Length > 0 ? collision.contacts[0].point : mech.transform.position;
+            Vector3 hitNormal = (mech.transform.position - transform.position).normalized;
+            mech.TakeDamage(contactDamage, hitPoint, hitNormal);
             return;
         }
 
