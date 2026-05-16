@@ -4,17 +4,26 @@ using UnityEngine;
 
 public abstract class BossBaseState
 {
-    protected BossSlimeController ctx;
+    protected BossBase vocalist;
     protected float stateTimer;
 
-   
-    public virtual void Enter(BossSlimeController context)
+    public virtual void Enter(BossBase context)
     {
-        ctx = context;
+        vocalist = context;
         stateTimer = 0f;
     }
-    public virtual void OnUpdate() { stateTimer += Time.deltaTime; Debug.Log($"Updating in {this.ToString()}"); }
-    public virtual void OnFixedUpdate() { Debug.Log($"FixedUpdating in {this.ToString()}"); }
-    public virtual void Exit() { }
-   
+
+    // 建议改名为 LogicUpdate，避免和 Unity 的 MonoBehaviour.Update 混淆
+    public virtual void LogicUpdate()
+    {
+        stateTimer += Time.deltaTime;
+    }
+
+    public virtual void PhysicsUpdate()
+    {
+    }
+
+    public virtual void Exit()
+    {
+    }
 }

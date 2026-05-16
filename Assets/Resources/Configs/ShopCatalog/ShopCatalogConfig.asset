@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c92161e0b72fea41b49d4599ae33486, type: 3}
   m_Name: ShopCatalogConfig
   m_EditorClassIdentifier: 
+  catalogId: 
   baseOffers: []
   themeOffers: []

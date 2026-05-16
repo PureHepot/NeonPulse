@@ -69,6 +69,54 @@ public class ContinuousPhysicsMotor2D : MonoBehaviour
         body.angularVelocity = 0f;
     }
 
+    public void ClampPositionToBounds(Vector2 min, Vector2 max)
+    {
+        if (body == null || !body.simulated)
+            return;
+
+        Vector2 clampedPosition = new Vector2(
+            Mathf.Clamp(body.position.x, min.x, max.x),
+            Mathf.Clamp(body.position.y, min.y, max.y));
+
+        Vector2 adjustedVelocity = body.velocity;
+        Vector2 adjustedDesiredVelocity = desiredVelocity;
+        const float epsilon = 0.0001f;
+
+        if (clampedPosition.x <= min.x + epsilon)
+        {
+            if (adjustedVelocity.x < 0f)
+                adjustedVelocity.x = 0f;
+            if (adjustedDesiredVelocity.x < 0f)
+                adjustedDesiredVelocity.x = 0f;
+        }
+        else if (clampedPosition.x >= max.x - epsilon)
+        {
+            if (adjustedVelocity.x > 0f)
+                adjustedVelocity.x = 0f;
+            if (adjustedDesiredVelocity.x > 0f)
+                adjustedDesiredVelocity.x = 0f;
+        }
+
+        if (clampedPosition.y <= min.y + epsilon)
+        {
+            if (adjustedVelocity.y < 0f)
+                adjustedVelocity.y = 0f;
+            if (adjustedDesiredVelocity.y < 0f)
+                adjustedDesiredVelocity.y = 0f;
+        }
+        else if (clampedPosition.y >= max.y - epsilon)
+        {
+            if (adjustedVelocity.y > 0f)
+                adjustedVelocity.y = 0f;
+            if (adjustedDesiredVelocity.y > 0f)
+                adjustedDesiredVelocity.y = 0f;
+        }
+
+        body.position = clampedPosition;
+        body.velocity = adjustedVelocity;
+        desiredVelocity = adjustedDesiredVelocity;
+    }
+
     private void FixedUpdate()
     {
         if (body == null || !body.simulated)

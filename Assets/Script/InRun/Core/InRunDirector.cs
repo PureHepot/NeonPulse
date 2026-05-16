@@ -12,10 +12,13 @@ public class InRunDirector : MonoBehaviour
     [SerializeField] private float debugLoopDurationSeconds = 0f; //改成0就是不进行Debug测试
     [SerializeField] private float placeholderAdvanceDelaySeconds = 0.35f;
     [SerializeField] private bool showDebugHud = true;
+    [SerializeField] private int boundaryChecksPerFrame = 12;
+    [SerializeField] private float boundaryThreshold = 0.6f;
 
     private readonly CombatLoopController combatLoopController = new();
     private readonly PulseSystem pulseSystem = new();
     private readonly EnemySpawnDirector enemySpawnDirector = new();
+    private readonly EnemyBoundaryService enemyBoundaryService = new();
     private readonly BossEncounterDirector bossEncounterDirector = new();
     private readonly RewardDirector rewardDirector = new();
     private readonly ShopDirector shopDirector = new();
@@ -57,6 +60,8 @@ public class InRunDirector : MonoBehaviour
     public CombatGrade CurrentLoopGrade => currentLoop != null ? currentLoop.grade : CombatGrade.F;
     public int CurrentRunCurrency => context != null ? context.Runtime.runCurrency : 0;
     public int CurrentPendingRewardCount => context != null ? context.Runtime.pendingRewards.Count : 0;
+    public int CurrentWarehouseCount => context != null ? WarehouseRuntimeState.GetCount(context.Runtime) : 0;
+    public int CurrentWarehouseCapacity => context != null ? WarehouseRuntimeState.GetCapacity(context.Runtime) : 0;
     public RewardRollResult CurrentRewardResult => rewardDirector.CurrentResult;
     public IReadOnlyList<ShopOffer> CurrentShopOffers => shopDirector.CurrentOffers;
     public string CurrentBossName => bossEncounterDirector.CurrentBossName;
@@ -100,6 +105,8 @@ public class InRunDirector : MonoBehaviour
         combatLoopController.Reset();
         pulseSystem.Reset();
         enemySpawnDirector.Reset();
+        enemyBoundaryService.Configure(boundaryChecksPerFrame, boundaryThreshold);
+        enemyBoundaryService.Reset();
         bossEncounterDirector.Reset();
         rewardDirector.Reset();
         shopDirector.Reset();
@@ -125,6 +132,7 @@ public class InRunDirector : MonoBehaviour
         combatLoopController.Reset();
         pulseSystem.Reset();
         enemySpawnDirector.Reset();
+        enemyBoundaryService.Reset();
         bossEncounterDirector.Reset();
         rewardDirector.Reset();
         shopDirector.Reset();
@@ -141,14 +149,31 @@ public class InRunDirector : MonoBehaviour
         combatLoopController.Tick(Time.deltaTime);
         pulseSystem.Tick();
 
+        enemyBoundaryService.Configure(boundaryChecksPerFrame, boundaryThreshold);
+
         if (CurrentPhase == InRunPhase.CombatLoopActive)
+        {
             enemySpawnDirector.Tick(Time.deltaTime, combatLoopController.NormalizedTime);
+            enemyBoundaryService.Tick(Time.deltaTime, Camera.main);
+        }
         else if (CurrentPhase == InRunPhase.BossActive)
+        {
             bossEncounterDirector.Tick();
+            enemyBoundaryService.Tick(Time.deltaTime, Camera.main);
+        }
         else if (CurrentPhase == InRunPhase.LoopReward || CurrentPhase == InRunPhase.BossReward)
             rewardDirector.Tick(context != null ? context.Runtime : null);
         else if (CurrentPhase == InRunPhase.Shop)
             shopDirector.Tick(context != null ? context.Runtime : null);
+    }
+
+    private void LateUpdate()
+    {
+        if (!isSessionActive)
+            return;
+
+        if (CurrentPhase == InRunPhase.BossActive)
+            bossEncounterDirector.LateTick();
     }
 
     public void NotifyEnemyKilled(EnemyBase enemy)
@@ -163,6 +188,16 @@ public class InRunDirector : MonoBehaviour
         currentLoop.killCount++;
         currentLoop.highestMultiplier = Mathf.Max(1f, currentLoop.highestMultiplier);
         context.Runtime.lifetimeKillsThisRun++;
+    }
+
+    public void RegisterBoundaryEnemy(EnemyBase enemy)
+    {
+        enemyBoundaryService.RegisterEnemy(enemy);
+    }
+
+    public void UnregisterBoundaryEnemy(EnemyBase enemy)
+    {
+        enemyBoundaryService.UnregisterEnemy(enemy);
     }
 
     internal IEnumerator ResumeThemeIntro(int themeIndex, InRunPhase startPhase)

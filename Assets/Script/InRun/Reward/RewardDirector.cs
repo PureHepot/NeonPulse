@@ -90,19 +90,14 @@ public class RewardDirector
         if (choice == null || choice.selected)
             return;
 
+        if (!CanClaim(choice, runtime))
+            return;
+
         choice.selected = true;
         CurrentResult.picksMade++;
 
-        runtime.pendingRewards.Add(new RunRewardSaveData
-        {
-            rewardId = choice.rewardId,
-            displayName = choice.displayName,
-            description = choice.description,
-            source = "LoopReward",
-            currencyBonus = choice.currencyBonus
-        });
-
-        runtime.runCurrency += choice.currencyBonus;
+        string source = CurrentResult.grade == CombatGrade.SSS ? "BossReward" : "LoopReward";
+        ApplyChoice(choice, runtime, source);
 
         if (CurrentResult.picksMade >= CurrentResult.picksAllowed)
             IsComplete = true;
@@ -157,32 +152,40 @@ public class RewardDirector
             target.Add(new RewardChoice
             {
                 rewardId = "reward_currency_small",
+                itemId = "reward_currency_small",
                 displayName = "Credit Cache",
                 description = "Gain 25 run currency.",
+                itemType = InRunItemType.Currency,
                 rarity = RewardRarity.Common,
                 currencyBonus = 25
             });
             target.Add(new RewardChoice
             {
                 rewardId = "reward_damage_chip",
+                itemId = "reward_damage_chip",
                 displayName = "Damage Chip",
                 description = "Placeholder reward for future module integration.",
+                itemType = InRunItemType.Module,
                 rarity = RewardRarity.Uncommon,
                 currencyBonus = 10
             });
             target.Add(new RewardChoice
             {
                 rewardId = "reward_mobility_chip",
+                itemId = "reward_mobility_chip",
                 displayName = "Mobility Chip",
                 description = "Placeholder reward for future movement integration.",
+                itemType = InRunItemType.Plugin,
                 rarity = RewardRarity.Uncommon,
                 currencyBonus = 10
             });
             target.Add(new RewardChoice
             {
                 rewardId = "reward_core_fragment",
+                itemId = "reward_core_fragment",
                 displayName = "Core Fragment",
                 description = "Placeholder reward with higher long-term value.",
+                itemType = InRunItemType.Core,
                 rarity = RewardRarity.Rare,
                 currencyBonus = 15
             });
@@ -201,15 +204,60 @@ public class RewardDirector
                 target.Add(new RewardChoice
                 {
                     rewardId = entry.rewardId,
+                    itemId = string.IsNullOrWhiteSpace(entry.itemId) ? entry.rewardId : entry.itemId,
                     displayName = entry.displayName,
                     description = entry.description,
+                    itemType = entry.itemType,
                     rarity = entry.rarity,
-                    currencyBonus = entry.currencyBonus
+                    currencyBonus = entry.currencyBonus,
+                    warehouseSlotsDelta = entry.warehouseSlotsDelta
                 });
             }
         }
 
         while (target.Count > offerCount)
             target.RemoveAt(target.Count - 1);
+    }
+
+    private static bool CanClaim(RewardChoice choice, InRunRuntimeSaveData runtime)
+    {
+        if (choice == null || runtime == null)
+            return false;
+
+        if (choice.itemType == InRunItemType.Currency || choice.warehouseSlotsDelta > 0)
+            return true;
+
+        return WarehouseRuntimeState.HasSpace(runtime);
+    }
+
+    private static void ApplyChoice(RewardChoice choice, InRunRuntimeSaveData runtime, string source)
+    {
+        runtime.pendingRewards.Add(new RunRewardSaveData
+        {
+            rewardId = choice.rewardId,
+            itemId = choice.itemId,
+            displayName = choice.displayName,
+            description = choice.description,
+            source = source,
+            currencyBonus = choice.currencyBonus,
+            itemType = choice.itemType,
+            warehouseSlotsDelta = choice.warehouseSlotsDelta
+        });
+
+        runtime.runCurrency += choice.currencyBonus;
+        if (choice.warehouseSlotsDelta != 0)
+            WarehouseRuntimeState.ApplyCapacityDelta(runtime, choice.warehouseSlotsDelta);
+
+        if (choice.itemType != InRunItemType.Currency)
+        {
+            WarehouseRuntimeState.TryAddItem(
+                runtime,
+                choice.rewardId,
+                choice.itemType,
+                choice.itemId,
+                choice.displayName,
+                choice.description,
+                source);
+        }
     }
 }

@@ -3,21 +3,14 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
-public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
+[RequireComponent(typeof(ContinuousPhysicsMotor2D))]
+public abstract class EnemyBase : MonoBase, IPoolable
 {
-    [Header("Base Stats")]
-    public float maxHp = 10f;
+    [Header("Enemy Specific")]
     public float moveSpeed = 5f;
     public int scoreValue = 10;
     public int contactDamage = 1;
     public int enemyExp = 10;
-
-    [Header("Visuals")]
-    public SpriteRenderer bodyRenderer;
-    public Color normalColor = Color.white;
-    public Color hitColor = Color.red;
-    public GameObject deathEffectPrefab;
-    public GameObject hitParticlePrefab;
 
     [Header("Knockback Settings")]
     public bool canKnockback = false;
@@ -25,28 +18,25 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     public float knockbackForce = 8f;
     public float knockbackTorque = 20f;
 
-    [Header("Physics Motion")]
-    public float locomotionResponse = 10f;
-    public float angularDamping = 12f;
+    [Header("Movement Motor")]
+    [SerializeField] protected float locomotionResponse = 12f;
+    [SerializeField] protected float angularDamping = 10f;
 
-    public float currentHp;
     protected Rigidbody2D rb;
-    protected Transform playerTransform;
-    protected bool isDead = false;
     protected ContinuousPhysicsMotor2D motionMotor;
-
+    protected Transform playerTransform;
     public bool isInScene;
     public bool scared;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         rb = GetComponent<Rigidbody2D>();
         motionMotor = GetComponent<ContinuousPhysicsMotor2D>();
         if (motionMotor == null)
             motionMotor = gameObject.AddComponent<ContinuousPhysicsMotor2D>();
 
         motionMotor.Configure(locomotionResponse, angularDamping);
-        if (bodyRenderer == null) bodyRenderer = GetComponentInChildren<SpriteRenderer>();
         isInScene = false;
     }
 
@@ -54,301 +44,164 @@ public abstract class EnemyBase : MonoBehaviour, IPoolable, IDamageable
     {
         currentHp = maxHp;
         isDead = false;
-        this.gameObject.layer = LayerMask.NameToLayer("Enemy");
+        isKnockbacking = false;
+        gameObject.layer = LayerMask.NameToLayer("Enemy");
 
-        if (bodyRenderer != null) bodyRenderer.color = normalColor;
+        if (bodyRenderer != null)
+            bodyRenderer.color = normalColor;
+
         transform.localScale = Vector3.one;
 
-        if (MechTaunt.HasActiveTaunt)
-        {
-            playerTransform = MechTaunt.TauntTarget;
-        }
-        else
-        {
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null) playerTransform = playerObj.transform;
-        }
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null)
+            playerTransform = playerObj.transform;
 
         rb.simulated = true;
-        motionMotor?.ResetMotion();
-        
+        ResetMovementDrive();
+
+        if (InRunDirector.ActiveInstance != null)
+            InRunDirector.ActiveInstance.RegisterBoundaryEnemy(this);
+
         if (EnemyManager.Instance != null)
-        {
             EnemyManager.Instance.RegisterEnemy(this);
-        }
     }
 
     public virtual void OnDespawn()
     {
-
         transform.DOKill();
-        if (bodyRenderer != null) bodyRenderer.DOKill();
-
-        if (motionMotor != null)
-            motionMotor.ResetMotion();
-        else
-            rb.velocity = Vector2.zero;
-        
-        if (EnemyManager.Instance != null)
+        if (bodyRenderer != null)
         {
-            EnemyManager.Instance.UnRegisterEnemy(this);
+            bodyRenderer.DOKill();
+            bodyRenderer.material.DOKill();
         }
+
+        StopMovementDrive(true);
+
+        if (EnemyManager.Instance != null)
+            EnemyManager.Instance.UnRegisterEnemy(this);
     }
 
     private void FixedUpdate()
     {
-        if (isDead || isKnockbacking) return;
+        if (isDead || isKnockbacking)
+            return;
+
         MoveBehavior();
         CheckOutView();
     }
 
     protected virtual void MoveBehavior()
     {
-        
     }
 
-    public void TakeDamage(int amount)
+    public override void TakeDamage(int amount, Vector3 hitPoint, Vector3 hitNormal)
     {
-        if (isDead) return;
-
-        currentHp -= amount;
-
-        PlayHitEffect();
-
-        if (currentHp <= 0)
-        {
-            Die();
-        }
+        base.TakeDamage(amount, hitPoint, hitNormal);
+        if (!isDead && canKnockback)
+            ApplyKnockback(hitNormal, knockbackForce);
     }
 
-    protected virtual void PlayHitEffect()
+    public override void TakeDamage(int amount, Vector3 hitPoint, Vector3 knockbackDir, float customForce)
     {
-        if (bodyRenderer != null)
-        {
-            bodyRenderer.DOColor(hitColor, 0.05f).OnComplete(() =>
-            {
-                bodyRenderer.DOColor(normalColor, 0.1f);
-            });
-
-            // 绠€鍗曠殑鍙楀嚮缂╂斁锛圦寮圭殑鎰熻锛?
-            transform.DOPunchScale(new Vector3(0.2f, 0.2f, 0), 0.1f);
-        }
+        base.TakeDamage(amount, hitPoint, knockbackDir, customForce);
+        if (!isDead && canKnockback && customForce > 0f)
+            ApplyKnockback(knockbackDir, customForce);
     }
 
-    protected virtual void Die()
+    protected virtual void ApplyKnockback(Vector3 forceDir, float force)
     {
-        isDead = true;
+        isKnockbacking = true;
+        StopMovementDrive(true);
+        ApplyImpulse(forceDir.normalized * force, Random.Range(-knockbackTorque, knockbackTorque));
+        Timer.Register(0.2f, () => isKnockbacking = false);
+    }
+
+    protected override void Die()
+    {
+        base.Die();
+        StopMovementDrive(true);
         rb.simulated = false;
-        AudioManager.Instance.PlayEffect("EnemyDie");
-
-        if (deathEffectPrefab == null)
-        {
-            deathEffectPrefab = Resources.Load<GameObject>("ParticleSystem/PS_DeathSparks");
-        }
-
-        if (deathEffectPrefab != null)
-        {
-            GameObject particleObj = ObjectPoolManager.Instance.Get(deathEffectPrefab, transform.position, Quaternion.identity);
-            Timer.Register(1f, onComplete: () =>
-            {
-                ObjectPoolManager.Instance.Return(particleObj);
-            });
-            ParticleSystem ps = particleObj.GetComponent<ParticleSystem>();
-            if (ps != null)
-            {
-                var main = ps.main;
-
-                main.startColor = normalColor;
-
-                ps.Play();
-            }
-        }
-
-        BackgroundFXController.Instance.TriggerDistortion(transform.position);
 
         if (InRunDirector.ActiveInstance != null)
             InRunDirector.ActiveInstance.NotifyEnemyKilled(this);
-        
-        ObjectPoolManager.Instance.Return(this.gameObject);
-    }
 
+        ObjectPoolManager.Instance.Return(gameObject);
+    }
 
     protected virtual void OnCollisionEnter2D(Collision2D collision)
     {
-        var shield = collision.collider.gameObject.GetComponent<ShieldController>();
-        if (shield != null)
+        if (collision.gameObject.GetComponent<ShieldController>() != null)
             return;
-
-        MechBase mech = collision.collider.gameObject.GetComponent<MechBase>();
-        if (mech != null)
-        {
-            Vector3 hitPoint = collision.contacts.Length > 0 ? collision.contacts[0].point : mech.transform.position;
-            Vector3 hitNormal = (mech.transform.position - transform.position).normalized;
-            mech.TakeDamage(contactDamage, hitPoint, hitNormal);
-            return;
-        }
 
         if (collision.gameObject.CompareTag("Player"))
-        {
             collision.gameObject.GetComponentInChildren<HealthModule>()?.TakeDamage(contactDamage, transform);
-        }
     }
 
-    public void TakeDamage(int amount, Vector3 hitPoint, Vector3 hitNormal)
-    {
-        if (isDead) return;
-
-        currentHp -= amount;
-
-        PlayHitEffect(hitPoint, hitNormal);
-
-        if (canKnockback)
-        {
-            ApplyKnockback(hitNormal);
-        }
-
-        if (currentHp <= 0) Die();
-        else AudioManager.Instance.PlayEffect("EnemyHit1", 2f, 1f);
-    }
-
-    protected virtual void ApplyKnockback(Vector3 hitNormal)
-    {
-        isKnockbacking = true;
-
-        StopMovementDrive();
-
-        Vector2 forceDir = hitNormal.normalized;
-        ApplyImpulse(forceDir * knockbackForce, Random.Range(-knockbackTorque, knockbackTorque));
-
-        Timer.Register(0.2f, () =>
-        {
-            isKnockbacking = false;
-        });
-    }
-
-    public void TakeDamage(int amount, Vector3 hitPoint, Vector3 knockbackDir, float customForce)
-    {
-        TakeDamage(amount, hitPoint, knockbackDir, customForce, float.NaN);
-    }
-
-    public void TakeDamage(int amount, Vector3 hitPoint, Vector3 knockbackDir, float customForce, float customTorque)
-    {
-        if (isDead) return;
-
-        currentHp -= amount;
-
-        PlayHitEffect(hitPoint, knockbackDir); // 鎾斁鐗规晥
-
-        if (canKnockback && customForce > 0)
-        {
-            ApplyCustomKnockback(knockbackDir, customForce, customTorque);
-        }
-
-        if (currentHp <= 0) Die();
-        else AudioManager.Instance.PlayEffect("EnemyHit1");
-    }
-
-    protected virtual void ApplyCustomKnockback(Vector3 forceDir, float force, float customTorque = float.NaN)
-    {
-        isKnockbacking = true;
-        StopMovementDrive();
-
-        float torque = float.IsNaN(customTorque)
-            ? Random.Range(-knockbackTorque, knockbackTorque)
-            : customTorque;
-
-        ApplyImpulse(forceDir * force, torque);
-
-        Timer.Register(0.2f, () =>
-        {
-            isKnockbacking = false;
-        });
-    }
-
-
-
-    protected virtual void PlayHitEffect(Vector3 pos, Vector3 normal)
-    {
-        if (bodyRenderer != null)
-        {
-            // 鍋囪鎴戜滑鍦⊿hader閲屽畾涔変簡 "_HitFlashStrength"
-            bodyRenderer.material.DOKill();
-            bodyRenderer.material.SetFloat("_HitFlashStrength", 2f);
-            bodyRenderer.material.DOFloat(0.1f, "_HitFlashStrength", 0.8f);
-
-            transform.DOKill();
-            transform.localScale = Vector3.one;
-            transform.DOPunchScale(new Vector3(0.15f, 0.15f, 0), 0.1f);
-        }
-
-        if (hitParticlePrefab == null)
-        {
-            hitParticlePrefab = Resources.Load<GameObject>("ParticleSystem/PS_HitSparks");
-        }
-
-        if (hitParticlePrefab != null)
-        {
-            GameObject particleObj = ObjectPoolManager.Instance.Get(hitParticlePrefab, pos, Quaternion.LookRotation(normal));
-
-            Timer.Register(1f, onComplete: () =>
-            {
-                ObjectPoolManager.Instance.Return(particleObj);
-            });
-
-            ParticleSystem ps = particleObj.GetComponent<ParticleSystem>();
-            if (ps != null)
-            {
-                var main = ps.main;
-
-                main.startColor = normalColor;
-
-                ps.Play();
-            }
-        }
-    }
-    
-    
     private void CheckOutView()
     {
         Vector2 p = Camera.main.WorldToViewportPoint(transform.position);
-        isInScene = !(p.x < 0 || p.x > 1 || p.y < 0 || p.y > 1);
+        isInScene = !(p.x < 0f || p.x > 1f || p.y < 0f || p.y > 1f);
     }
 
     protected void DriveVelocity(Vector2 velocity, float responseScale = 1f)
     {
         if (motionMotor != null)
+        {
             motionMotor.SetDesiredVelocity(velocity, responseScale);
-        else
-            rb.velocity = velocity;
-    }
+            return;
+        }
 
-    protected void StopMovementDrive(bool immediate = false)
-    {
-        if (motionMotor != null)
-            motionMotor.StopDriving(immediate);
-        else if (immediate)
-            rb.velocity = Vector2.zero;
+        rb.velocity = velocity;
     }
 
     protected void SnapVelocity(Vector2 velocity)
     {
         if (motionMotor != null)
+        {
             motionMotor.SnapVelocity(velocity);
-        else
-            rb.velocity = velocity;
+            return;
+        }
+
+        rb.velocity = velocity;
+    }
+
+    protected void StopMovementDrive(bool immediate = false)
+    {
+        if (motionMotor != null)
+        {
+            motionMotor.StopDriving(immediate);
+            if (immediate)
+                rb.angularVelocity = 0f;
+            return;
+        }
+
+        rb.velocity = Vector2.zero;
+        if (immediate)
+            rb.angularVelocity = 0f;
+    }
+
+    protected void ResetMovementDrive()
+    {
+        if (motionMotor != null)
+        {
+            motionMotor.ResetMotion();
+            return;
+        }
+
+        rb.velocity = Vector2.zero;
+        rb.angularVelocity = 0f;
     }
 
     protected void ApplyImpulse(Vector2 impulse, float angularImpulse = 0f)
     {
         if (motionMotor != null)
-            motionMotor.AddImpulse(impulse, angularImpulse);
-        else
         {
-            rb.AddForce(impulse, ForceMode2D.Impulse);
-            if (!Mathf.Approximately(angularImpulse, 0f))
-                rb.AddTorque(angularImpulse, ForceMode2D.Impulse);
+            motionMotor.AddImpulse(impulse, angularImpulse);
+            return;
         }
-    }
 
-  
+        rb.AddForce(impulse, ForceMode2D.Impulse);
+        if (!Mathf.Approximately(angularImpulse, 0f))
+            rb.AddTorque(angularImpulse, ForceMode2D.Impulse);
+    }
 }

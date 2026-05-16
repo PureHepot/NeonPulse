@@ -36,6 +36,7 @@ public class InRunHUD : MonoBehaviour
         GUILayout.Label($"Loop Score: {director.CurrentLoopScore}", labelStyle);
         GUILayout.Label($"Loop Grade: {director.CurrentLoopGrade}", labelStyle);
         GUILayout.Label($"Run Currency: {director.CurrentRunCurrency}", labelStyle);
+        GUILayout.Label($"Warehouse: {director.CurrentWarehouseCount}/{director.CurrentWarehouseCapacity}", labelStyle);
         if (!string.IsNullOrWhiteSpace(director.CurrentBossName))
             GUILayout.Label($"Boss: {director.CurrentBossName}", labelStyle);
         GUILayout.EndArea();
@@ -113,13 +114,15 @@ public class InRunHUD : MonoBehaviour
         if (!isBossReward)
             GUILayout.Label($"Score {director.CurrentLoopScore}   Currency +{director.CurrentLoopCurrencyGain}", labelStyle);
         GUILayout.Label($"Pick {Mathf.Max(0, result.picksAllowed - result.picksMade)} reward(s)", labelStyle);
+        GUILayout.Label($"Warehouse {director.CurrentWarehouseCount}/{director.CurrentWarehouseCapacity}", labelStyle);
         GUILayout.Space(8f);
 
         for (int i = 0; i < result.choices.Count; i++)
         {
             RewardChoice choice = result.choices[i];
             string state = choice.selected ? "[TAKEN]" : $"[{i + 1}]";
-            GUILayout.Label($"{state} {choice.displayName}  +{choice.currencyBonus}c", labelStyle);
+            string extra = choice.warehouseSlotsDelta != 0 ? $"  Slots +{choice.warehouseSlotsDelta}" : string.Empty;
+            GUILayout.Label($"{state} {choice.displayName}  [{choice.itemType}]  +{choice.currencyBonus}c{extra}", labelStyle);
             GUILayout.Label(choice.description, labelStyle);
             GUILayout.Space(6f);
         }
@@ -148,6 +151,7 @@ public class InRunHUD : MonoBehaviour
         GUI.Box(panel, string.Empty);
         GUILayout.BeginArea(new Rect(panel.x + 16f, panel.y + 12f, panel.width - 32f, panel.height - 24f));
         GUILayout.Label($"SHOP  Currency {director.CurrentRunCurrency}", titleStyle);
+        GUILayout.Label($"Warehouse {director.CurrentWarehouseCount}/{director.CurrentWarehouseCapacity}", labelStyle);
         GUILayout.Label("Press number to buy, Space/Enter/N to continue", labelStyle);
         GUILayout.Space(8f);
 
@@ -155,7 +159,8 @@ public class InRunHUD : MonoBehaviour
         {
             var offer = offers[i];
             string state = offer.purchased ? "[BOUGHT]" : $"[{i + 1}]";
-            GUILayout.Label($"{state} {offer.displayName}  Cost {offer.cost}", labelStyle);
+            string extra = offer.warehouseSlotsDelta != 0 ? $"  Slots +{offer.warehouseSlotsDelta}" : string.Empty;
+            GUILayout.Label($"{state} {offer.displayName}  [{offer.itemType}]  Cost {offer.cost}{extra}", labelStyle);
             GUILayout.Label(offer.description, labelStyle);
             GUILayout.Space(6f);
         }

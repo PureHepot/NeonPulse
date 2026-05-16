@@ -85,6 +85,29 @@ public class PlayerController : MonoBehaviour
         motionMotor.ResetMotion();
     }
 
+    public void ClampToBounds(Vector2 min, Vector2 max)
+    {
+        if (motionMotor != null)
+        {
+            motionMotor.ClampPositionToBounds(min, max);
+            return;
+        }
+
+        if (Rigid2d != null)
+        {
+            Rigid2d.position = new Vector2(
+                Mathf.Clamp(Rigid2d.position.x, min.x, max.x),
+                Mathf.Clamp(Rigid2d.position.y, min.y, max.y));
+            return;
+        }
+
+        Vector3 position = transform.position;
+        transform.position = new Vector3(
+            Mathf.Clamp(position.x, min.x, max.x),
+            Mathf.Clamp(position.y, min.y, max.y),
+            position.z);
+    }
+
     public void SetInvincible(bool state)
     {
         var healthModule = Modules != null ? Modules.GetModule<HealthModule>(ModuleType.Health) : null;

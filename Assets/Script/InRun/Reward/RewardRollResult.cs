@@ -14,9 +14,12 @@ public class RewardRollResult
 public class RewardChoice
 {
     public string rewardId;
+    public string itemId;
     public string displayName;
     public string description;
+    public InRunItemType itemType = InRunItemType.Misc;
     public RewardRarity rarity = RewardRarity.Common;
     public int currencyBonus;
+    public int warehouseSlotsDelta;
     public bool selected;
 }

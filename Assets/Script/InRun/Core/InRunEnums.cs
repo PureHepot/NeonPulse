@@ -30,3 +30,17 @@ public enum CombatGrade
     SS,
     SSS
 }
+
+public enum InRunItemType
+{
+    Currency,
+    Module,
+    Plugin,
+    Core,
+    Frame,
+    Consumable,
+    WarehouseExpansion,
+    MapExpansion,
+    Repair,
+    Misc
+}
