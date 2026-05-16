@@ -2,31 +2,34 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class AssembleUI : UIBase
 {
-    #region Fields
-
     private readonly List<FrameSlotButton> activeSlots = new();
     private readonly List<FrameConfig> frames = new();
     private readonly List<ModuleConfig> filteredModules = new();
-    private readonly List<CoreConfig> filteredCores = new();
+    private readonly Dictionary<string, Transform> panelCache = new();
 
-    private readonly Dictionary<string, CoreConfig> coreLookup = new();
     private int frameIndex;
     private FrameConfig currentFrame;
     private GameObject currentSlotLayout;
     private FrameSlotButton selectedSlot;
     private string selectedModuleId;
 
-    private Transform moduleContentRoot;
-    private Transform coreContentRoot;
-
-    #endregion
-
-    #region Lifecycle
+    private Transform bgRoot;
+    private Transform framePanel;
+    private Transform modificationPanel;
+    private Transform frameDetailPanel;
+    private Transform moduleCargoPanel;
+    private Transform coreCargoPanel;
+    private Transform moduleDetailPanel;
+    private Transform moduleCargoDetailPanel;
+    private Transform previewPanel;
+    private Transform moduleCargoContent;
+    private Transform coreCargoContent;
+    private Transform moduleEntryContent;
+    private Transform moduleCargoEntryContent;
 
     public override void OnEnter(object args)
     {
@@ -36,17 +39,9 @@ public class AssembleUI : UIBase
         if (db == null || db.allFrames == null)
             return;
 
-        frames.Clear();
-        coreLookup.Clear();
-        if (db.allCores != null)
-        {
-            foreach (var core in db.allCores)
-            {
-                if (core != null)
-                    coreLookup[core.coreId] = core;
-            }
-        }
+        CachePanels();
 
+        frames.Clear();
         foreach (var frame in db.allFrames)
         {
             if (frame != null && GameMgr.Instance.Data.Meta.IsFrameUnlocked(frame.frameId))
@@ -55,9 +50,6 @@ public class AssembleUI : UIBase
 
         if (frames.Count == 0)
             return;
-
-        moduleContentRoot = Get<Transform>("ModuleContent");
-        coreContentRoot = Get<Transform>("CoreContent");
 
         string selectedFrameId = GameMgr.Instance.Data.Meta.GetSelectedFrameId();
         frameIndex = frames.FindIndex(frame => frame.frameId == selectedFrameId);
@@ -72,35 +64,70 @@ public class AssembleUI : UIBase
     {
         CleanupCurrentFrameDisplay();
         GameMgr.Instance.Preview.HideAssemblyPreview();
-        base.OnClose();
         Save();
+        base.OnClose();
     }
 
-    #endregion
+    private void CachePanels()
+    {
+        panelCache.Clear();
 
-    #region Button Binding
+        bgRoot = Get<Transform>("Background");
+        if (bgRoot == null)
+            return;
+
+        for (int index = 0; index < bgRoot.childCount; index++)
+        {
+            var child = bgRoot.GetChild(index);
+            panelCache[child.name] = child;
+        }
+
+        panelCache.TryGetValue("FramePanel", out framePanel);
+        panelCache.TryGetValue("ModificationPanel", out modificationPanel);
+        panelCache.TryGetValue("FrameDetailPanel", out frameDetailPanel);
+        panelCache.TryGetValue("ModuleCargoPanel", out moduleCargoPanel);
+        panelCache.TryGetValue("CoreCargoPanel", out coreCargoPanel);
+        panelCache.TryGetValue("ModuleDetailPanel", out moduleDetailPanel);
+        panelCache.TryGetValue("ModuleCargoDetailPanel", out moduleCargoDetailPanel);
+        panelCache.TryGetValue("PreviewPanel", out previewPanel);
+
+        moduleCargoContent = FindIn(moduleCargoPanel, "ModuleCargoContent");
+        coreCargoContent = FindIn(coreCargoPanel, "CoreCargoContent");
+        moduleEntryContent = FindIn(moduleDetailPanel, "EntryContent");
+        moduleCargoEntryContent = FindIn(moduleCargoDetailPanel, "CargoEntryContent") ??
+                                  FindIn(moduleCargoDetailPanel, "EntryChangeContent");
+    }
 
     private void BindButtons()
     {
-        Get<Button>("BtnPrevFrame").onClick.SetListener(() => ShowFrame(frameIndex - 1));
-        Get<Button>("BtnNextFrame").onClick.SetListener(() => ShowFrame(frameIndex + 1));
-        Get<Button>("BackBtn").onClick.SetListener(() => GameMgr.Instance.Game.ChangeState(new MenuState()));
-        Get<Button>("Finish").onClick.SetListener(() =>
+        var prevButton = Get<Button>("BtnPrevFrame");
+        if (prevButton != null)
+            prevButton.onClick.SetListener(() => ShowFrame(frameIndex - 1));
+
+        var nextButton = Get<Button>("BtnNextFrame");
+        if (nextButton != null)
+            nextButton.onClick.SetListener(() => ShowFrame(frameIndex + 1));
+
+        var backButton = Get<Button>("BackBtn");
+        if (backButton != null)
+            backButton.onClick.SetListener(() => GameMgr.Instance.Game.ChangeState(new MenuState()));
+
+        var finishButton = Get<Button>("Finish");
+        if (finishButton != null)
         {
-            if (currentFrame == null)
-                return;
+            finishButton.onClick.SetListener(() =>
+            {
+                if (currentFrame == null)
+                    return;
 
-            GameMgr.Instance.Loadout.SelectFrame(currentFrame.frameId);
-            Save();
+                GameMgr.Instance.Loadout.SelectFrame(currentFrame.frameId);
+                Save();
 
-            Action action = () => GameMgr.Instance.Game.ChangeState(new MainGameState(false));
-            GameMgr.Instance.UI.Open<LoadingUI>(action);
-        });
+                Action action = () => GameMgr.Instance.Game.ChangeState(new MainGameState(false));
+                GameMgr.Instance.UI.Open<LoadingUI>(action);
+            });
+        }
     }
-
-    #endregion
-
-    #region Frame Display
 
     private void ShowFrame(int index)
     {
@@ -114,27 +141,20 @@ public class AssembleUI : UIBase
 
         GameMgr.Instance.Loadout.SelectFrame(currentFrame.frameId);
 
-        SetText(Get<Transform>("FrameName"), currentFrame.displayName);
-        SetText(Get<Transform>("MoneyNum"), GameMgr.Instance.Data.Meta.softCurrency.ToString());
-
         CleanupCurrentFrameDisplay();
         SpawnFrameDisplay();
-
-        ShowModulePanel(false);
-        ShowLoadoutPanel(false);
-        SetPanelItemCount(moduleContentRoot, 0);
-        SetPanelItemCount(coreContentRoot, 0);
+        RefreshFrameTexts();
         RefreshFrameStats();
-        ShowFrameDescription();
         RefreshAssemblyPreview();
+        ShowFrameOverview();
     }
 
     private void SpawnFrameDisplay()
     {
-        var parent = Get<Transform>("FrameDisplay");
+        var parent = FindIn(framePanel, "FrameDisplay");
         ClearChildren(parent);
 
-        if (currentFrame == null)
+        if (parent == null || currentFrame == null)
             return;
 
         if (currentFrame.slotLayoutPrefab != null)
@@ -155,47 +175,74 @@ public class AssembleUI : UIBase
         foreach (var slot in currentSlotLayout.GetComponentsInChildren<FrameSlotButton>(true))
         {
             slot.OnSlotClicked += OnSlotClicked;
-            slot.OnSlotHovered += OnSlotHovered;
-            slot.OnSlotHoverExited += OnSlotHoverExited;
             activeSlots.Add(slot);
             RefreshSlotVisual(slot);
         }
     }
 
-    #endregion
-
-    #region Slot Interaction
-
-    private void OnSlotHovered(FrameSlotButton slot)
-    {
-        SetDescription(DescribeSlot(slot, GetSlotRuntime(slot.slotId)));
-    }
-
-    private void OnSlotHoverExited(FrameSlotButton slot)
-    {
-        RefreshDescriptionForCurrentSelection();
-    }
-
     private void OnSlotClicked(FrameSlotButton slot)
     {
+        if (slot == null)
+            return;
+
         selectedSlot = slot;
-        selectedModuleId = GetSlotRuntime(slot.slotId)?.moduleId;
+        var runtimeData = GetSlotRuntime(slot.slotId);
+        selectedModuleId = runtimeData?.moduleId;
 
-        foreach (var activeSlot in activeSlots)
-            RefreshSlotVisual(activeSlot);
+        RefreshSlotVisuals();
 
-        ShowModulePanel(true);
-        RefreshModulePanel(slot.allowedCategories);
-        RefreshLoadoutPanel();
-        RefreshFrameStats();
-        RefreshDescriptionForCurrentSelection();
+        if (runtimeData == null || !runtimeData.HasModule)
+        {
+            OpenModuleCargoForSlot(slot);
+            RefreshAssemblyPreview();
+            return;
+        }
+
+        RefreshModuleDetail(runtimeData);
+        ShowInstalledModuleFlow();
+        RefreshAssemblyPreview();
     }
 
-    #endregion
+    private void OpenModuleCargoForSlot(FrameSlotButton slot)
+    {
+        if (slot == null)
+            return;
 
-    #region Module Panel
+        var runtimeData = GetSlotRuntime(slot.slotId);
+        selectedModuleId = runtimeData != null && runtimeData.HasModule ? runtimeData.moduleId : null;
+        RefreshModuleCargo(slot.allowedCategories);
+        RefreshModuleCargoDetail();
+        ShowModuleCargoFlow();
+    }
 
-    private void RefreshModulePanel(ModuleCategory filter)
+    private void RefreshFrameTexts()
+    {
+        if (currentFrame == null)
+            return;
+
+        SetText(FindIn(framePanel, "FrameName"), currentFrame.displayName);
+        SetText(FindIn(frameDetailPanel, "FrameName"), currentFrame.displayName);
+        SetText(FindIn(frameDetailPanel, "FrameDescription"), currentFrame.description);
+        SetText(FindIn(frameDetailPanel, "HealthNum"), Mathf.RoundToInt(currentFrame.baseMaxHP).ToString());
+    }
+
+    private void RefreshFrameStats()
+    {
+        int totalLoad = 0;
+
+        foreach (var slot in activeSlots)
+        {
+            var runtimeData = GetSlotRuntime(slot.slotId);
+            if (runtimeData == null || !runtimeData.HasModule)
+                continue;
+
+            totalLoad += runtimeData.GetLoadCost();
+        }
+
+        SetText(FindIn(frameDetailPanel, "LoadNum"), totalLoad.ToString());
+    }
+
+    private void RefreshModuleCargo(ModuleCategory allowedCategories)
     {
         filteredModules.Clear();
 
@@ -208,44 +255,38 @@ public class AssembleUI : UIBase
                     continue;
                 if (!GameMgr.Instance.Data.Meta.IsModuleUnlocked(module.ModuleId))
                     continue;
-                if (filter != ModuleCategory.None && !module.HasCategory(filter))
+                if (allowedCategories != ModuleCategory.None && !module.HasCategory(allowedCategories))
                     continue;
 
                 filteredModules.Add(module);
             }
         }
 
-        if (moduleContentRoot == null)
+        if (moduleCargoContent == null)
             return;
 
-        var runtimeData = selectedSlot != null ? GetSlotRuntime(selectedSlot.slotId) : null;
-        moduleContentRoot.IteratorChild(filteredModules.Count, iterator);
-
-        void iterator(int index, Transform item)
+        moduleCargoContent.IteratorChild(filteredModules.Count, (index, item) =>
         {
-            int idx = index;
-            var module = filteredModules[idx];
-            bool isSelected = runtimeData != null &&
-                              runtimeData.moduleId == module.ModuleId;
+            var module = filteredModules[index];
+            var rootButton = item.GetComponent<Button>();
 
-            BindPanelItem(
-                item,
-                module.moduleName,
-                module.icon,
-                isSelected ? module.themeColor : module.themeColor * 0.55f,
-                () =>
+            SetText(FindIn(item, "ModuleName"), module.moduleName);
+            SetText(FindIn(item, "ModuleDescription"), module.description);
+            SetText(FindIn(item, "LoadNum"), module.GetLoadCost(module.defaultRarity).ToString());
+            SetImageSprite(FindIn(item, "ModuleIcon"), module.icon);
+
+            if (rootButton != null)
+            {
+                rootButton.onClick.SetListener(() =>
                 {
-                    if (isSelected)
-                        UnequipSelectedModule();
-                    else
-                        SelectModule(module);
-                },
-                () => SetDescription(DescribeModule(module)),
-                RefreshDescriptionForCurrentSelection);
-        }
+                    selectedModuleId = module.ModuleId;
+                    RefreshModuleCargoDetail();
+                });
+            }
+        });
     }
 
-    private void SelectModule(ModuleConfig module)
+    private void EquipModuleToSelectedSlot(ModuleConfig module)
     {
         if (selectedSlot == null || module == null)
             return;
@@ -254,10 +295,179 @@ public class AssembleUI : UIBase
             return;
 
         selectedModuleId = module.ModuleId;
-        RefreshSelectionState();
+        Save();
+        RefreshFrameStats();
+        RefreshSlotVisuals();
+        RefreshAssemblyPreview();
+
+        var runtimeData = GetSlotRuntime(selectedSlot.slotId);
+        if (runtimeData == null || !runtimeData.HasModule)
+            return;
+
+        RefreshModuleDetail(runtimeData);
+        RefreshModuleCargoDetail();
+        RefreshModificationPanel(runtimeData);
+        ShowInstalledModuleFlow();
     }
 
-    private void UnequipSelectedModule()
+    private void RefreshModuleDetail(LoadoutModuleRuntimeData runtimeData)
+    {
+        if (moduleDetailPanel == null || runtimeData?.moduleConfig == null)
+            return;
+
+        FillModuleInfo(moduleDetailPanel, runtimeData);
+        RefreshModuleEntryList(moduleEntryContent, runtimeData);
+        RefreshModuleCoreEquip(runtimeData);
+        BindModuleDetailButtons();
+    }
+
+    private void RefreshModuleCargoDetail()
+    {
+        if (moduleCargoDetailPanel == null)
+            return;
+
+        var equippedRuntime = GetSelectedRuntime();
+        var detailRuntime = GetCargoSelectedRuntime();
+
+        FillModuleInfo(moduleCargoDetailPanel, detailRuntime);
+
+        RefreshModuleEntryList(moduleCargoEntryContent, detailRuntime);
+
+        var equipButton = FindIn(moduleCargoDetailPanel, "EquipBtn")?.GetComponent<Button>();
+        if (equipButton != null)
+        {
+            bool canEquip = detailRuntime != null &&
+                            detailRuntime.moduleConfig != null &&
+                            selectedSlot != null &&
+                            !IsCargoSelectionInstalled(equippedRuntime);
+            equipButton.gameObject.SetActive(canEquip);
+            equipButton.onClick.SetListener(EquipSelectedCargoModule);
+        }
+
+        var removeButton = FindIn(moduleCargoDetailPanel, "RemoveBtn")?.GetComponent<Button>();
+        if (removeButton != null)
+        {
+            bool canRemove = IsCargoSelectionInstalled(equippedRuntime);
+            removeButton.gameObject.SetActive(canRemove);
+            removeButton.onClick.SetListener(RemoveSelectedCargoModule);
+        }
+    }
+
+    private void FillModuleInfo(Transform root, LoadoutModuleRuntimeData runtimeData)
+    {
+        var moduleConfig = runtimeData?.moduleConfig;
+        var coreConfig = runtimeData?.coreConfig;
+
+        SetText(FindIn(root, "ModuleName"), moduleConfig != null ? moduleConfig.moduleName : "");
+        SetText(FindIn(root, "ModuleDescription"), moduleConfig != null ? moduleConfig.description : "");
+        SetText(FindIn(root, "CoreName"), coreConfig != null ? coreConfig.displayName : "");
+        SetText(FindIn(root, "CoreDescription"), coreConfig != null ? coreConfig.description : string.Empty);
+        SetText(FindIn(root, "LoadNum"), runtimeData != null && runtimeData.HasModule ? runtimeData.GetLoadCost().ToString() : "0");
+
+        SetImageSprite(FindIn(root, "ModuleIcon"), moduleConfig != null ? moduleConfig.icon : null);
+        SetImageSprite(FindIn(root, "CoreIcon"), coreConfig != null ? coreConfig.icon : null);
+    }
+
+    private void RefreshModuleEntryList(Transform content, LoadoutModuleRuntimeData runtimeData)
+    {
+        if (content == null)
+            return;
+
+        var entries = BuildModuleEntries(runtimeData);
+        content.IteratorChild(entries.Count, (index, item) =>
+        {
+            var entry = entries[index];
+            SetText(FindIn(item, "EntryName"), entry.name);
+            SetText(FindIn(item, "EntryValue"), entry.value);
+            SetText(FindIn(item, "EntryValueEnd"), string.Empty);
+        });
+    }
+
+    private void RefreshModuleCoreEquip(LoadoutModuleRuntimeData runtimeData)
+    {
+        var moduleCoreEquip = FindIn(moduleDetailPanel, "ModuleCoreEquip");
+        if (moduleCoreEquip == null)
+            return;
+
+        RefreshSingleModuleCard(FindIn(moduleCoreEquip, "ModuleGroup"), runtimeData);
+        RefreshSingleCoreCard(FindIn(moduleCoreEquip, "CoreGroup"), runtimeData?.coreConfig, OpenCoreCargoForSelectedModule);
+
+        var coreItemButton = FindIn(moduleCoreEquip, "CoreItem")?.GetComponent<Button>();
+        if (coreItemButton != null)
+            coreItemButton.onClick.SetListener(OpenCoreCargoForSelectedModule);
+    }
+
+    private void RefreshModificationPanel(LoadoutModuleRuntimeData runtimeData)
+    {
+        if (modificationPanel == null)
+            return;
+
+        RefreshSingleCoreCard(FindIn(modificationPanel, "CoreGroup"), runtimeData?.coreConfig, OpenCoreCargoForSelectedModule);
+        RefreshSingleModuleCard(FindIn(modificationPanel, "ModuleGroup"), runtimeData);
+    }
+
+    private void RefreshSingleModuleCard(Transform root, LoadoutModuleRuntimeData runtimeData)
+    {
+        if (root == null)
+            return;
+
+        FillModuleInfo(root, runtimeData);
+    }
+
+    private void RefreshSingleCoreCard(Transform root, CoreConfig coreConfig, Action onClick)
+    {
+        if (root == null)
+            return;
+
+        SetText(FindIn(root, "CoreName"), coreConfig != null ? coreConfig.displayName : "Not Installed");
+        SetText(FindIn(root, "CoreDescription"), coreConfig != null ? coreConfig.description : "Core system pending.");
+        SetImageSprite(FindIn(root, "CoreIcon"), coreConfig != null ? coreConfig.icon : null);
+
+        var button = FindIn(root, "CoreItem")?.GetComponent<Button>();
+        if (button != null)
+            button.onClick.SetListener(() => onClick?.Invoke());
+    }
+
+    private List<(string name, string value)> BuildModuleEntries(LoadoutModuleRuntimeData runtimeData)
+    {
+        var result = new List<(string name, string value)>();
+        if (runtimeData?.moduleConfig == null)
+            return result;
+
+        foreach (var stat in runtimeData.moduleConfig.GetAllowedStats())
+        {
+            if (stat == null)
+                continue;
+
+            float value = runtimeData.GetFinalStat(stat);
+            if (Mathf.Approximately(value, 0f))
+                continue;
+
+            result.Add((stat.displayName, FormatStatValue(stat, value)));
+        }
+
+        return result;
+    }
+
+    private void BindModuleDetailButtons()
+    {
+        var exchangeButton = FindIn(moduleDetailPanel, "ExchangeBtn")?.GetComponent<Button>();
+        if (exchangeButton != null)
+        {
+            exchangeButton.onClick.SetListener(() =>
+            {
+                SetPanelVisible(frameDetailPanel, false);
+                if (selectedSlot != null)
+                    OpenModuleCargoForSlot(selectedSlot);
+            });
+        }
+
+        var removeButton = FindIn(moduleDetailPanel, "RemoveBtn")?.GetComponent<Button>();
+        if (removeButton != null)
+            removeButton.onClick.SetListener(RemoveSelectedModule);
+    }
+
+    private void RemoveSelectedModule()
     {
         if (selectedSlot == null)
             return;
@@ -266,42 +476,62 @@ public class AssembleUI : UIBase
             return;
 
         selectedModuleId = null;
-        RefreshSelectionState();
+        Save();
+        RefreshFrameStats();
+        RefreshSlotVisuals();
+        RefreshAssemblyPreview();
+        RefreshModuleCargoDetail();
+        ShowFrameOverview();
     }
 
-    #endregion
-
-    #region Core Panel
-
-    private void RefreshLoadoutPanel()
+    private void EquipSelectedCargoModule()
     {
-        bool hasModule = selectedSlot != null && !string.IsNullOrEmpty(selectedModuleId);
-        ShowLoadoutPanel(hasModule);
-
-        if (coreContentRoot == null)
+        var runtimeData = GetCargoSelectedRuntime();
+        if (runtimeData?.moduleConfig == null)
             return;
 
-        if (!hasModule || selectedSlot == null)
-        {
-            SetPanelItemCount(coreContentRoot, 0);
-            return;
-        }
-
-        RefreshCoreSection();
+        EquipModuleToSelectedSlot(runtimeData.moduleConfig);
     }
 
-    private void RefreshCoreSection()
+    private void RemoveSelectedCargoModule()
     {
-        filteredCores.Clear();
-        var runtimeData = selectedSlot != null ? GetSlotRuntime(selectedSlot.slotId) : null;
-        var selectedModuleConfig = runtimeData?.moduleConfig;
-
-        if (selectedModuleConfig == null)
-        {
-            SetPanelItemCount(coreContentRoot, 0);
+        if (selectedSlot == null)
             return;
-        }
 
+        var equippedRuntime = GetSelectedRuntime();
+        if (!IsCargoSelectionInstalled(equippedRuntime))
+            return;
+
+        if (!GameMgr.Instance.Loadout.UnequipModule(selectedSlot.slotId))
+            return;
+
+        Save();
+        RefreshFrameStats();
+        RefreshSlotVisuals();
+        RefreshAssemblyPreview();
+
+        selectedModuleId = null;
+        CloseCargoAndShowCurrentSelection();
+    }
+
+    private void OpenCoreCargoForSelectedModule()
+    {
+        var runtimeData = GetSelectedRuntime();
+        RefreshModificationPanel(runtimeData);
+        RefreshCoreCargo(runtimeData?.moduleConfig);
+
+        SetPanelVisible(framePanel, false);
+        SetPanelVisible(frameDetailPanel, false);
+        SetPanelVisible(modificationPanel, true);
+        SetPanelVisible(coreCargoPanel, true);
+    }
+
+    private void RefreshCoreCargo(ModuleConfig moduleConfig)
+    {
+        if (coreCargoContent == null)
+            return;
+
+        var cores = new List<CoreConfig>();
         var db = GameConfigDatabase.Instance;
         if (db?.allCores != null)
         {
@@ -309,60 +539,21 @@ public class AssembleUI : UIBase
             {
                 if (core == null)
                     continue;
-                if (!GameMgr.Instance.Data.Meta.IsCoreUnlocked(core.coreId))
-                    continue;
-                if (!core.CanInsertInto(selectedModuleConfig))
+                if (moduleConfig != null && !core.CanInsertInto(moduleConfig))
                     continue;
 
-                filteredCores.Add(core);
+                cores.Add(core);
             }
         }
 
-        if (coreContentRoot == null)
-            return;
-
-        string equippedCoreId = runtimeData?.coreId;
-
-        coreContentRoot.IteratorChild(filteredCores.Count, iterator);
-
-        void iterator(int index, Transform item)
+        coreCargoContent.IteratorChild(cores.Count, (index, item) =>
         {
-            var core = filteredCores[index];
-            bool isSelected = equippedCoreId == core.coreId;
-
-            BindPanelItem(
-                item,
-                core.displayName,
-                core.icon,
-                isSelected ? Color.yellow : new Color(1f, 1f, 1f, 0.55f),
-                () => SelectCore(core),
-                () => SetDescription(DescribeCore(core)),
-                RefreshDescriptionForCurrentSelection);
-        }
+            var core = cores[index];
+            SetText(FindIn(item, "CoreName"), core.displayName);
+            SetText(FindIn(item, "CoreDescription"), core.description);
+            SetImageSprite(FindIn(item, "CoreIcon"), core.icon);
+        });
     }
-
-    private void SelectCore(CoreConfig core)
-    {
-        if (selectedSlot == null || string.IsNullOrEmpty(selectedModuleId) || core == null)
-            return;
-
-        var runtimeData = GetSlotRuntime(selectedSlot.slotId);
-        if (runtimeData?.moduleConfig == null)
-            return;
-
-        bool success = runtimeData != null && runtimeData.coreId == core.coreId
-            ? GameMgr.Instance.Loadout.RemoveCore(selectedSlot.slotId)
-            : GameMgr.Instance.Loadout.InsertCore(selectedSlot.slotId, core.coreId);
-
-        if (!success)
-            return;
-
-        RefreshSelectionState();
-    }
-
-    #endregion
-
-    #region Slot Visuals
 
     private void RefreshSlotVisual(FrameSlotButton slot)
     {
@@ -394,283 +585,77 @@ public class AssembleUI : UIBase
         }
     }
 
-    #endregion
-
-    #region Description And Stats
-
-    private void RefreshFrameStats()
+    private void RefreshSlotVisuals()
     {
-        int usedSlots = 0;
-        int totalLoad = 0;
-
-        foreach (var slot in activeSlots)
-        {
-            var runtimeData = GetSlotRuntime(slot.slotId);
-            if (runtimeData == null || !runtimeData.HasModule)
-                continue;
-
-            usedSlots++;
-            totalLoad += runtimeData.GetLoadCost();
-        }
-
-        SetText(Get<Transform>("FrameLimit"), $"{usedSlots}/{activeSlots.Count}");
-        SetText(Get<Transform>("Load"), totalLoad.ToString());
+        foreach (var activeSlot in activeSlots)
+            RefreshSlotVisual(activeSlot);
     }
-
-    private string DescribeSlot(FrameSlotButton slot, LoadoutModuleRuntimeData runtimeData)
-    {
-        if (slot == null)
-            return DescribeFrame();
-
-        if (runtimeData == null || !runtimeData.HasModule)
-            return $"{slot.slotId}\n可装配类别: {FormatCategories(slot.allowedCategories)}";
-
-        var lines = new List<string>
-        {
-            $"{runtimeData.moduleConfig.moduleName} [{runtimeData.moduleRarity}]",
-            runtimeData.moduleConfig.description
-        };
-
-        if (runtimeData.coreConfig != null)
-            lines.Add($"核心: {runtimeData.coreConfig.displayName}");
-
-        if (runtimeData.pluginRuntimes.Count > 0)
-            lines.Add($"插件: {string.Join(", ", GetPluginNames(runtimeData.pluginRuntimes))}");
-
-        string stats = BuildRuntimeStatSummary(runtimeData);
-        if (!string.IsNullOrEmpty(stats))
-            lines.Add(stats);
-
-        return string.Join("\n\n", lines);
-    }
-
-    private string DescribeFrame()
-    {
-        if (currentFrame == null)
-            return string.Empty;
-
-        var parts = new List<string>
-        {
-            currentFrame.displayName,
-            currentFrame.description
-        };
-
-        if (currentFrame.inherentEffects != null && currentFrame.inherentEffects.Count > 0)
-        {
-            var effectLines = new List<string>();
-            foreach (var effect in currentFrame.inherentEffects)
-            {
-                if (!string.IsNullOrWhiteSpace(effect.description))
-                    effectLines.Add(effect.description);
-                else if (!string.IsNullOrWhiteSpace(effect.effectId))
-                    effectLines.Add(effect.effectId);
-            }
-
-            if (effectLines.Count > 0)
-                parts.Add("固有特效: " + string.Join(" / ", effectLines));
-        }
-
-        return string.Join("\n\n", parts);
-    }
-
-    private string DescribeModule(ModuleConfig module)
-    {
-        if (module == null)
-            return string.Empty;
-
-        var parts = new List<string>
-        {
-            module.moduleName,
-            module.description,
-            $"分类: {FormatCategories(module.categories)}",
-            $"默认品质: {module.defaultRarity}",
-            $"负载: {module.GetLoadCost(module.defaultRarity)}",
-            $"插件槽: {module.GetPluginSlots(module.defaultRarity)}"
-        };
-
-        var statLines = new List<string>();
-        foreach (var stat in module.GetAllowedStats())
-        {
-            if (stat == null)
-                continue;
-
-            float baseValue = module.GetBaseStat(stat, module.defaultRarity);
-            if (Mathf.Approximately(baseValue, 0f))
-                continue;
-
-            statLines.Add($"{stat.displayName}: {FormatStatValue(stat, baseValue)}");
-        }
-
-        if (statLines.Count > 0)
-            parts.Add("基础属性\n" + string.Join("\n", statLines));
-
-        return string.Join("\n\n", parts);
-    }
-
-    private string DescribeCore(CoreConfig core)
-    {
-        if (core == null)
-            return string.Empty;
-
-        var parts = new List<string>
-        {
-            core.displayName,
-            core.description
-        };
-
-        if (core.statBonuses != null && core.statBonuses.Count > 0)
-        {
-            var lines = new List<string>();
-            foreach (var bonus in core.statBonuses)
-            {
-                string line = bonus.statDefinition != null
-                    ? bonus.statDefinition.displayName
-                    : bonus.StatId;
-                if (!Mathf.Approximately(bonus.additiveBonus, 0f))
-                    line += $" +{bonus.additiveBonus:0.##}";
-                if (!Mathf.Approximately(bonus.multiplicativeBonus, 0f))
-                    line += $" / +{bonus.multiplicativeBonus * 100f:0.#}%";
-
-                lines.Add(line);
-            }
-
-            parts.Add("数值加成\n" + string.Join("\n", lines));
-        }
-
-        return string.Join("\n\n", parts);
-    }
-
-    private string BuildRuntimeStatSummary(LoadoutModuleRuntimeData runtimeData)
-    {
-        if (runtimeData?.moduleConfig == null)
-            return string.Empty;
-
-        var lines = new List<string>();
-        foreach (var stat in runtimeData.moduleConfig.GetAllowedStats())
-        {
-            if (stat == null)
-                continue;
-
-            float value = runtimeData.GetFinalStat(stat);
-            if (Mathf.Approximately(value, 0f))
-                continue;
-
-            lines.Add($"{stat.displayName}: {FormatStatValue(stat, value)}");
-        }
-
-        return lines.Count > 0 ? "当前属性\n" + string.Join("\n", lines) : string.Empty;
-    }
-
-    private string FormatCategories(ModuleCategory categories)
-    {
-        if (categories == ModuleCategory.None)
-            return "None";
-
-        var results = new List<string>();
-        foreach (ModuleCategory value in Enum.GetValues(typeof(ModuleCategory)))
-        {
-            if (value == ModuleCategory.None)
-                continue;
-            if ((categories & value) != 0)
-                results.Add(value.ToString());
-        }
-
-        return string.Join(", ", results);
-    }
-
-    private string FormatStatValue(StatDefinition stat, float value)
-    {
-        if (stat == null)
-            return value.ToString("0.##");
-
-        return stat.valueKind switch
-        {
-            StatValueKind.Integer => Mathf.RoundToInt(value).ToString(),
-            StatValueKind.Percent => $"{value * 100f:0.#}%",
-            _ => value.ToString("0.##")
-        };
-    }
-
-    private IEnumerable<string> GetPluginNames(List<LoadoutPluginRuntimeData> plugins)
-    {
-        foreach (var plugin in plugins)
-        {
-            if (plugin?.pluginConfig != null)
-                yield return plugin.pluginConfig.displayName;
-        }
-    }
-
-    private void RefreshDescriptionForCurrentSelection()
-    {
-        if (selectedSlot != null)
-            SetDescription(DescribeSlot(selectedSlot, GetSlotRuntime(selectedSlot.slotId)));
-        else
-            ShowFrameDescription();
-    }
-
-    private void ShowFrameDescription()
-    {
-        SetDescription(DescribeFrame());
-    }
-
-    #endregion
-
-    #region Panel Visibility
-
-    private void SetDescription(string text)
-    {
-        SetText(Get<Transform>("Description"), text);
-    }
-
-    private void ShowModulePanel(bool visible)
-    {
-        var panel = Get<Transform>("ModulePanel");
-        if (panel != null)
-            panel.gameObject.SetActive(visible);
-    }
-
-    private void ShowLoadoutPanel(bool visible)
-    {
-        var panel = Get<Transform>("CorePanel");
-        if (panel != null)
-            panel.gameObject.SetActive(visible);
-    }
-
-    #endregion
-
-    #region Loadout Access
 
     private LoadoutModuleRuntimeData GetSlotRuntime(string slotId)
     {
         return GameMgr.Instance.Loadout.GetEquippedModuleRuntime(slotId);
     }
 
-    private void RefreshSelectionState()
+    private LoadoutModuleRuntimeData GetSelectedRuntime()
     {
-        foreach (var activeSlot in activeSlots)
-            RefreshSlotVisual(activeSlot);
+        return selectedSlot == null ? null : GetSlotRuntime(selectedSlot.slotId);
+    }
 
-        if (selectedSlot != null)
+    private LoadoutModuleRuntimeData GetCargoSelectedRuntime()
+    {
+        if (selectedSlot == null)
+            return null;
+
+        var moduleConfig = GameMgr.Instance.Loadout.GetModuleConfig(selectedModuleId);
+        if (moduleConfig == null)
+            return null;
+
+        return new LoadoutModuleRuntimeData
         {
-            selectedModuleId = GetSlotRuntime(selectedSlot.slotId)?.moduleId;
-            RefreshModulePanel(selectedSlot.allowedCategories);
-        }
+            slotId = selectedSlot.slotId,
+            moduleId = moduleConfig.ModuleId,
+            moduleType = moduleConfig.moduleType,
+            moduleRarity = moduleConfig.defaultRarity,
+            moduleConfig = moduleConfig,
+            coreConfig = null,
+            coreId = string.Empty,
+            database = GameConfigDatabase.Instance,
+            statGraph = new LoadoutStatGraph(moduleConfig, moduleConfig.defaultRarity, null)
+        };
+    }
 
-        RefreshLoadoutPanel();
-        RefreshFrameStats();
-        RefreshDescriptionForCurrentSelection();
-        Save();
-        RefreshAssemblyPreview();
+    private bool IsCargoSelectionInstalled(LoadoutModuleRuntimeData equippedRuntime)
+    {
+        return equippedRuntime != null &&
+               equippedRuntime.HasModule &&
+               !string.IsNullOrEmpty(selectedModuleId) &&
+               string.Equals(equippedRuntime.moduleId, selectedModuleId, StringComparison.Ordinal);
+    }
+
+    private void CloseCargoAndShowCurrentSelection()
+    {
+        SetPanelVisible(moduleCargoPanel, false);
+        SetPanelVisible(moduleCargoDetailPanel, false);
+        SetPanelVisible(frameDetailPanel, true);
+
+        var runtimeData = GetSelectedRuntime();
+        if (runtimeData != null && runtimeData.HasModule)
+        {
+            selectedModuleId = runtimeData.moduleId;
+            RefreshModuleDetail(runtimeData);
+            RefreshModificationPanel(runtimeData);
+            SetPanelVisible(moduleDetailPanel, true);
+        }
+        else
+        {
+            SetPanelVisible(moduleDetailPanel, false);
+        }
     }
 
     private void Save()
     {
         GameMgr.Instance.Data.Save();
     }
-
-    #endregion
-
-    #region Cleanup
 
     private void CleanupCurrentFrameDisplay()
     {
@@ -680,8 +665,6 @@ public class AssembleUI : UIBase
                 continue;
 
             slot.OnSlotClicked -= OnSlotClicked;
-            slot.OnSlotHovered -= OnSlotHovered;
-            slot.OnSlotHoverExited -= OnSlotHoverExited;
         }
 
         activeSlots.Clear();
@@ -692,76 +675,71 @@ public class AssembleUI : UIBase
         currentSlotLayout = null;
     }
 
-    #endregion
-
-    #region Panel Item Binding
-
-    private void SetPanelItemCount(Transform contentRoot, int count)
+    private Transform FindIn(Transform root, string name)
     {
-        if (contentRoot == null)
-            return;
+        if (root == null || string.IsNullOrEmpty(name))
+            return null;
 
-        contentRoot.IteratorChild(count, (_, _) => { });
-    }
-
-    private void BindPanelItem(
-        Transform item,
-        string label,
-        Sprite icon,
-        Color color,
-        Action onClick,
-        Action onHover,
-        Action onHoverExit)
-    {
-        if (item == null)
-            return;
-
-        var button = item.GetComponent<Button>();
-        if (button != null)
-            button.onClick.SetListener(() => onClick?.Invoke());
-
-        var image = item.GetComponent<Image>();
-        if (image != null)
-            image.color = color;
-
-        var iconImage = FindItemIcon(item);
-        if (iconImage != null)
+        foreach (var child in root.GetComponentsInChildren<Transform>(true))
         {
-            iconImage.sprite = icon;
-            iconImage.enabled = icon != null;
-        }
-
-        var labelText = item.GetComponentInChildren<TMP_Text>(true);
-        if (labelText != null)
-            labelText.text = label;
-
-        var trigger = item.GetComponent<EventTrigger>();
-        if (trigger == null && (onHover != null || onHoverExit != null))
-            trigger = item.gameObject.AddComponent<EventTrigger>();
-
-        if (trigger != null)
-        {
-            trigger.triggers ??= new List<EventTrigger.Entry>();
-            trigger.triggers.Clear();
-            trigger.AddTrigger(EventTriggerType.PointerEnter, _ => onHover?.Invoke());
-            trigger.AddTrigger(EventTriggerType.PointerExit, _ => onHoverExit?.Invoke());
-        }
-    }
-
-    private Image FindItemIcon(Transform item)
-    {
-        foreach (var image in item.GetComponentsInChildren<Image>(true))
-        {
-            if (image.transform != item)
-                return image;
+            if (child.name == name)
+                return child;
         }
 
         return null;
     }
 
-    #endregion
+    private void SetPanelVisible(Transform panel, bool visible)
+    {
+        if (panel != null)
+            panel.gameObject.SetActive(visible);
+    }
 
-    #region Utility
+    private void ShowFrameOverview()
+    {
+        SetPanelVisible(framePanel, true);
+        SetPanelVisible(modificationPanel, false);
+        SetPanelVisible(frameDetailPanel, true);
+        SetPanelVisible(moduleCargoPanel, false);
+        SetPanelVisible(coreCargoPanel, false);
+        SetPanelVisible(moduleDetailPanel, false);
+        SetPanelVisible(moduleCargoDetailPanel, false);
+    }
+
+    private void ShowInstalledModuleFlow()
+    {
+        SetPanelVisible(framePanel, true);
+        SetPanelVisible(modificationPanel, false);
+        SetPanelVisible(frameDetailPanel, true);
+        SetPanelVisible(moduleCargoPanel, false);
+        SetPanelVisible(coreCargoPanel, false);
+        SetPanelVisible(moduleDetailPanel, true);
+        SetPanelVisible(moduleCargoDetailPanel, false);
+    }
+
+    private void ShowModuleCargoFlow()
+    {
+        SetPanelVisible(framePanel, true);
+        SetPanelVisible(modificationPanel, false);
+        SetPanelVisible(frameDetailPanel, false);
+        SetPanelVisible(moduleCargoPanel, true);
+        SetPanelVisible(coreCargoPanel, false);
+        SetPanelVisible(moduleDetailPanel, false);
+        SetPanelVisible(moduleCargoDetailPanel, true);
+    }
+
+    private void SetImageSprite(Transform target, Sprite sprite)
+    {
+        if (target == null)
+            return;
+
+        var image = target.GetComponent<Image>();
+        if (image == null)
+            return;
+
+        image.sprite = sprite;
+        image.enabled = sprite != null;
+    }
 
     private void ClearChildren(Transform parent)
     {
@@ -798,14 +776,30 @@ public class AssembleUI : UIBase
             color.a);
     }
 
+    private string FormatStatValue(StatDefinition stat, float value)
+    {
+        if (stat == null)
+            return value.ToString("0.##");
+
+        return stat.valueKind switch
+        {
+            StatValueKind.Integer => Mathf.RoundToInt(value).ToString(),
+            StatValueKind.Percent => $"{value * 100f:0.#}%",
+            _ => value.ToString("0.##")
+        };
+    }
+
     private void RefreshAssemblyPreview()
     {
         var snapshot = GameMgr.Instance.Loadout.BuildCurrentAssemblySnapshot();
         GameMgr.Instance.Preview.ShowAssemblyPreview(snapshot);
-        var previewTexture = Get<RawImage>("PreviewTexture");
-        if (previewTexture != null)
-            previewTexture.texture = GameMgr.Instance.Preview.GetAssemblyPreviewTexture();
-    }
 
-    #endregion
+        var previewTexture = FindIn(previewPanel, "PreviewTexture");
+        if (previewTexture == null)
+            return;
+
+        var rawImage = previewTexture.GetComponent<RawImage>();
+        if (rawImage != null)
+            rawImage.texture = GameMgr.Instance.Preview.GetAssemblyPreviewTexture();
+    }
 }

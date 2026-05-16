@@ -300,6 +300,32 @@ ThemeSelecting / ThemeIntro
 
 ## 历史日期记忆
 
+### 2026-05-16
+
+- `AssembleUI.prefab` 已被用户彻底重做，旧 `AssembleUI.cs` 不再适合直接依赖全局重名节点。
+- `AssembleUI.cs` 已先完成第一段迁移，当前策略是：
+  - 先缓存 `BG` 下的主 Panel，而不是继续依赖 `UIBase.Get(name)` 的全树重名查找。
+  - 先打通 Frame 相关流程：`FramePanel`、`FrameDetailPanel`、`ModuleDetailPanel`、`PreviewPanel`。
+  - `FrameDetailPanel` 当前会填充：
+    - `FrameName`
+    - `FrameDescription`
+    - `HealthNum` = `FrameConfig.baseMaxHP`
+    - `LoadNum` = 当前已安装模块总负载
+  - `FramePanel` 当前仍复用 `FrameDisplay` + `FrameSlotButton` 机制展示上一次拼装结果。
+  - 点击已安装模块时会打开 `ModuleDetailPanel`，并填充模块/核心基础信息，同时刷新 `PreviewPanel`。
+  - 未安装槽位当前先不进入模块库流程，留待下一步实现。
+- `AssembleUI.cs` 第二段已接上：
+  - 点击空槽位会关闭 `FrameDetailPanel`，打开 `ModuleCargoPanel`。
+  - `ModuleCargoPanel` 会按 `FrameSlotButton.allowedCategories` 过滤可用模组，并用 `IteratorChild` 生成 `ModuleCargoContent`。
+  - 点击模块库中的 `ModuleItem` 会把该模组装到当前槽位，然后刷新：
+    - `ModuleDetailPanel`
+    - `FrameDetailPanel` 的总负载
+    - 槽位图标状态
+    - `PreviewPanel`
+  - `ModuleDetailPanel` 现在会维护 `ModuleEntryDetail`，按模块配置允许的 Stat 生成词条和值。
+  - `ExchangeBtn` 已绑定为重新打开当前槽位的 `ModuleCargoPanel`。
+  - `RemoveBtn` 已绑定为卸下当前槽位模组，并回到 `FrameDetailPanel`。
+
 ### 2026-05-10
 
 - 最新提交显示 InRun 已推进到第六步方向：
@@ -416,3 +442,15 @@ dotnet build .\Assembly-CSharp.csproj -nologo
 - `12 warning`
 
 注意：我当前没有在 Unity Editor 里运行场景，进度判断主要来自仓库文件、提交信息和文档记录。
+
+### 2026-05-16 AssembleUI 增补
+
+- `AssembleUI.prefab` 根节点当前以 `Background` 为准，不再使用 `BG`，因为用户为规避重名问题已主动改名。
+- `AssembleUI.cs` 已按新 prefab 的组合式面板流转继续调整：
+  - 点击已安装模块槽位时，不再关闭 `FrameDetailPanel`，而是在其保持显示的同时打开 `ModuleDetailPanel`。
+  - 点击空槽位，或点击 `ModuleDetailPanel/ExchangeBtn` 时，会打开 `ModuleCargoPanel` 与 `ModuleCargoDetailPanel`，同时关闭 `ModuleDetailPanel`。
+  - `ModuleDetailPanel` 下新增的 `ModuleCoreEquip` 已接入展示与按钮绑定；当前阶段点击 `CoreItem` 只负责打开 `CoreCargoPanel`、关闭 `FramePanel`、打开 `ModificationPanel`。
+  - `ModificationPanel` 当前同步显示：
+    - `CoreGroup`：当前选中模块上已安装的 Core
+    - `ModuleGroup`：当前正在改造的 Module
+  - `ModuleCargoDetailPanel` 当前作为模块选择流程右侧详情面板，显示当前槽位对应模块的基础信息与词条列表。
