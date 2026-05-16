@@ -12,14 +12,16 @@ public sealed class LoadoutStatGraph
     private readonly ModuleConfig moduleConfig;
     private readonly ModuleRarity moduleRarity;
     private readonly CoreConfig coreConfig;
+    private readonly IReadOnlyList<LoadoutPluginRuntimeData> pluginRuntimes;
 
     private readonly Dictionary<string, SealedValue<float>> statValuesById = new Dictionary<string, SealedValue<float>>();
 
-    public LoadoutStatGraph(ModuleConfig moduleConfig, ModuleRarity moduleRarity, CoreConfig coreConfig)
+    public LoadoutStatGraph(ModuleConfig moduleConfig, ModuleRarity moduleRarity, CoreConfig coreConfig, IReadOnlyList<LoadoutPluginRuntimeData> pluginRuntimes = null)
     {
         this.moduleConfig = moduleConfig;
         this.moduleRarity = moduleRarity;
         this.coreConfig = coreConfig;
+        this.pluginRuntimes = pluginRuntimes;
     }
 
     public float GetFinalStat(StatDefinition statDefinition)
@@ -54,6 +56,7 @@ public sealed class LoadoutStatGraph
             .AddModification(new FloatMultipleMulGroup(PluginMultiplierGroupId));
 
         ApplyCoreBonuses(sealedValue, statId);
+        ApplyPluginBonuses(sealedValue, statId);
         return sealedValue;
     }
 
@@ -74,6 +77,37 @@ public sealed class LoadoutStatGraph
                 sealedValue.TryAddModifier(
                     CoreMultiplierGroupId,
                     new Modifier<float>(1f + bonus.multiplicativeBonus));
+        }
+    }
+
+    private void ApplyPluginBonuses(SealedValue<float> sealedValue, string statId)
+    {
+        if (pluginRuntimes == null || string.IsNullOrWhiteSpace(statId))
+            return;
+
+        for (int runtimeIndex = 0; runtimeIndex < pluginRuntimes.Count; runtimeIndex++)
+        {
+            var pluginRuntime = pluginRuntimes[runtimeIndex];
+            var modifiers = pluginRuntime?.pluginConfig?.GetStatModifiers(pluginRuntime.rarity);
+            if (modifiers == null)
+                continue;
+
+            for (int modifierIndex = 0; modifierIndex < modifiers.Count; modifierIndex++)
+            {
+                var modifier = modifiers[modifierIndex];
+                if (!modifier.Matches(statId))
+                    continue;
+
+                if (!Mathf.Approximately(modifier.additiveBonus, 0f))
+                    sealedValue.TryAddModifier(PluginAddGroupId, new Modifier<float>(modifier.additiveBonus));
+
+                if (!Mathf.Approximately(modifier.multiplicativeBonus, 0f))
+                {
+                    sealedValue.TryAddModifier(
+                        PluginMultiplierGroupId,
+                        new Modifier<float>(1f + modifier.multiplicativeBonus));
+                }
+            }
         }
     }
 }

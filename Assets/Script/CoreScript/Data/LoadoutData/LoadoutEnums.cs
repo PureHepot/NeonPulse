@@ -89,6 +89,7 @@ public enum PluginType
     OnKillExplosion,   // 击杀爆炸
     OnKillHeal,        // 击杀回血
     OnCritStun,        // 暴击眩晕
+    ReflectProjectiles // 反弹敌方投射物（优先给近战/防御模块使用）
 }
 
 /// <summary>

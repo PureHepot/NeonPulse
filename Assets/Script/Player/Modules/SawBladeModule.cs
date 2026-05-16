@@ -35,6 +35,8 @@ public class SawBladeModule : PlayerModule
     public float knockbackForce = 10f;
     public float attackRadiusRatio = 1.2f;
     public LayerMask enemyLayer;
+    public float projectileReflectRadiusRatio = 1.35f;
+    public float projectileReflectInterval = 0.05f;
 
     private enum BladeState
     {
@@ -54,6 +56,7 @@ public class SawBladeModule : PlayerModule
     private HealthModule healthModule;
     private int playerLayerID;
     private int enemyLayerID;
+    private float projectileReflectTimer;
 
     protected override void OnInitialize()
     {
@@ -79,6 +82,7 @@ public class SawBladeModule : PlayerModule
     protected override void OnActivate()
     {
         RecalculateStats();
+        projectileReflectTimer = 0f;
     }
 
     protected override void OnDeactivate()
@@ -183,6 +187,7 @@ public class SawBladeModule : PlayerModule
             player.SnapVelocity(dashDirection * currentDashSpeed);
 
         DetectEnemies();
+        ReflectNearbyProjectiles();
     }
 
     private void StartCharging()
@@ -213,6 +218,7 @@ public class SawBladeModule : PlayerModule
         currentState = BladeState.Dashing;
         hitTargets.Clear();
         currentDashSpeed = Mathf.Lerp(minDashSpeed, maxDashSpeed, chargeProgress);
+        projectileReflectTimer = 0f;
 
         Vector3 mousePos = MUtils.GetMouseWorldPosition();
         dashDirection = (mousePos - player.transform.position).normalized;
@@ -244,6 +250,46 @@ public class SawBladeModule : PlayerModule
             if (hit.GetComponent<IDamageable>() != null)
                 hitTargets.Add(hit);
         }
+    }
+
+    private void ReflectNearbyProjectiles()
+    {
+        if (!SupportsProjectileReflect())
+            return;
+
+        projectileReflectTimer -= DeltaTime;
+        if (projectileReflectTimer > 0f)
+            return;
+
+        projectileReflectTimer = projectileReflectInterval > 0f ? projectileReflectInterval : 0.05f;
+
+        float detectRadius = GetCurrentStageScale() * attackRadius * projectileReflectRadiusRatio;
+        Collider2D[] hits = Physics2D.OverlapCircleAll(player.transform.position, detectRadius);
+        for (int index = 0; index < hits.Length; index++)
+        {
+            var collider = hits[index];
+            if (collider == null)
+                continue;
+
+            if (collider.TryGetComponent<IReflectableProjectile>(out var reflectable))
+                reflectable.TryReflect(player.transform.position, ResolveReflectTargetPosition());
+        }
+    }
+
+    private bool SupportsProjectileReflect()
+    {
+        return HasPlugin(PluginType.ReflectProjectiles) ||
+               HasPlugin("ReflectProjectiles") ||
+               HasPlugin("Reflect") ||
+               HasPlugin("ReflectMod");
+    }
+
+    private Vector3 ResolveReflectTargetPosition()
+    {
+        if (HasControl)
+            return MUtils.GetMouseWorldPosition();
+
+        return player.transform.position + (Vector3)dashDirection * 10f;
     }
 
     private void EndDash()

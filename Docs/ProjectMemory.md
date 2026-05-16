@@ -454,3 +454,33 @@ dotnet build .\Assembly-CSharp.csproj -nologo
     - `CoreGroup`：当前选中模块上已安装的 Core
     - `ModuleGroup`：当前正在改造的 Module
   - `ModuleCargoDetailPanel` 当前作为模块选择流程右侧详情面板，显示当前槽位对应模块的基础信息与词条列表。
+
+### 2026-05-16 Plugin System 增补
+
+- 用户确认：`AssembleUI` 本轮任务先暂停，后续再做 `CorePanel` / 核心相关 UI。
+- 新插件系统本轮决定不再扩旧 `Assets/Script/Player/IWeapon/*` 的 `Plugin/WeaponPlugin` 路径，改为以当前新链路为准：
+  - `LoadoutModuleRuntimeData`
+  - `LoadoutStatGraph`
+  - `WeaponModuleBase`
+  - `WeaponModuleEffectFactory`
+- 已识别的旧遗留插件脚本与迁移结论：
+  - `ChasePlugin`：语义保留，兼容映射到新 `Homing` 效果链。
+  - `ReflectMod`：不再作为旧 prefab 脚本挂件使用，改为新系统中的近战反弹投射物能力。
+  - `CriticalhitPlugin`：更适合作为插件数值修正，而不是旧随机脚本逻辑。
+  - `ExplodePlugin` / `PenetrateMod`：当前仍是遗留空壳，尚未迁移到新 runtime。
+- `PluginConfig` 已扩展出按品质配置的数值修正（`PluginStatModifierProfile` / `PluginStatModifier`），插件现在既可以：
+  - 改模块基础数值
+  - 也可以走 `effectId` / `pluginType` 提供特殊效果
+- `LoadoutStatGraph` 已接入插件数值修正，当前 module 最终 stat = 模块基础值 + Core 修正 + Plugin 修正。
+- 当前已可测的特殊效果通路：
+  - 远程追踪：`WeaponModuleEffectFactory` 兼容 `Homing` / `Chase` / `ChasePlugin`
+  - 近战反弹：`SawBladeModule` 在冲刺阶段可检测并反弹实现了 `IReflectableProjectile` 的敌方投射物
+- 敌方投射物当前已接入统一反弹接口：
+  - `EnemyBullet`
+  - `EnemyProjectile`
+- 当前新增枚举值：
+  - `PluginType.ReflectProjectiles`
+- 当前验证基线：
+  - `dotnet build .\Assembly-CSharp.csproj -nologo`
+  - `0 error`
+  - `13 warning`

@@ -1,10 +1,10 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
-public class EnemyProjectile : MonoBehaviour, IPoolable
+public class EnemyProjectile : MonoBehaviour, IPoolable, IReflectableProjectile
 {
     [Header("Basic Stats")]
     public float speed = 5f;
@@ -19,16 +19,17 @@ public class EnemyProjectile : MonoBehaviour, IPoolable
     public int maxBounces = 2;
     public string reflectionTag = "Reflector";
 
-    [Header("Homing Reflection (ĞÂÔö: ×·×Ù·´µ¯)")]
-    [Tooltip("·´µ¯µ¼ÏòĞŞÕı£º0Îª´¿ÎïÀí·´µ¯£¬1ÎªÖ±½ÓÉäÏòÍæ¼Ò£¬½¨Òé0.3×óÓÒ")]
+    [Header("Homing Reflection (æ–°å¢: è¿½è¸ªåå¼¹)")]
+    [Tooltip("åå¼¹å¯¼å‘ä¿®æ­£ï¼š0ä¸ºçº¯ç‰©ç†åå¼¹ï¼Œ1ä¸ºç›´æ¥å°„å‘ç©å®¶ï¼Œå»ºè®®0.3å·¦å³")]
     [Range(0f, 1f)]
     public float reflectionHomingBias = 0.3f;
 
     private float timer;
     private bool isInitialized = false;
     private int currentBounceCount = 0;
+    private bool isReflectedByPlayer = false;
 
-    // ¼ÇÂ¼Êµ¼Ê·ÉĞĞ·½Ïò
+    // è®°å½•å®é™…é£è¡Œæ–¹å‘
     public Vector3 direction { get; private set; }
     private Transform myTransform;
 
@@ -44,6 +45,7 @@ public class EnemyProjectile : MonoBehaviour, IPoolable
         timer = 0f;
         currentBounceCount = 0;
         isInitialized = true;
+        isReflectedByPlayer = false;
 
         this.direction = dir.normalized;
         UpdateRotation();
@@ -58,7 +60,7 @@ public class EnemyProjectile : MonoBehaviour, IPoolable
 
         float moveDistance = speed * Time.deltaTime;
 
-        // ÉäÏß¼ì²â
+        // å°„çº¿æ£€æµ‹
         RaycastHit2D hit = Physics2D.Raycast(myTransform.position, direction, moveDistance, hitLayers);
 
         if (hit.collider != null)
@@ -76,10 +78,18 @@ public class EnemyProjectile : MonoBehaviour, IPoolable
 
     void OnHitObject(Collider2D other, Vector2 hitPoint, Vector2 hitNormal)
     {
-        if (other.CompareTag("Player"))
+        if (!isReflectedByPlayer && other.CompareTag("Player"))
         {
             var health = other.GetComponentInChildren<HealthModule>();
             if (health != null) health.TakeDamage(damage, myTransform);
+            RecycleSelf();
+        }
+        else if (isReflectedByPlayer && other.CompareTag("Enemy"))
+        {
+            var damageable = other.GetComponent<IDamageable>();
+            if (damageable != null)
+                damageable.TakeDamage(damage, hitPoint, direction.normalized);
+
             RecycleSelf();
         }
         else if (enableReflection && other.CompareTag(reflectionTag))
@@ -102,40 +112,40 @@ public class EnemyProjectile : MonoBehaviour, IPoolable
 
         currentBounceCount++;
 
-        // 1. ÒÆ¶¯µ½Åö×²µã
+        // 1. ç§»åŠ¨åˆ°ç¢°æ’ç‚¹
         myTransform.position = hitPoint;
 
-        // --- ºËĞÄĞŞ¸Ä£º¼ÆËã´øÓĞ¡°É±Òâ¡±µÄ·´µ¯·½Ïò ---
+        // --- æ ¸å¿ƒä¿®æ”¹ï¼šè®¡ç®—å¸¦æœ‰â€œæ€æ„â€çš„åå¼¹æ–¹å‘ ---
 
-        // A. ¼ÆËã±ê×¼µÄÎïÀí·´Éä·½Ïò
+        // A. è®¡ç®—æ ‡å‡†çš„ç‰©ç†åå°„æ–¹å‘
         Vector2 standardReflectDir = Vector2.Reflect(direction, hitNormal).normalized;
 
-        // B. ¼ÆËãÖ¸ÏòÍæ¼ÒµÄ·½Ïò
-        Vector2 targetDir = standardReflectDir; // Ä¬ÈÏ»ØÍË
+        // B. è®¡ç®—æŒ‡å‘ç©å®¶çš„æ–¹å‘
+        Vector2 targetDir = standardReflectDir; // é»˜è®¤å›é€€
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
             targetDir = (player.transform.position - (Vector3)hitPoint).normalized;
         }
 
-        // C. ÈÚºÏÁ½¸ö·½Ïò (Vector3.Lerp)
-        // Lerp »áÔÚ A ºÍ B Ö®¼ä²åÖµ¡£Bias = 0 ÊÇA£¬Bias = 1 ÊÇB¡£
+        // C. èåˆä¸¤ä¸ªæ–¹å‘ (Vector3.Lerp)
+        // Lerp ä¼šåœ¨ A å’Œ B ä¹‹é—´æ’å€¼ã€‚Bias = 0 æ˜¯Aï¼ŒBias = 1 æ˜¯Bã€‚
         Vector2 finalDir = Vector3.Lerp(standardReflectDir, targetDir, reflectionHomingBias).normalized;
 
-        // 2. ¼ì²é·´µ¯½Ç¶È°²È«ĞÔ (¿ÉÑ¡ÓÅ»¯)
-        // È·±£ĞÂ·½ÏòÒ²ÊÇ³¯Ïò¡°Íâ²à¡±µÄ£¬·ÀÖ¹²åÖµ¹ı¶Èµ¼ÖÂ×Óµ¯·´µ¯»ØÇ½Àï
-        // Èç¹û finalDir ºÍ hitNormal µÄ¼Ğ½Ç´óÓÚ 90¶È (µã»ı < 0)£¬ËµÃ÷·´Ïò´©Ç½ÁË
+        // 2. æ£€æŸ¥åå¼¹è§’åº¦å®‰å…¨æ€§ (å¯é€‰ä¼˜åŒ–)
+        // ç¡®ä¿æ–°æ–¹å‘ä¹Ÿæ˜¯æœå‘â€œå¤–ä¾§â€çš„ï¼Œé˜²æ­¢æ’å€¼è¿‡åº¦å¯¼è‡´å­å¼¹åå¼¹å›å¢™é‡Œ
+        // å¦‚æœ finalDir å’Œ hitNormal çš„å¤¹è§’å¤§äº 90åº¦ (ç‚¹ç§¯ < 0)ï¼Œè¯´æ˜åå‘ç©¿å¢™äº†
         if (Vector2.Dot(finalDir, hitNormal) < 0)
         {
-            // Èç¹û¼ÆËã³öµÄ·½Ïò»á´©Ç½£¬Ç¿ÖÆÊ¹ÓÃÎïÀí·´Éä±£µ×
+            // å¦‚æœè®¡ç®—å‡ºçš„æ–¹å‘ä¼šç©¿å¢™ï¼Œå¼ºåˆ¶ä½¿ç”¨ç‰©ç†åå°„ä¿åº•
             finalDir = standardReflectDir;
         }
 
-        // 3. Ó¦ÓÃĞÂ·½Ïò
+        // 3. åº”ç”¨æ–°æ–¹å‘
         this.direction = finalDir;
         UpdateRotation();
 
-        // 4. ÍÆÀë±íÃæ
+        // 4. æ¨ç¦»è¡¨é¢
         myTransform.Translate(direction * 0.1f, Space.World);
     }
 
@@ -151,5 +161,24 @@ public class EnemyProjectile : MonoBehaviour, IPoolable
             ObjectPoolManager.Instance.Return(this.gameObject);
         else
             Destroy(gameObject);
+    }
+
+    public bool TryReflect(Vector3 reflectorPosition, Vector3 preferredTargetPosition)
+    {
+        if (!isInitialized || isReflectedByPlayer)
+            return false;
+
+        isReflectedByPlayer = true;
+        timer = 0f;
+        myTransform.position = reflectorPosition;
+
+        Vector2 targetDirection = preferredTargetPosition - myTransform.position;
+        if (targetDirection.sqrMagnitude <= Mathf.Epsilon)
+            targetDirection = -direction;
+
+        direction = targetDirection.normalized;
+        UpdateRotation();
+        myTransform.Translate(direction * 0.1f, Space.World);
+        return true;
     }
 }

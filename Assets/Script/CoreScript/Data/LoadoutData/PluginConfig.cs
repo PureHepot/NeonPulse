@@ -23,6 +23,10 @@ public class PluginConfig : ScriptableObject
     public string effectId;
     [Tooltip("效果在各品质下的参数")]
     public PluginEffectRarityValues effectRarityValues;
+    
+    [Header("数值修正")]
+    [Tooltip("插件可按品质提供基础数值修正，供新 loadout/runtime 系统直接消费")]
+    public List<PluginStatModifierProfile> statModifierProfiles = new List<PluginStatModifierProfile>();
 
     [Header("适配限制")]
     [Tooltip("旧兼容字段：该配件只能插入这些模块类型（空=不限）")]
@@ -41,6 +45,20 @@ public class PluginConfig : ScriptableObject
     public PluginEffectParams GetEffectParams(PluginRarity rarity)
     {
         return effectRarityValues.GetParams(rarity);
+    }
+
+    public List<PluginStatModifier> GetStatModifiers(PluginRarity rarity)
+    {
+        if (statModifierProfiles == null)
+            return null;
+
+        foreach (var profile in statModifierProfiles)
+        {
+            if (profile != null && profile.rarity == rarity)
+                return profile.statModifiers;
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -109,4 +127,28 @@ public struct PluginEffectParams
     public float param1;
     public float param2;
     public float param3;  // 预留第三个参数
+}
+
+[Serializable]
+public class PluginStatModifierProfile
+{
+    public PluginRarity rarity;
+    public List<PluginStatModifier> statModifiers = new List<PluginStatModifier>();
+}
+
+[Serializable]
+public struct PluginStatModifier
+{
+    public StatDefinition statDefinition;
+    public float additiveBonus;
+    public float multiplicativeBonus;
+
+    public string StatId => statDefinition != null ? statDefinition.StatId : string.Empty;
+
+    public bool Matches(string statId)
+    {
+        return statDefinition != null &&
+               !string.IsNullOrWhiteSpace(statId) &&
+               statDefinition.Matches(statId);
+    }
 }

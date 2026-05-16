@@ -195,11 +195,6 @@ public static class LoadoutModuleRuntimeBuilder
         if (runtimeData.moduleConfig != null)
             runtimeData.moduleType = runtimeData.moduleConfig.moduleType;
 
-        runtimeData.statGraph = new LoadoutStatGraph(
-            runtimeData.moduleConfig,
-            runtimeData.moduleRarity,
-            runtimeData.coreConfig);
-
         if (database?.allPlugins != null && plugins != null)
         {
             foreach (var plugin in plugins)
@@ -220,6 +215,12 @@ public static class LoadoutModuleRuntimeBuilder
                 }
             }
         }
+
+        runtimeData.statGraph = new LoadoutStatGraph(
+            runtimeData.moduleConfig,
+            runtimeData.moduleRarity,
+            runtimeData.coreConfig,
+            runtimeData.pluginRuntimes);
 
         return runtimeData;
     }

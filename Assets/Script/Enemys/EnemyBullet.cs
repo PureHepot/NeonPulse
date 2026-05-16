@@ -2,7 +2,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
-public class EnemyBullet : MonoBehaviour, IPoolable
+public class EnemyBullet : MonoBehaviour, IPoolable, IReflectableProjectile
 {
     [Header("Basic Stats")]
     public float speed = 15f;
@@ -114,5 +114,23 @@ public class EnemyBullet : MonoBehaviour, IPoolable
         if (trail) trail.startColor = reflectedColor;
 
         this.gameObject.layer = LayerMask.NameToLayer("PlayerBullet"); 
+    }
+
+    public bool TryReflect(Vector3 reflectorPosition, Vector3 preferredTargetPosition)
+    {
+        if (isReflected)
+            return false;
+
+        Reflect(reflectorPosition);
+
+        Vector2 preferredDirection = (preferredTargetPosition - transform.position);
+        if (preferredDirection.sqrMagnitude > Mathf.Epsilon)
+        {
+            preferredDirection.Normalize();
+            float angle = Mathf.Atan2(preferredDirection.y, preferredDirection.x) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+        }
+
+        return true;
     }
 }

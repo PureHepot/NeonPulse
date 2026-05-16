@@ -111,7 +111,9 @@ public static class WeaponModuleEffectFactory
         }
 
         if (pluginRuntime.pluginConfig.pluginType == PluginType.Homing ||
-            string.Equals(pluginRuntime.pluginConfig.effectId, "Homing", System.StringComparison.OrdinalIgnoreCase))
+            string.Equals(pluginRuntime.pluginConfig.effectId, "Homing", System.StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(pluginRuntime.pluginConfig.effectId, "Chase", System.StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(pluginRuntime.pluginConfig.effectId, "ChasePlugin", System.StringComparison.OrdinalIgnoreCase))
         {
             return new HomingWeaponModuleEffect();
         }
