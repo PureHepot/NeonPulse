@@ -13,7 +13,8 @@ public enum ModuleType
     SawBlade = 8,
     Magnet = 9,
     OddMovement = 10,
-    None = 11
+    Sword=11,
+    None = 99
 }
 
 public abstract class PlayerModule : MonoBehaviour
@@ -68,7 +69,7 @@ public abstract class PlayerModule : MonoBehaviour
     {
     }
 
-    protected virtual void OnActivate()
+    protected virtual void OnActivate() 
     {
     }
 

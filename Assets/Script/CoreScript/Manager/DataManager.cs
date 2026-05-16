@@ -18,7 +18,8 @@ public class DataManager : MonoSingleton<DataManager>
         "defense_module_energy",
         "weapon_module_sawblade",
         "scrollwheel_move_module",
-        "weapon_module_laserdrones"
+        "weapon_module_laserdrones",
+        "Weapon_Melee_Sword"
     };
 
     private SaveRoot saveRoot;
