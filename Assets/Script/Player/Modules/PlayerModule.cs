@@ -13,9 +13,10 @@ public enum ModuleType
     SawBlade = 8,
     Magnet = 9,
     OddMovement = 10,
-    Buffer = 11,
+	Buffer = 11,
     Taunt = 12,
-    None = 13
+	Sword=13,
+    None = 99
 }
 
 public abstract class PlayerModule : MonoBehaviour

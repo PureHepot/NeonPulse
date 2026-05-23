@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2938850d4485ee45954e75922bd383a, type: 3}
+  m_Name: Weapon_Melee_Sword
+  m_EditorClassIdentifier: 
+  moduleId: Weapon_Melee_Sword
+  moduleName: "\u5149\u5200"
+  moduleType: 0
+  description: "\u6441\u4E0B\u5DE6\u952E\uFF0C\u4EE5\u81EA\u8EAB\u4E3A\u4E2D\u5FC3\u4F1A\u5411\u524D\u6325\u780D180\u5EA6"
+  icon: {fileID: 0}
+  categories: 1
+  statSchema: {fileID: 11400000, guid: dc9d07eaf634fab4895f0a7c4f0f6e73, type: 2}
+  defaultRarity: 0
+  rarityProfiles:
+  - rarity: 0
+    baseStats:
+    - statDefinition: {fileID: 11400000, guid: fddb1fe5ce65f514988fb97e08e9009e, type: 2}
+      value: 10
+    - statDefinition: {fileID: 11400000, guid: 78fd7d5dbc780f8468dfed5cc4f5b5c1, type: 2}
+      value: 0
+    maxPluginSlots: 1
+    loadCost: 1
+  coreSlotCount: 1
+  themeColor: {r: 0, g: 1, b: 1, a: 1}
+  runtimePrefab: {fileID: 3646845985557196355, guid: 4a1cdf8144b3e914fb2857335ff900bb, type: 3}
+  previewPrefab: {fileID: 3646845985557196355, guid: 4a1cdf8144b3e914fb2857335ff900bb, type: 3}
+  unlockCost: 0
