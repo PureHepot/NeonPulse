@@ -557,7 +557,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 8159
+    m_Bits: 57311
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -1562,6 +1562,7 @@ MonoBehaviour:
   DownKey: 274
   PauseKey: 27
   SpaceKey: 32
+  GKey: 103
   MouseKey0: 323
   MouseKey1: 324
 --- !u!114 &1357557152
@@ -1673,7 +1674,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   checkPerFrame: 10
-  border: 2
   borderThreshold: 1
 --- !u!1 &1367779161
 GameObject:

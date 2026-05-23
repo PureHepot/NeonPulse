@@ -105,7 +105,7 @@ public class EnemyArcher : EnemyBase
         }
     }
 
-    public void ApplySharedDamageFromArrow(int amount, Vector3 hitPoint, Vector3 hitNormal)
+    public void ApplySharedDamageFromArrow(float amount, Vector3 hitPoint, Vector3 hitNormal)
     {
         if (isDead) return;
         TakeDamage(amount, hitPoint, hitNormal);

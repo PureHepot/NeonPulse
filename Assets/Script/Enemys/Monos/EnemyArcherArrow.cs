@@ -132,13 +132,13 @@ public class EnemyArcherArrow : MonoBehaviour, IDamageable
         rb.MovePosition(rb.position + launchDir * flySpeed * Time.fixedDeltaTime);
     }
 
-    public void TakeDamage(int amount)
+    public void TakeDamage(float amount)
     {
         if (owner == null) return;
         owner.ApplySharedDamageFromArrow(amount, transform.position, -transform.up);
     }
 
-    public void TakeDamage(int amount, Vector3 hitPoint, Vector3 hitNormal)
+    public void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitNormal)
     {
         if (owner == null) return;
         owner.ApplySharedDamageFromArrow(amount, hitPoint, hitNormal);

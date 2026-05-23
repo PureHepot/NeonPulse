@@ -1,4 +1,4 @@
-using DG.Tweening;
+ï»¿using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,56 +10,56 @@ public class KnightBoss : BossBase
     public Transform playerTarget;
     public LaserBeam laserPrefab;
 
-    [Header("½üÕ½³å´Ì¹¥»÷ÉèÖÃ")]
+    [Header("è¿‘æˆ˜å†²åˆºæ”»å‡»è®¾ç½®")]
     public float meleeDashSpeed = 20f;
     public float meleeSpinDuration = 0.3f;
     public int meleeRepeatCount = 3;
     public float meleeAimDuration = 0.2f;
     public float meleeRecoveryDuration = 0.6f;
 
-    [Header("·ÉĞĞĞÎÌ¬»ù´¡ÉèÖÃ")]
+    [Header("é£è¡Œå½¢æ€åŸºç¡€è®¾ç½®")]
     public float flightTransformDuration = 0.8f;
     public int flightRepeatCount = 3;
 
-    [Header("SĞÍÅÌĞı¹¥»÷")]
+    [Header("Så‹ç›˜æ—‹æ”»å‡»")]
     public float flightSCurveForwardSpeed = 12f;
-    [Tooltip("SĞÍ·ù¶È")]
+    [Tooltip("Så‹å¹…åº¦")]
     public float flightSCurveAmplitude = 10f;
-    [Tooltip("SĞÍÆµÂÊ")]
+    [Tooltip("Så‹é¢‘ç‡")]
     public float flightSCurveFrequency = 5f;
     public float flightSCurveDuration = 1.5f;
 
     [HideInInspector]
     public bool lastFlightWasSCurve = false;
 
-    [Header("Ö±ÏßÕÛ·µ³å´Ì¹¥»÷")]
+    [Header("ç›´çº¿æŠ˜è¿”å†²åˆºæ”»å‡»")]
     public float flightStraightAimDuration = 0.3f;
     public float flightStraightDashSpeed = 30f;
-    [Tooltip("³å´ÌÔ½¹ı¾àÀë")]
+    [Tooltip("å†²åˆºè¶Šè¿‡è·ç¦»")]
     public float flightDashOvershoot = 5f;
-    [Tooltip("UĞÍ¹ÕÍäËÙ¶È")]
+    [Tooltip("Uå‹æ‹å¼¯é€Ÿåº¦")]
     public float flightUTurnForwardSpeed = 15f;
-    [Tooltip("UĞÍ¹ÕÍäĞı×ª½ÇËÙ¶È")]
+    [Tooltip("Uå‹æ‹å¼¯æ—‹è½¬è§’é€Ÿåº¦")]
     public float flightUTurnAngularSpeed = 180f;
 
-    [Header("¶ş½×¶Î¸ÅÂÊÈ¨ÖØ")]
+    [Header("äºŒé˜¶æ®µæ¦‚ç‡æƒé‡")]
     public float meleeWeight = 20f;
     public float flightWeight = 40f;
     public float artilleryWeight = 40f;
 
-    [Header("¿ñ±©×´Ì¬")]
+    [Header("ç‹‚æš´çŠ¶æ€")]
     public bool isEnraged = false;
-    private bool hasTriggeredEnrage = false; // È·±£¿ñ±©Ö»´¥·¢Ò»´Î
-    [Header("¿ñ±©ÌØĞ§²¿¼ş")]
+    private bool hasTriggeredEnrage = false; // ç¡®ä¿ç‹‚æš´åªè§¦å‘ä¸€æ¬¡
+    [Header("ç‹‚æš´ç‰¹æ•ˆéƒ¨ä»¶")]
     public SpriteRenderer exMelee;
     public SpriteRenderer exFlight01;
     public SpriteRenderer exFlight02;
     public SpriteRenderer exFlight03;
-    [Header("Ãæ¾ßÆÆËğ±íÏÖ")]
-    public GameObject normalMask;   // ÍêºÃµÄÃæ¾ß
-    public GameObject brokenMask;   // ÆÆËğµÄÃæ¾ß
-    [Header("ĞéÈõ×´Ì¬")]
-    public bool isExhausted = false; // ±ê¼ÇÊÇ·ñ½øÈë×îºóµÄÕõÔú½×¶Î
+    [Header("é¢å…·ç ´æŸè¡¨ç°")]
+    public GameObject normalMask;   // å®Œå¥½çš„é¢å…·
+    public GameObject brokenMask;   // ç ´æŸçš„é¢å…·
+    [Header("è™šå¼±çŠ¶æ€")]
+    public bool isExhausted = false; // æ ‡è®°æ˜¯å¦è¿›å…¥æœ€åçš„æŒ£æ‰é˜¶æ®µ
 
     [HideInInspector] public BossBaseState lastAttackState;
     [HideInInspector] public Vector3 targetDashPos;
@@ -70,15 +70,15 @@ public class KnightBoss : BossBase
     public KnightArtilleryState artilleryState;
     public LaserSlashState laserSlashState;
     public EndAttackState endAttackState;
-    public MeleeLaserSlashState meleeLaserSlashState; // ÌØÊâ¸´ºÏÕ¶»÷
+    public MeleeLaserSlashState meleeLaserSlashState; // ç‰¹æ®Šå¤åˆæ–©å‡»
 
-    private bool hasTriggeredPhase2Entry = false;//¿ñÈÈ½×¶Î
-    public bool hasTriggeredFinalPhase = false;//×îºó½×¶Î
+    private bool hasTriggeredPhase2Entry = false;//ç‹‚çƒ­é˜¶æ®µ
+    public bool hasTriggeredFinalPhase = false;//æœ€åé˜¶æ®µ
     public bool IsPhase2Unlocked { get; private set; } = false;
     public BossPart LeftBlade { get; private set; }
     public BossPart RightBlade { get; private set; }
 
-    public int contactDamage = 1;
+    public float ContactDamage = 1f;
 
     public BossBaseState CurrentState => currentState;
     
@@ -112,25 +112,25 @@ public class KnightBoss : BossBase
         
         float healthRatio = currentHp / maxHp;
 
-        // ÑªÁ¿µÍÓÚ 2/3 ÇÒÉĞÎ´´¥·¢¹ı¶ş½×¶Î×ª³¡
+        // è¡€é‡ä½äº 2/3 ä¸”å°šæœªè§¦å‘è¿‡äºŒé˜¶æ®µè½¬åœº
         if (healthRatio <= 0.66f && !hasTriggeredPhase2Entry)
         {
             
             IsPhase2Unlocked = true;
             hasTriggeredPhase2Entry = true;
 
-            Debug.Log("Knight: ´¥·¢¶ş½×¶Î×ª³¡¼¤¹âÕ¶»÷£¡");
+            Debug.Log("Knight: è§¦å‘äºŒé˜¶æ®µè½¬åœºæ¿€å…‰æ–©å‡»ï¼");
 
-            // ÉèÖÃÕ¶»÷½áÊøºóµÄÏÂÒ»¸ö×´Ì¬Îª¹Û²ì×´Ì¬
+            // è®¾ç½®æ–©å‡»ç»“æŸåçš„ä¸‹ä¸€ä¸ªçŠ¶æ€ä¸ºè§‚å¯ŸçŠ¶æ€
             laserSlashState.nextStateAfterSlash = observeState;
             SwitchState(laserSlashState);
         }
-        // £º°ëÑª¿ñ±©Âß¼­ (1/2 ÑªÁ¿´¥·¢)
+        // ï¼šåŠè¡€ç‹‚æš´é€»è¾‘ (1/2 è¡€é‡è§¦å‘)
         if (healthRatio <= 0.5f && !hasTriggeredEnrage)
         {
             TriggerEnrage();
         }
-        // 1/6Ñª×îºó¹¥»÷
+        // 1/6è¡€æœ€åæ”»å‡»
         if (healthRatio <= 0.166f && !hasTriggeredFinalPhase)
         {
             hasTriggeredFinalPhase = true;
@@ -140,7 +140,7 @@ public class KnightBoss : BossBase
         }
     }
 
-    public override void TakeDamage(int amount, Vector3 hitPoint, Vector3 hitNormal)
+    public override void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitNormal)
     {
         base.TakeDamage(amount, hitPoint, hitNormal);
 
@@ -170,41 +170,41 @@ public class KnightBoss : BossBase
         }
         return true;
     }
-    // ¿ñ±©Ïà¹Ø
+    // ç‹‚æš´ç›¸å…³
 
-    // ¼¯ÖĞ´¦Àí¿ñ±©Ê±µÄ²ÎÊıÇ¿»¯
+    // é›†ä¸­å¤„ç†ç‹‚æš´æ—¶çš„å‚æ•°å¼ºåŒ–
     private void TriggerEnrage()
     {
         isEnraged = true;
         hasTriggeredEnrage = true;
-        Debug.Log("Knight: ÑªÁ¿µÍÓÚ50%£¬½øÈë¿ñ±©×´Ì¬£¡");
+        Debug.Log("Knight: è¡€é‡ä½äº50%ï¼Œè¿›å…¥ç‹‚æš´çŠ¶æ€ï¼");
 
-        // === ºËĞÄ²ÎÊıµ÷Õû£¨ÊıÖµÄã¿ÉÒÔ¸ù¾İÊÖ¸ĞÎ¢µ÷£© ===
+        // === æ ¸å¿ƒå‚æ•°è°ƒæ•´ï¼ˆæ•°å€¼ä½ å¯ä»¥æ ¹æ®æ‰‹æ„Ÿå¾®è°ƒï¼‰ ===
 
-        // 1. ·ÉĞĞĞÎÌ¬Ç¿»¯£º³å´ÌËÙ¶ÈÌáÉı 50%£¬³å´Ì´ÎÊı +1
+        // 1. é£è¡Œå½¢æ€å¼ºåŒ–ï¼šå†²åˆºé€Ÿåº¦æå‡ 50%ï¼Œå†²åˆºæ¬¡æ•° +1
         flightStraightDashSpeed *= 1.5f;
         flightRepeatCount += 1;
 
-        // 2. ½üÕ½ĞÎÌ¬Ç¿»¯£º´ó·ç³µĞı×ªÊ±¼äËõ¶Ì£¨ÊÓ¾õÉÏ×ªËÙ´ó·ù¼Ó¿ì£©
+        // 2. è¿‘æˆ˜å½¢æ€å¼ºåŒ–ï¼šå¤§é£è½¦æ—‹è½¬æ—¶é—´ç¼©çŸ­ï¼ˆè§†è§‰ä¸Šè½¬é€Ÿå¤§å¹…åŠ å¿«ï¼‰
         meleeSpinDuration *= 0.6f;
 
-        // 3. ¹Û²ìĞÎÌ¬Ç¿»¯£º·¢´ôÊ±¼ä¼õ°ë£¬ÅÌĞıÒÆ¶¯ËÙ¶È¼Ó¿ì
+        // 3. è§‚å¯Ÿå½¢æ€å¼ºåŒ–ï¼šå‘å‘†æ—¶é—´å‡åŠï¼Œç›˜æ—‹ç§»åŠ¨é€Ÿåº¦åŠ å¿«
         if (observeState != null)
         {
-            observeState.observeDuration = 1.0f; // ¹¥»÷ÆµÂÊ¼«¸ß£¡
-            observeState.orbitSpeed *= 1.5f;     // ÅÌĞıÑ¹ÆÈ¸Ğ¸üÇ¿
+            observeState.observeDuration = 1.0f; // æ”»å‡»é¢‘ç‡æé«˜ï¼
+            observeState.orbitSpeed *= 1.5f;     // ç›˜æ—‹å‹è¿«æ„Ÿæ›´å¼º
         }
 
-        // === ÊÓ¾õÓëÌı¾õ·´À¡ ===
+        // === è§†è§‰ä¸å¬è§‰åé¦ˆ ===
         
         
 
-        // Èç¹ûÓĞÆÁÄ»Õğ¶¯»ò¿ñ±©ÒôĞ§£¬¿ÉÒÔĞ´ÔÚÕâÀï£º
+        // å¦‚æœæœ‰å±å¹•éœ‡åŠ¨æˆ–ç‹‚æš´éŸ³æ•ˆï¼Œå¯ä»¥å†™åœ¨è¿™é‡Œï¼š
         // CameraShake.Shake(0.5f, 2f);
         // AudioManager.Play("BossEnrageRoar");
     }
     /// <summary>
-    /// Ë²¼äÒş²ØËùÓĞ¿ñ±©ÌØĞ§
+    /// ç¬é—´éšè—æ‰€æœ‰ç‹‚æš´ç‰¹æ•ˆ
     /// </summary>
     public void HideAllExParts()
     {
@@ -215,7 +215,7 @@ public class KnightBoss : BossBase
     }
 
     /// <summary>
-    /// ÒÔÖĞĞÄÏòÁ½²àÕ¹¿ªµÄ·½Ê½ÏÔÊ¾ÌØĞ§
+    /// ä»¥ä¸­å¿ƒå‘ä¸¤ä¾§å±•å¼€çš„æ–¹å¼æ˜¾ç¤ºç‰¹æ•ˆ
     /// </summary>
     public void ShowExPart(SpriteRenderer part, float duration = 0.3f)
     {
@@ -223,55 +223,55 @@ public class KnightBoss : BossBase
 
         part.gameObject.SetActive(true);
 
-        // É±µô¿ÉÄÜ²ĞÁôµÄ¾É¶¯»­£¬·ÀÖ¹³åÍ»
+        // æ€æ‰å¯èƒ½æ®‹ç•™çš„æ—§åŠ¨ç”»ï¼Œé˜²æ­¢å†²çª
         part.DOKill();
         part.transform.DOKill();
 
-        // ³õÊ¼×´Ì¬£ºXÖáËõ·ÅÎª0£¨¼·Ñ¹ÔÚÖĞ¼ä£©£¬Í¸Ã÷¶ÈÎª0
+        // åˆå§‹çŠ¶æ€ï¼šXè½´ç¼©æ”¾ä¸º0ï¼ˆæŒ¤å‹åœ¨ä¸­é—´ï¼‰ï¼Œé€æ˜åº¦ä¸º0
         part.transform.localScale = new Vector3(0, 1, 1);
         Color c = part.color;
         c.a = 0;
         part.color = c;
 
-        // ¶¯»­£ºXÖáÕ¹¿ªµ½ 1£¨Ïò×óÓÒÉìÕ¹£©£¬Í¸Ã÷¶È½¥±äµ½ 1
+        // åŠ¨ç”»ï¼šXè½´å±•å¼€åˆ° 1ï¼ˆå‘å·¦å³ä¼¸å±•ï¼‰ï¼Œé€æ˜åº¦æ¸å˜åˆ° 1
         part.transform.DOScaleX(1f, duration).SetEase(Ease.OutQuad);
         part.DOFade(1f, duration);
     }
 
-    //ĞéÈõÏà¹Ø
+    //è™šå¼±ç›¸å…³
 
     /// <summary>
-    /// ´¥·¢×îºóÕõÔú×´Ì¬£¨ÓÉ EndAttackState µÄ×îºóÒ»²½µ÷ÓÃ£©
+    /// è§¦å‘æœ€åæŒ£æ‰çŠ¶æ€ï¼ˆç”± EndAttackState çš„æœ€åä¸€æ­¥è°ƒç”¨ï¼‰
     /// </summary>
     public void TriggerExhaustedState()
     {
         isExhausted = true;
-        Debug.Log("Knight: ÄÜÁ¿ºÄ¾¡£¬½øÈë×îºóµÄÕõÔú...");
+        Debug.Log("Knight: èƒ½é‡è€—å°½ï¼Œè¿›å…¥æœ€åçš„æŒ£æ‰...");
 
-        // 1. ËÙ¶È´ó·ùÏ÷Èõ
-        meleeDashSpeed = 10f;        // ³å´Ì±äµÃ·Ç³£»ºÂıÎŞÁ¦ (¼ÙÉèÔ­ÏÈÊÇ25f~40f)
-        meleeSpinDuration = 1f;   // Ğı×ªÒ»ÖÜĞèÒª 2 Ãë (Ô­±¾¿ÉÄÜÊÇ 0.2 Ãë)£¬×ªËÙ¼«Âı£¡
+        // 1. é€Ÿåº¦å¤§å¹…å‰Šå¼±
+        meleeDashSpeed = 10f;        // å†²åˆºå˜å¾—éå¸¸ç¼“æ…¢æ— åŠ› (å‡è®¾åŸå…ˆæ˜¯25f~40f)
+        meleeSpinDuration = 1f;   // æ—‹è½¬ä¸€å‘¨éœ€è¦ 2 ç§’ (åŸæœ¬å¯èƒ½æ˜¯ 0.2 ç§’)ï¼Œè½¬é€Ÿææ…¢ï¼
 
-        // 2. ÊÓ¾õ±íÏÖ£º»úÌåÊ§È¥¹âÔó£¬±ä³É÷öµ­µÄ°µºìÉ«
+        // 2. è§†è§‰è¡¨ç°ï¼šæœºä½“å¤±å»å…‰æ³½ï¼Œå˜æˆé»¯æ·¡çš„æš—çº¢è‰²
         
 
-        // 3. ¹Û²ìÆÚµ÷Õû£ºÔÚÔ­µØ´­Ï¢¸ü¾Ã£¬»òÕß¸üÎŞÄÔµØÆËÏòÍæ¼Ò
+        // 3. è§‚å¯ŸæœŸè°ƒæ•´ï¼šåœ¨åŸåœ°å–˜æ¯æ›´ä¹…ï¼Œæˆ–è€…æ›´æ— è„‘åœ°æ‰‘å‘ç©å®¶
         if (observeState != null)
         {
-            observeState.observeDuration = 1f; // ¸øÍæ¼Ò³ä×ãµÄ´ò°ĞÊ±¼ä
-            observeState.orbitSpeed = 15f;       // ÅÌĞı±äµÃÒ¡Ò¡Óû×¹
+            observeState.observeDuration = 1f; // ç»™ç©å®¶å……è¶³çš„æ‰“é¶æ—¶é—´
+            observeState.orbitSpeed = 15f;       // ç›˜æ—‹å˜å¾—æ‘‡æ‘‡æ¬²å 
         }
     }
 
     /// <summary>
-    /// ´¥·¢Ãæ¾ßËéÁÑ±íÏÖ
+    /// è§¦å‘é¢å…·ç¢è£‚è¡¨ç°
     /// </summary>
     public void BreakMask()
     {
         if (normalMask != null) normalMask.SetActive(false);
         if (brokenMask != null) brokenMask.SetActive(true);
 
-        // ¿ÉÑ¡£ºÔÚÕâÀï¼ÓÒ»µãÃæ¾ßËéÁÑµÄ±¬µãÁ£×Ó»òÆÁÄ»Õğ¶¯£¬Ôö¼Ó³å»÷Á¦
+        // å¯é€‰ï¼šåœ¨è¿™é‡ŒåŠ ä¸€ç‚¹é¢å…·ç¢è£‚çš„çˆ†ç‚¹ç²’å­æˆ–å±å¹•éœ‡åŠ¨ï¼Œå¢åŠ å†²å‡»åŠ›
         // BackgroundFXController.Instance.TriggerDistortion(transform.position);
         // CameraShake.Shake(0.5f, 2f);
     }

@@ -15,7 +15,7 @@ MonoBehaviour:
   moduleId: scrollwheel_move_module
   moduleName: "\u6EDA\u8F6E\u79FB\u52A8\u6A21\u5757"
   moduleType: 10
-  description: Basic frame thruster. Improves baseline mobility.
+  description: "\u4F7F\u7528\u9F20\u6807\u6EDA\u8F6E\u8FDB\u884C\u79FB\u52A8\uFF0C\u4E0A\u6EDA\u5411\u524D\u79FB\u52A8\uFF0C\u4E0B\u6EDA\u5411\u540E\u79FB\u52A8\u3002"
   icon: {fileID: 21300000, guid: 7b2ad6bdaefa8b841a4198e2b6c423e9, type: 3}
   categories: 64
   statSchema: {fileID: 11400000, guid: 29821085cfb231744b62dacb9c8cfc0e, type: 2}
@@ -27,10 +27,12 @@ MonoBehaviour:
       value: 2
     - statDefinition: {fileID: 11400000, guid: 788e5226ec5ecb843bef437c90b29fdc, type: 2}
       value: 1
+    - statDefinition: {fileID: 11400000, guid: 52d907d9f1746804fa615c4c97aa2cbd, type: 2}
+      value: 14
     maxPluginSlots: 1
     loadCost: 1
   coreSlotCount: 1
   themeColor: {r: 0.2117647, g: 1, b: 0.8737547, a: 1}
-  runtimePrefab: {fileID: 0}
+  runtimePrefab: {fileID: 950323459775795189, guid: 6e311f7bdae3f794f908380ed6dcb8ae, type: 3}
   previewPrefab: {fileID: 950323459775795189, guid: 6e311f7bdae3f794f908380ed6dcb8ae, type: 3}
   unlockCost: 0

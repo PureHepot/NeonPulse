@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f2938850d4485ee45954e75922bd383a, type: 3}
-  m_Name: Weapon_Ranged_Snipe
+  m_Name: Weapon_Ranged_Sniper
   m_EditorClassIdentifier: 
   moduleId: weapon_module_sniper
   moduleName: "\u72D9\u51FB\u67AA"
@@ -24,15 +24,23 @@ MonoBehaviour:
   - rarity: 0
     baseStats:
     - statDefinition: {fileID: 11400000, guid: fddb1fe5ce65f514988fb97e08e9009e, type: 2}
-      value: 30
+      value: 15
     - statDefinition: {fileID: 11400000, guid: 78fd7d5dbc780f8468dfed5cc4f5b5c1, type: 2}
-      value: 1
+      value: 0.5
     - statDefinition: {fileID: 11400000, guid: 739ac8df719410941ba8aa457488fd3d, type: 2}
       value: 30
     - statDefinition: {fileID: 11400000, guid: 9555f464902f5ec45b09ea050f35bb62, type: 2}
       value: 110
+    - statDefinition: {fileID: 11400000, guid: 80dd2c8d7419fbf458c2cc818c58a8e6, type: 2}
+      value: 1
+    - statDefinition: {fileID: 11400000, guid: 952689803a70ace44ab440ca5e69f48b, type: 2}
+      value: 3
+    - statDefinition: {fileID: 11400000, guid: 5672b5260b6feed41b2647e8a9a06540, type: 2}
+      value: 120
+    - statDefinition: {fileID: 11400000, guid: 2b4a5d608949cb440a56d8838028b560, type: 2}
+      value: 30
     maxPluginSlots: 1
-    loadCost: 1
+    loadCost: 7
   coreSlotCount: 1
   themeColor: {r: 1, g: 0.08282871, b: 0, a: 1}
   runtimePrefab: {fileID: 1289084884220203822, guid: 6fcab3ad23c44334ea1974456237f783, type: 3}

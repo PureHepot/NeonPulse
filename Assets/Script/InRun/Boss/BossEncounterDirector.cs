@@ -3,24 +3,39 @@ using UnityEngine;
 
 public class BossEncounterDirector
 {
+    private const string BossConfigResourceFolder = "Configs/Boss";
+
     private readonly BossArenaLimiter arenaLimiter = new();
+    private readonly List<BossEncounterConfig> bossSequence = new();
     private GameObject activeBossObject;
+    private MonoBase activeBoss;
     private EnemyBase activeBossEnemy;
     private BossEncounterConfig activeConfig;
+    private BossEncounterConfig pendingConfig;
     private PlayerController activePlayer;
+    private int nextBossSequenceIndex;
 
     public bool IsRunning { get; private set; }
     public bool IsComplete { get; private set; }
-    public string CurrentBossName => activeConfig != null && !string.IsNullOrWhiteSpace(activeConfig.displayName)
-        ? activeConfig.displayName
-        : activeConfig != null ? activeConfig.bossId : string.Empty;
+    public string PendingBossName => ResolveBossDisplayName(pendingConfig);
+    public string CurrentBossName => ResolveBossDisplayName(activeConfig);
+    public MonoBase ActiveBoss => activeBoss;
     public EnemyBase ActiveBossEnemy => activeBossEnemy;
+
+    public string PrepareEncounter(BattleThemeConfig theme)
+    {
+        pendingConfig ??= ResolveEncounterConfig(theme);
+        return PendingBossName;
+    }
 
     public void BeginEncounter(BattleThemeConfig theme, int themeIndex)
     {
-        Reset();
+        var preparedConfig = pendingConfig;
+        CleanupEncounter();
+        IsComplete = false;
 
-        activeConfig = ResolveEncounterConfig(theme);
+        activeConfig = preparedConfig ?? ResolveEncounterConfig(theme);
+        pendingConfig = null;
         arenaLimiter.Activate(activeConfig != null ? activeConfig.arenaConfig : null);
         activePlayer = ResolveActivePlayer();
 
@@ -37,16 +52,17 @@ public class BossEncounterDirector
         Vector3 spawnPosition = new Vector3(arenaCenter.x + spawnOffset.x, arenaCenter.y + spawnOffset.y, 0f);
 
         activeBossObject = ObjectPoolManager.Instance.Get(bossPrefab, spawnPosition, Quaternion.identity);
+        activeBoss = activeBossObject.GetComponent<MonoBase>();
         activeBossEnemy = activeBossObject.GetComponent<EnemyBase>();
 
-        if (activeBossEnemy == null)
+        if (activeBoss == null)
         {
-            Debug.LogWarning($"[BossEncounterDirector] Spawned boss prefab {bossPrefab.name} has no EnemyBase.");
+            Debug.LogWarning($"[BossEncounterDirector] Spawned boss prefab {bossPrefab.name} has no MonoBase.");
             IsComplete = true;
             return;
         }
 
-        ApplyBossScaling(activeBossEnemy, themeIndex);
+        ApplyBossScaling(activeBoss, activeBossEnemy, themeIndex);
         IsRunning = true;
         IsComplete = false;
     }
@@ -82,6 +98,7 @@ public class BossEncounterDirector
             ObjectPoolManager.Instance.Return(activeBossObject);
 
         activeBossObject = null;
+        activeBoss = null;
         activeBossEnemy = null;
         activePlayer = null;
         arenaLimiter.Deactivate();
@@ -92,15 +109,79 @@ public class BossEncounterDirector
     {
         CleanupEncounter();
         activeConfig = null;
+        pendingConfig = null;
         IsComplete = false;
     }
 
     private BossEncounterConfig ResolveEncounterConfig(BattleThemeConfig theme)
     {
+        if (TryGetNextSequenceConfig(out var sequenceConfig))
+            return sequenceConfig;
+
         if (theme != null && theme.bossEncounter != null)
             return theme.bossEncounter;
 
         return CreateFallbackConfig();
+    }
+
+    private bool TryGetNextSequenceConfig(out BossEncounterConfig config)
+    {
+        EnsureBossSequence();
+        if (bossSequence.Count == 0)
+        {
+            config = null;
+            return false;
+        }
+
+        if (nextBossSequenceIndex >= bossSequence.Count)
+        {
+            ShuffleBossSequence();
+            nextBossSequenceIndex = 0;
+        }
+
+        config = bossSequence[nextBossSequenceIndex];
+        nextBossSequenceIndex++;
+        return config != null;
+    }
+
+    private void EnsureBossSequence()
+    {
+        if (bossSequence.Count > 0)
+            return;
+
+        var loadedConfigs = Resources.LoadAll<BossEncounterConfig>(BossConfigResourceFolder);
+        if (loadedConfigs == null || loadedConfigs.Length == 0)
+            return;
+
+        for (int index = 0; index < loadedConfigs.Length; index++)
+        {
+            var config = loadedConfigs[index];
+            if (config != null)
+                bossSequence.Add(config);
+        }
+
+        ShuffleBossSequence();
+        nextBossSequenceIndex = 0;
+    }
+
+    private void ShuffleBossSequence()
+    {
+        for (int index = bossSequence.Count - 1; index > 0; index--)
+        {
+            int swapIndex = Random.Range(0, index + 1);
+            (bossSequence[index], bossSequence[swapIndex]) = (bossSequence[swapIndex], bossSequence[index]);
+        }
+    }
+
+    private static string ResolveBossDisplayName(BossEncounterConfig config)
+    {
+        if (config == null)
+            return string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(config.displayName))
+            return config.displayName;
+
+        return config.bossId ?? string.Empty;
     }
 
     private BossEncounterConfig CreateFallbackConfig()
@@ -108,16 +189,20 @@ public class BossEncounterDirector
         return ScriptableObject.CreateInstance<BossEncounterConfig>().WithFallbackValues();
     }
 
-    private void ApplyBossScaling(EnemyBase bossEnemy, int themeIndex)
+    private void ApplyBossScaling(MonoBase boss, EnemyBase enemyBoss, int themeIndex)
     {
         float difficultyMultiplier = activeConfig != null ? Mathf.Max(0.1f, activeConfig.difficultyMultiplier) : 1f;
         float hpScale = (1f + Mathf.Max(0, themeIndex) * 0.35f) * difficultyMultiplier;
         float damageScale = (1f + Mathf.Max(0, themeIndex) * 0.20f) * difficultyMultiplier;
 
-        bossEnemy.maxHp = Mathf.Max(1f, bossEnemy.maxHp * hpScale);
-        bossEnemy.currentHp = bossEnemy.maxHp;
-        bossEnemy.contactDamage = Mathf.Max(1, Mathf.RoundToInt(bossEnemy.contactDamage * damageScale));
-        bossEnemy.scoreValue = Mathf.Max(50, Mathf.RoundToInt(bossEnemy.scoreValue * hpScale));
+        boss.maxHp = Mathf.Max(1f, boss.maxHp * hpScale);
+        boss.currentHp = boss.maxHp;
+
+        if (enemyBoss != null)
+        {
+            enemyBoss.contactDamage = Mathf.Max(1, Mathf.RoundToInt(enemyBoss.contactDamage * damageScale));
+            enemyBoss.scoreValue = Mathf.Max(50, Mathf.RoundToInt(enemyBoss.scoreValue * hpScale));
+        }
     }
 
     private static void ClearActiveEnemies()
@@ -130,6 +215,16 @@ public class BossEncounterDirector
                 continue;
 
             ObjectPoolManager.Instance.Return(enemy.gameObject);
+        }
+
+        var bosses = Object.FindObjectsByType<BossBase>(FindObjectsSortMode.None);
+        for (int i = 0; i < bosses.Length; i++)
+        {
+            var boss = bosses[i];
+            if (boss == null || !boss.gameObject.activeInHierarchy)
+                continue;
+
+            ObjectPoolManager.Instance.Return(boss.gameObject);
         }
     }
 

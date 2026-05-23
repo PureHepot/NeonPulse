@@ -198,7 +198,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae25ec67c90181244b528355345b585f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHp: 10
+  maxHp: 300
   currentHp: 0
   bodyRenderer: {fileID: 7204499180306744594}
   normalColor: {r: 1, g: 1, b: 1, a: 1}

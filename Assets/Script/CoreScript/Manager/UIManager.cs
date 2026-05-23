@@ -7,8 +7,8 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 注：三种UI的区别：
-/// 1，全局UI,通常用于全局HUD(如状态和背包栏)，互斥显示，同时只能有一个
-/// 2，面板UI,通常用于游戏内各种功能面板，采用栈管理，比如背包页面，以及背包内点开的物品详情页面
+/// 1，全局UI,通常用于全局HUD(如状态和背包�?，互斥显示，同时只能有一�?
+/// 2，面板UI,通常用于游戏内各种功能面板，采用栈管理，比如背包页面，以及背包内点开的物品详情页�?
 /// 3，弹窗UI,通常用于提示信息，独立显示，覆盖所有UI，通常自行管理生命周期
 /// </summary>
 public class UIManager : MonoSingleton<UIManager>
@@ -19,10 +19,10 @@ public class UIManager : MonoSingleton<UIManager>
     // 层级节点
     private Transform canvasTransform;
     private Transform layerFullScreen; // 底层
-    private Transform layerPanel;      // 中层（栈管理）
+    private Transform layerPanel;      // 中层（栈管理�?
     private Transform layerPopup;      // 顶层
 
-    // 状态存储
+    // 状态存�?
     private UIBase currentFullScreenUI;
     private UIBase popupUI;
     private List<UIBase> panelList = new();
@@ -66,7 +66,7 @@ public class UIManager : MonoSingleton<UIManager>
         canvasTransform = canvasObj.transform;
         DontDestroyOnLoad(canvasObj);
 
-        // 创建三个层级父节点
+        // 创建三个层级父节�?
         layerFullScreen = canvasTransform.Find("Layer_FullScreen") ?? CreateLayer("Layer_FullScreen", 0);
         layerPanel = canvasTransform.Find("Layer_Panel") ?? CreateLayer("Layer_Panel", 100);
         layerPopup = canvasTransform.Find("Layer_Popup") ?? CreateLayer("Layer_Popup", 200);
@@ -81,7 +81,7 @@ public class UIManager : MonoSingleton<UIManager>
         var canvas = layer.AddComponent<Canvas>();
         canvas.overrideSorting = true;
         canvas.sortingOrder = sortOrder;
-        layer.AddComponent<GraphicRaycaster>(); // 确保能点击
+        layer.AddComponent<GraphicRaycaster>(); // 确保能点�?
 
         // 强制全屏拉伸
         var rect = layer.AddComponent<RectTransform>();
@@ -96,7 +96,7 @@ public class UIManager : MonoSingleton<UIManager>
     #region 核心加载方法
 
     /// <summary>
-    /// 加载UI Prefab，约定Prefab名必须和类名一致
+    /// 加载UI Prefab，约定Prefab名必须和类名一�?
     /// </summary>
     private T LoadUI<T>(Transform parent) where T : UIBase
     {
@@ -122,8 +122,8 @@ public class UIManager : MonoSingleton<UIManager>
     #region 通用方法 
 
     /// <summary>
-    /// 通用的 UI 关闭方法
-    /// 自动识别 UI 类型（面板/全屏/弹窗）并执行对应逻辑
+    /// 通用�?UI 关闭方法
+    /// 自动识别 UI 类型（面�?全屏/弹窗）并执行对应逻辑
     /// </summary>
     /// <param name="ui">要关闭的 UI 实例</param>
     public void CloseUI(UIBase ui)
@@ -148,7 +148,7 @@ public class UIManager : MonoSingleton<UIManager>
 
     #endregion
 
-    #region 全屏 UI (互斥，同时只有一个)
+    #region 全屏 UI (互斥，同时只有一�?
 
     public T OpenFullScreen<T>(object args=null) where T : UIBase
     {
@@ -167,9 +167,19 @@ public class UIManager : MonoSingleton<UIManager>
         return ui;
     }
 
+    public void CloseFullScreen()
+    {
+        if (currentFullScreenUI == null)
+            return;
+
+        var ui = currentFullScreenUI;
+        currentFullScreenUI = null;
+        ui.OnClose();
+    }
+
     #endregion
 
-    #region 面板 UI (栈管理)
+    #region 面板 UI (栈管�?
     /// <summary>
     /// 打开某个面板UI
     /// 注：该UI不应该在内部关闭自身
@@ -179,7 +189,7 @@ public class UIManager : MonoSingleton<UIManager>
     /// <returns></returns>
     public T Open<T>(object args = null) where T : UIBase
     {
-        // 暂停栈顶的上一个面板
+        // 暂停栈顶的上一个面�?
         if (panelList.Count > 0)
         {
             var top = panelList[^1]; // 获取末尾元素
@@ -214,7 +224,7 @@ public class UIManager : MonoSingleton<UIManager>
     }
 
     /// <summary>
-    /// 关闭指定的面板实例
+    /// 关闭指定的面板实�?
     /// </summary>
     public void ClosePanel(UIBase panel)
     {
@@ -238,7 +248,7 @@ public class UIManager : MonoSingleton<UIManager>
     }
 
     /// <summary>
-    /// 关闭所有面板
+    /// 关闭所有面�?
     /// </summary>
     public void CloseAllPanels()
     {
@@ -250,7 +260,7 @@ public class UIManager : MonoSingleton<UIManager>
 
     #endregion
 
-    #region 弹窗 UI (独立，覆盖所有)
+    #region 弹窗 UI (独立，覆盖所�?
 
     /// <summary>
     /// 打开某个弹窗UI
@@ -302,3 +312,4 @@ public class UIManager : MonoSingleton<UIManager>
 
     #endregion
 }
+

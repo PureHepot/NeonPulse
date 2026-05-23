@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -38,6 +38,7 @@ public class InRunRuntimeContext
         Runtime.runCurrency = 0;
         Runtime.runScoreTotal = 0;
         Runtime.lifetimeKillsThisRun = 0;
+        Runtime.bossDefeatCount = 0;
         WarehouseRuntimeState.ResetForNewRun(Runtime);
         ShopInventoryRuntimeState.Clear(Runtime);
         Runtime.pendingRewards.Clear();
@@ -111,6 +112,8 @@ public class InRunRuntimeContext
     public void MarkBossDefeated()
     {
         var themeSave = EnsureThemeSave(Runtime.currentThemeIndex, GetCurrentThemeId());
+        if (!themeSave.bossDefeated)
+            Runtime.bossDefeatCount++;
         themeSave.bossDefeated = true;
     }
 
@@ -196,3 +199,5 @@ public class InRunRuntimeContext
         return $"debug_theme_{themeIndex + 1}";
     }
 }
+
+

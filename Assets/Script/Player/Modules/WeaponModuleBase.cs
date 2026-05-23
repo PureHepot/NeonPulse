@@ -3,6 +3,9 @@ using UnityEngine;
 
 public abstract class WeaponModuleBase : PlayerModule
 {
+    private const string WeaponSelfBackForceStatId = "weapon.selfbackforce";
+    private const string DoubleWeaponDamageEffectId = PluginSpecialEffectUtility.DoubleWeaponDamageEffectId;
+    private const string DoubleWeaponAttackSpeedEffectId = PluginSpecialEffectUtility.DoubleWeaponAttackSpeedEffectId;
     private readonly List<IWeaponModuleEffect> effects = new();
     private float cooldownRemaining;
 
@@ -66,6 +69,35 @@ public abstract class WeaponModuleBase : PlayerModule
             effects[index].OnProjectileSpawned(context, projectileObject);
     }
 
+    protected void ApplySelfBackForce(Vector2 shotDirection, float fallbackForce = 0f, float forceScale = 1f)
+    {
+        if (player == null)
+            return;
+
+        if (shotDirection.sqrMagnitude <= Mathf.Epsilon)
+            return;
+
+        float selfBackForce = GetStat(WeaponSelfBackForceStatId, fallbackForce);
+        if (selfBackForce <= 0f)
+            return;
+
+        player.AddImpulse(-shotDirection.normalized * (selfBackForce * Mathf.Max(0f, forceScale)));
+    }
+
+    protected float ApplyWeaponDamageMultiplier(float baseDamage)
+    {
+        return baseDamage * ResolvePluginMultiplier(DoubleWeaponDamageEffectId);
+    }
+
+    protected float ApplyWeaponFireIntervalMultiplier(float baseFireInterval)
+    {
+        float multiplier = ResolvePluginMultiplier(DoubleWeaponAttackSpeedEffectId);
+        if (multiplier <= 0f)
+            return baseFireInterval;
+
+        return baseFireInterval / multiplier;
+    }
+
     private void RebuildEffects()
     {
         effects.Clear();
@@ -82,6 +114,24 @@ public abstract class WeaponModuleBase : PlayerModule
             effect.Initialize(this, plugins[index]);
             effects.Add(effect);
         }
+    }
+
+    private float ResolvePluginMultiplier(string effectId)
+    {
+        float multiplier = 1f;
+        var plugins = RuntimeData != null ? RuntimeData.Plugins : null;
+        if (plugins == null)
+            return multiplier;
+
+        for (int index = 0; index < plugins.Count; index++)
+        {
+            if (!PluginSpecialEffectUtility.MatchesEffect(plugins[index], effectId))
+                continue;
+
+            multiplier *= PluginSpecialEffectUtility.ResolveMultiplier(plugins[index]);
+        }
+
+        return multiplier;
     }
 
     protected abstract void OnWeaponInitialize();
@@ -103,13 +153,6 @@ public static class WeaponModuleEffectFactory
         if (pluginRuntime?.pluginConfig == null)
             return null;
 
-        if (pluginRuntime.pluginConfig.pluginType == PluginType.ExtraMuzzle ||
-            string.Equals(pluginRuntime.pluginConfig.effectId, "ExtraMuzzle", System.StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(pluginRuntime.pluginConfig.effectId, "ExtraMuzzleCount", System.StringComparison.OrdinalIgnoreCase))
-        {
-            return new ExtraMuzzleWeaponModuleEffect();
-        }
-
         if (pluginRuntime.pluginConfig.pluginType == PluginType.Homing ||
             string.Equals(pluginRuntime.pluginConfig.effectId, "Homing", System.StringComparison.OrdinalIgnoreCase) ||
             string.Equals(pluginRuntime.pluginConfig.effectId, "Chase", System.StringComparison.OrdinalIgnoreCase) ||
@@ -119,72 +162,6 @@ public static class WeaponModuleEffectFactory
         }
 
         return null;
-    }
-}
-
-public sealed class ExtraMuzzleWeaponModuleEffect : IWeaponModuleEffect
-{
-    private const int DefaultExtraMuzzleCount = 1;
-    private const float DefaultMuzzleSpacing = 0.18f;
-
-    private LoadoutPluginRuntimeData pluginRuntime;
-
-    public void Initialize(WeaponModuleBase owner, LoadoutPluginRuntimeData pluginRuntimeData)
-    {
-        pluginRuntime = pluginRuntimeData;
-    }
-
-    public void ModifyMuzzlePlan(WeaponFireContext context, List<WeaponMuzzlePoint> muzzlePlan)
-    {
-        if (muzzlePlan == null || muzzlePlan.Count == 0)
-            return;
-
-        int extraCount = Mathf.Max(
-            0,
-            Mathf.RoundToInt(pluginRuntime.effectParams.param1 > 0f
-                ? pluginRuntime.effectParams.param1
-                : DefaultExtraMuzzleCount));
-        if (extraCount <= 0)
-            return;
-
-        float spacing = pluginRuntime.effectParams.param2 > 0f
-            ? pluginRuntime.effectParams.param2
-            : DefaultMuzzleSpacing;
-
-        Quaternion rotation = muzzlePlan[0].rotation;
-        Vector3 center = Vector3.zero;
-        for (int index = 0; index < muzzlePlan.Count; index++)
-            center += muzzlePlan[index].position;
-
-        center /= muzzlePlan.Count;
-
-        int originalCount = muzzlePlan.Count;
-        int finalCount = originalCount + extraCount;
-        var expandedPlan = new List<WeaponMuzzlePoint>(finalCount);
-
-        for (int index = 0; index < finalCount; index++)
-        {
-            float centeredIndex = index - (finalCount - 1) * 0.5f;
-            Vector3 offset = (rotation * Vector3.up) * (spacing * centeredIndex);
-            expandedPlan.Add(new WeaponMuzzlePoint
-            {
-                position = center + offset,
-                rotation = rotation,
-                visualTransform = index < originalCount ? muzzlePlan[index].visualTransform : null,
-                isVirtual = index >= originalCount
-            });
-        }
-
-        muzzlePlan.Clear();
-        muzzlePlan.AddRange(expandedPlan);
-    }
-
-    public void ModifyProjectileSpawnData(WeaponFireContext context, ProjectileSpawnData spawnData)
-    {
-    }
-
-    public void OnProjectileSpawned(WeaponFireContext context, GameObject projectileObject)
-    {
     }
 }
 

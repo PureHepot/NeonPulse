@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2938850d4485ee45954e75922bd383a, type: 3}
   m_Name: BaseHealthModule
   m_EditorClassIdentifier: 
-  moduleId: base_health_module
-  moduleName: "\u57FA\u7840\u751F\u547D\u6A21\u5757"
+  moduleId: module_health_recover
+  moduleName: "\u6062\u590D\u578B\u751F\u547D\u6A21\u5757"
   moduleType: 1
   description: "\u8FD9\u662F\u57FA\u7840\u7684\u751F\u547D\u6A21\u5757\uFF0C\u53EF\u4EE5\u63D0\u4F9B\u673A\u4F53\u7684"
   icon: {fileID: 0}
@@ -26,11 +26,11 @@ MonoBehaviour:
     - statDefinition: {fileID: 11400000, guid: 14c01b01d1953c249907e5d7f1eed946, type: 2}
       value: 40
     - statDefinition: {fileID: 11400000, guid: da89ff98cbf3c414c81fa1b3bba0a6c1, type: 2}
-      value: 1
+      value: 0.5
     maxPluginSlots: 1
-    loadCost: 1
+    loadCost: 5
   coreSlotCount: 1
   themeColor: {r: 0.37995815, g: 1, b: 0, a: 1}
-  runtimePrefab: {fileID: 0}
+  runtimePrefab: {fileID: 7912777684067947577, guid: 142a2546d2871ba498c4e8f5e356f7f5, type: 3}
   previewPrefab: {fileID: 7912777684067947577, guid: 142a2546d2871ba498c4e8f5e356f7f5, type: 3}
   unlockCost: 0

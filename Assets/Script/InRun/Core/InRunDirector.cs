@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,7 +9,9 @@ public class InRunDirector : MonoBehaviour
     [SerializeField] private InRunConfigDatabase configOverride;
     [SerializeField] private int themesPerRun = 3;
     [SerializeField] private int loopsPerTheme = 3;
-    [SerializeField] private float debugLoopDurationSeconds = 0f; //改成0就是不进行Debug测试
+    [Header("Temporary Flow Cut")]
+    [SerializeField] private bool bossRushMode = true; // TEMP/BOSS_RUSH_CUT: bypass normal enemy/shop/reward loop and chain bosses only.
+    [SerializeField] private float debugLoopDurationSeconds = 0f; //鏀规垚0灏辨槸涓嶈繘琛孌ebug娴嬭瘯
     [SerializeField] private float placeholderAdvanceDelaySeconds = 0.35f;
     [SerializeField] private bool showDebugHud = true;
     [SerializeField] private int boundaryChecksPerFrame = 12;
@@ -60,18 +62,32 @@ public class InRunDirector : MonoBehaviour
     public CombatGrade CurrentLoopGrade => currentLoop != null ? currentLoop.grade : CombatGrade.F;
     public int CurrentRunCurrency => context != null ? context.Runtime.runCurrency : 0;
     public int CurrentPendingRewardCount => context != null ? context.Runtime.pendingRewards.Count : 0;
+    public int CurrentBossKillCount => context != null ? context.Runtime.bossDefeatCount : 0;
     public int CurrentWarehouseCount => context != null ? WarehouseRuntimeState.GetCount(context.Runtime) : 0;
     public int CurrentWarehouseCapacity => context != null ? WarehouseRuntimeState.GetCapacity(context.Runtime) : 0;
     public RewardRollResult CurrentRewardResult => rewardDirector.CurrentResult;
     public IReadOnlyList<ShopOffer> CurrentShopOffers => shopDirector.CurrentOffers;
     public string CurrentBossName => bossEncounterDirector.CurrentBossName;
     public bool IsBossEncounterRunning => bossEncounterDirector.IsRunning;
+    internal bool IsBossRushMode => bossRushMode;
     internal InRunFlowRunner FlowRunner => flowRunner;
     internal int ThemesPerRun => themesPerRun;
     internal int LoopsPerTheme => loopsPerTheme;
     internal InRunRuntimeContext RuntimeContext => context;
     internal BattleThemeConfig CurrentTheme { get => currentTheme; set => currentTheme = value; }
     internal CombatLoopRuntimeSaveData CurrentLoop { get => currentLoop; set => currentLoop = value; }
+    internal bool IsPlayerAliveForFlow
+    {
+        get
+        {
+            var playerObject = GameMgr.Instance != null ? GameMgr.Instance.Player.CurrentPlayerObj : null;
+            if (playerObject == null || !playerObject.activeInHierarchy)
+                return false;
+
+            var controller = playerObject.GetComponent<PlayerController>();
+            return controller != null && !controller.IsDead;
+        }
+    }
 
     private void OnEnable()
     {
@@ -252,11 +268,23 @@ public class InRunDirector : MonoBehaviour
     {
         yield return EnterState(InRunPhase.BossPreparing);
         enemySpawnDirector.DespawnAllTrackedEnemies();
+        yield return ShowBossMessage();
         bossEncounterDirector.BeginEncounter(currentTheme, context != null ? context.CurrentThemeIndex : 0);
         yield return EnterState(InRunPhase.BossActive);
-        yield return new WaitUntil(() => bossEncounterDirector.IsComplete);
+        yield return new WaitUntil(() => bossEncounterDirector.IsComplete || !IsPlayerAliveForFlow);
         bossEncounterDirector.CleanupEncounter();
+        if (!IsPlayerAliveForFlow)
+            yield break;
+
         context.MarkBossDefeated();
+        if (bossRushMode)
+        {
+            // TEMP/BOSS_RUSH_CUT: keep plugin progression but remove reward UI and shop from the active flow.
+            rewardDirector.GrantBossRushPluginDrop(currentTheme, context.Runtime);
+            yield return EnterState(InRunPhase.NextTheme);
+            yield break;
+        }
+
         yield return RunBossRewardPhase(false);
 
         if (themeIndex < themesPerRun - 1)
@@ -269,26 +297,40 @@ public class InRunDirector : MonoBehaviour
         {
             case InRunPhase.BossPreparing:
                 yield return EnterState(InRunPhase.BossPreparing);
+                yield return ShowBossMessage();
                 bossEncounterDirector.BeginEncounter(currentTheme, context != null ? context.CurrentThemeIndex : 0);
                 yield return EnterState(InRunPhase.BossActive);
-                yield return new WaitUntil(() => bossEncounterDirector.IsComplete);
+                yield return new WaitUntil(() => bossEncounterDirector.IsComplete || !IsPlayerAliveForFlow);
                 bossEncounterDirector.CleanupEncounter();
+                if (!IsPlayerAliveForFlow)
+                    yield break;
                 context.MarkBossDefeated();
-                yield return RunBossRewardPhase(false);
+                if (bossRushMode)
+                    rewardDirector.GrantBossRushPluginDrop(currentTheme, context.Runtime);
+                else
+                    yield return RunBossRewardPhase(false);
                 break;
 
             case InRunPhase.BossActive:
                 yield return EnterState(InRunPhase.BossActive);
                 bossEncounterDirector.BeginEncounter(currentTheme, context != null ? context.CurrentThemeIndex : 0);
-                yield return new WaitUntil(() => bossEncounterDirector.IsComplete);
+                yield return new WaitUntil(() => bossEncounterDirector.IsComplete || !IsPlayerAliveForFlow);
                 bossEncounterDirector.CleanupEncounter();
+                if (!IsPlayerAliveForFlow)
+                    yield break;
                 context.MarkBossDefeated();
-                yield return RunBossRewardPhase(false);
+                if (bossRushMode)
+                    rewardDirector.GrantBossRushPluginDrop(currentTheme, context.Runtime);
+                else
+                    yield return RunBossRewardPhase(false);
                 break;
 
             case InRunPhase.BossReward:
                 context.MarkBossDefeated();
-                yield return RunBossRewardPhase(true);
+                if (bossRushMode)
+                    rewardDirector.GrantBossRushPluginDrop(currentTheme, context.Runtime);
+                else
+                    yield return RunBossRewardPhase(true);
                 break;
 
             case InRunPhase.NextTheme:
@@ -300,8 +342,25 @@ public class InRunDirector : MonoBehaviour
                 yield break;
         }
 
+        if (bossRushMode)
+        {
+            if (IsPlayerAliveForFlow)
+                yield return EnterState(InRunPhase.NextTheme);
+            yield break;
+        }
+
         if (themeIndex < themesPerRun - 1)
             yield return EnterState(InRunPhase.NextTheme);
+    }
+
+    private IEnumerator ShowBossMessage()
+    {
+        string bossName = bossEncounterDirector.PrepareEncounter(currentTheme);
+        if (string.IsNullOrWhiteSpace(bossName))
+            yield break;
+
+        GameMgr.Instance.UI.Open<MessageUI>(new MessageUIArg(0, bossName, 2f));
+        yield return new WaitForSeconds(1f);
     }
 
     internal IEnumerator EnterState(InRunPhase phase, bool waitAfter = true)
@@ -439,3 +498,7 @@ public class InRunDirector : MonoBehaviour
         stateFlowRoutine = null;
     }
 }
+
+
+
+

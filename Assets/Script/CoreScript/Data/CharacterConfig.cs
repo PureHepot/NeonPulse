@@ -6,11 +6,12 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewCharacterConfig", menuName = "Game/Character Config")]
 public class CharacterConfig : ScriptableObject
 {
-    public string characterId; // 如 "Gunner", "Ninja"
-    public string displayName; // 显示名称 "枪手", "忍者"
-    public int maxLoadCapacity = 10; // 机体负荷上限
+    public string characterId; // �?"Gunner", "Ninja"
+    public string displayName; // 显示名称 "枪手", "忍�?
+    public int maxLoadCapacity = 20; // 机体负荷上限
 
     public List<ModuleConfig> availableModules;
 
     public GameObject previewPrefab;
 }
+

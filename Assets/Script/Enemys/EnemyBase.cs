@@ -1,4 +1,4 @@
-using DG.Tweening;
+﻿using DG.Tweening;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -13,7 +13,7 @@ public abstract class EnemyBase : MonoBase, IPoolable
     public int enemyExp = 10;
 
     [Header("Knockback Settings")]
-    public bool canKnockback = false;
+    public bool canKnockback;
     protected bool isKnockbacking;
     public float knockbackForce = 8f;
     public float knockbackTorque = 20f;
@@ -46,6 +46,7 @@ public abstract class EnemyBase : MonoBase, IPoolable
         isDead = false;
         isKnockbacking = false;
         gameObject.layer = LayerMask.NameToLayer("Enemy");
+        ResetHitFlashVisuals();
 
         if (bodyRenderer != null)
             bodyRenderer.color = normalColor;
@@ -59,26 +60,16 @@ public abstract class EnemyBase : MonoBase, IPoolable
         rb.simulated = true;
         ResetMovementDrive();
 
-        if (InRunDirector.ActiveInstance != null)
-            InRunDirector.ActiveInstance.RegisterBoundaryEnemy(this);
-
-        if (EnemyManager.Instance != null)
-            EnemyManager.Instance.RegisterEnemy(this);
+        InRunDirector.ActiveInstance?.RegisterBoundaryEnemy(this);
+        EnemyManager.Instance?.RegisterEnemy(this);
     }
 
     public virtual void OnDespawn()
     {
+        ResetHitFlashVisuals();
         transform.DOKill();
-        if (bodyRenderer != null)
-        {
-            bodyRenderer.DOKill();
-            bodyRenderer.material.DOKill();
-        }
-
         StopMovementDrive(true);
-
-        if (EnemyManager.Instance != null)
-            EnemyManager.Instance.UnRegisterEnemy(this);
+        EnemyManager.Instance?.UnRegisterEnemy(this);
     }
 
     private void FixedUpdate()
@@ -94,18 +85,25 @@ public abstract class EnemyBase : MonoBase, IPoolable
     {
     }
 
-    public override void TakeDamage(int amount, Vector3 hitPoint, Vector3 hitNormal)
+    public override void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitNormal)
     {
         base.TakeDamage(amount, hitPoint, hitNormal);
         if (!isDead && canKnockback)
             ApplyKnockback(hitNormal, knockbackForce);
     }
 
-    public override void TakeDamage(int amount, Vector3 hitPoint, Vector3 knockbackDir, float customForce)
+    public override void TakeDamage(float amount, Vector3 hitPoint, Vector3 knockbackDir, float customForce)
     {
         base.TakeDamage(amount, hitPoint, knockbackDir, customForce);
         if (!isDead && canKnockback && customForce > 0f)
             ApplyKnockback(knockbackDir, customForce);
+    }
+
+    public override void TakeDamage(float amount, Vector3 hitPoint, Vector3 knockbackDir, float customForce, float customTorque)
+    {
+        base.TakeDamage(amount, hitPoint, knockbackDir, customForce, customTorque);
+        if (!isDead && canKnockback && customForce > 0f)
+            ApplyKnockback(knockbackDir, customForce, customTorque);
     }
 
     protected virtual void ApplyKnockback(Vector3 forceDir, float force)
@@ -116,15 +114,20 @@ public abstract class EnemyBase : MonoBase, IPoolable
         Timer.Register(0.2f, () => isKnockbacking = false);
     }
 
+    protected virtual void ApplyKnockback(Vector3 forceDir, float force, float angularImpulse)
+    {
+        isKnockbacking = true;
+        StopMovementDrive(true);
+        ApplyImpulse(forceDir.normalized * force, angularImpulse);
+        Timer.Register(0.2f, () => isKnockbacking = false);
+    }
+
     protected override void Die()
     {
         base.Die();
         StopMovementDrive(true);
         rb.simulated = false;
-
-        if (InRunDirector.ActiveInstance != null)
-            InRunDirector.ActiveInstance.NotifyEnemyKilled(this);
-
+        InRunDirector.ActiveInstance?.NotifyEnemyKilled(this);
         ObjectPoolManager.Instance.Return(gameObject);
     }
 

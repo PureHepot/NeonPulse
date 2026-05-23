@@ -26,9 +26,9 @@ MonoBehaviour:
     - statDefinition: {fileID: 11400000, guid: b4f9713909a601d4aa70573e336a21ff, type: 2}
       value: 90
     - statDefinition: {fileID: 11400000, guid: a005521775b5db34a980b3fb0e844d00, type: 2}
-      value: 20
+      value: 100
     maxPluginSlots: 1
-    loadCost: 1
+    loadCost: 6
   coreSlotCount: 1
   themeColor: {r: 1, g: 0.57323545, b: 0, a: 1}
   runtimePrefab: {fileID: 8664554218016078908, guid: c361252e9b6ce8f4cbc16a2fba7fb324, type: 3}

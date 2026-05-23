@@ -17,7 +17,7 @@ MonoBehaviour:
   backgroundPreset: {fileID: 11400000, guid: ade3f143988cdce478adf8817dba7be9, type: 2}
   enemyPool:
   - enemyId: Slime_Drifter
-    enemyPrefab: {fileID: 2559620815044795701, guid: 0565c5dd0e594194c936a8e3a1a62198, type: 3}
+    enemyPrefab: {fileID: 1385969132019650507, guid: 6dad0381bddacfd438eb761a6012ff73, type: 3}
     enemyResourcePath: Prefabs/Mono/Enemys/EnemyDrifter
     baseScore: 10
     baseSpawnCost: 1
@@ -74,4 +74,8 @@ MonoBehaviour:
       weight: 0.6
     - enemyId: Slime_Dasher
       weight: 0.9
+  bossEncounter: {fileID: 11400000, guid: a346815af21286f48bbc5800c783eb2d, type: 2}
+  loopRewardPool: {fileID: 0}
+  bossRewardPool: {fileID: 0}
+  shopCatalog: {fileID: 0}
   difficultyMultiplier: 1

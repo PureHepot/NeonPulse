@@ -24,13 +24,13 @@ MonoBehaviour:
   - rarity: 0
     baseStats:
     - statDefinition: {fileID: 11400000, guid: b4f9713909a601d4aa70573e336a21ff, type: 2}
-      value: 90
+      value: 150
     - statDefinition: {fileID: 11400000, guid: a005521775b5db34a980b3fb0e844d00, type: 2}
-      value: 20
+      value: 0
     maxPluginSlots: 1
     loadCost: 1
   coreSlotCount: 1
   themeColor: {r: 1, g: 0.57323545, b: 0, a: 1}
-  runtimePrefab: {fileID: 8703667726629796008, guid: 1ac3a5dc82910794382228725c8b3811, type: 3}
-  previewPrefab: {fileID: 8703667726629796008, guid: 1ac3a5dc82910794382228725c8b3811, type: 3}
+  runtimePrefab: {fileID: 2507184547672687053, guid: 1ac3a5dc82910794382228725c8b3811, type: 3}
+  previewPrefab: {fileID: 2507184547672687053, guid: 1ac3a5dc82910794382228725c8b3811, type: 3}
   unlockCost: 0

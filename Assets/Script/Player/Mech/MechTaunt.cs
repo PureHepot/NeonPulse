@@ -36,21 +36,21 @@ public class MechTaunt : MechBase
         base.Die();
     }
 
-    public override void TakeDamage(int amount)
+    public override void TakeDamage(float amount)
     {
         base.TakeDamage(amount);
         ReflectToNearbyEnemies(amount);
     }
 
-    public override void TakeDamage(int amount, Vector3 hitPoint, Vector3 hitNormal)
+    public override void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitNormal)
     {
         base.TakeDamage(amount, hitPoint, hitNormal);
         ReflectToNearbyEnemies(amount);
     }
 
-    private void ReflectToNearbyEnemies(int incomingDamage)
+    private void ReflectToNearbyEnemies(float incomingDamage)
     {
-        int reflectDamage = Mathf.RoundToInt(incomingDamage * reflectPercent);
+        float reflectDamage = incomingDamage * reflectPercent;
         if (reflectDamage <= 0) return;
 
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, reflectRadius, enemyLayer);

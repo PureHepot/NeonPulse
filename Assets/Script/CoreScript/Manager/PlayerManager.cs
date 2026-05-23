@@ -6,8 +6,9 @@ public class PlayerManager : MonoSingleton<PlayerManager>
 {
     private const string PlayerPrefabResourcePath = "Prefabs/Mono/Player/Player";
     private const string FrameCoreResourceRoot = "Prefabs/Mono/Frame/Core";
+    private const string RuntimeHealthSlotId = "__runtime_health__";
 
-    public Action<int, int> OnHpChanged;
+    public Action<float, float> OnHpChanged;
 
     public GameObject playerPrefab;
     public Transform spawnPoint;
@@ -18,10 +19,10 @@ public class PlayerManager : MonoSingleton<PlayerManager>
     [Header("Visual References")]
     public SpriteRenderer bodyRenderer;
 
-    [SerializeField] private int currentHp;
-    [SerializeField] private int maxHealth;
+    [SerializeField] private float currentHp;
+    [SerializeField] private float maxHealth;
 
-    public int CurrentHp
+    public float CurrentHp
     {
         get => currentHp;
         set
@@ -31,7 +32,7 @@ public class PlayerManager : MonoSingleton<PlayerManager>
         }
     }
 
-    public int MaxHealth => maxHealth;
+    public float MaxHealth => maxHealth;
     public bool IsPlayerAlive => CurrentPlayerObj != null && CurrentPlayerObj.activeInHierarchy;
     public Vector3 PlayerPosition => CurrentPlayerObj != null ? CurrentPlayerObj.transform.position : Vector3.zero;
 
@@ -106,7 +107,7 @@ public class PlayerManager : MonoSingleton<PlayerManager>
         bodyRenderer.color = color;
     }
 
-    public void SyncHp(int current, int max)
+    public void SyncHp(float current, float max)
     {
         maxHealth = Mathf.Max(0, max);
         currentHp = Mathf.Clamp(current, 0, maxHealth);
@@ -140,6 +141,7 @@ public class PlayerManager : MonoSingleton<PlayerManager>
             return;
 
         moduleManager.ClearRuntimeModules();
+        EnsureRuntimeHealthModule(moduleManager, playerObject);
 
         var modulesRoot = playerObject.transform.Find("Modules") ?? playerObject.transform;
         foreach (var slot in runtimeLoadout.slots)
@@ -162,6 +164,28 @@ public class PlayerManager : MonoSingleton<PlayerManager>
 
             moduleManager.RegisterRuntimeModule(playerModule, runtimeData);
         }
+    }
+
+    private void EnsureRuntimeHealthModule(ModuleManager moduleManager, GameObject playerObject)
+    {
+        if (moduleManager == null || playerObject == null)
+            return;
+
+        var healthModule = playerObject.GetComponentInChildren<HealthModule>(true);
+        if (healthModule == null)
+        {
+            var healthObject = new GameObject("RuntimeHealth");
+            healthObject.transform.SetParent(playerObject.transform, false);
+            healthModule = healthObject.AddComponent<HealthModule>();
+        }
+
+        var runtimeData = new LoadoutModuleRuntimeData
+        {
+            slotId = RuntimeHealthSlotId,
+            moduleType = ModuleType.Health
+        };
+
+        moduleManager.RegisterRuntimeModule(healthModule, runtimeData);
     }
 
     private void AttachFrameCore(Transform playerRoot, FrameConfig frameConfig)

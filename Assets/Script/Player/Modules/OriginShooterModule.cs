@@ -80,11 +80,11 @@ public class OriginShooterModule : RangedWeaponModule
 
     private void RefreshWeaponStats()
     {
-        damagePerShot = Mathf.Max(1, Mathf.RoundToInt(GetStat(WeaponDamageStatId, DefaultDamage)));
+        damagePerShot = Mathf.Max(1, Mathf.RoundToInt(ApplyWeaponDamageMultiplier(GetStat(WeaponDamageStatId, DefaultDamage))));
         critChance = NormalizeChance(GetStat(WeaponCritChanceStatId, 0f));
         critDamageMultiplier = ResolveCritDamageMultiplier(GetStat(WeaponCritDamageStatId, 100f));
 
-        fireInterval = Mathf.Max(0.01f, ResolveFireInterval());
+        fireInterval = Mathf.Max(0.01f, ApplyWeaponFireIntervalMultiplier(ResolveFireInterval()));
 
         activeMuzzleCount = ResolveMuzzleCount();
         currentLevel = activeMuzzleCount;
@@ -296,7 +296,7 @@ public class OriginShooterModule : RangedWeaponModule
 
     private void ApplyFireRecoil(Vector3 aimTarget)
     {
-        if (player == null || recoilImpulse <= 0f)
+        if (player == null)
             return;
 
         Vector2 aimDirection = aimTarget - player.transform.position;
@@ -304,7 +304,7 @@ public class OriginShooterModule : RangedWeaponModule
             return;
 
         float recoilScale = 1f + Mathf.Max(0, activeMuzzleCount - 1) * 0.2f;
-        player.AddImpulse(-aimDirection.normalized * (recoilImpulse * recoilScale));
+        ApplySelfBackForce(aimDirection, recoilImpulse, recoilScale);
     }
 
     private void SyncGeneratedMuzzles()

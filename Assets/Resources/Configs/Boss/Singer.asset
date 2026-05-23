@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fe98d16c1b044a4ca172f67040eccdb, type: 3}
+  m_Name: Singer
+  m_EditorClassIdentifier: 
+  bossId: boss_singer
+  displayName: Singer
+  bossPrefab: {fileID: 2604878067555025342, guid: de00a20076ecc374b93c3bde26abe008, type: 3}
+  bossResourcePath: Assets/Resources/Prefabs/Mono/Boss/BossPre/SingerBoss.prefab
+  arenaConfig:
+    centerOffset: {x: 0, y: 0}
+    halfExtents: {x: 8, y: 4.5}
+    bossSpawnOffset: {x: 0, y: 3}
+  difficultyMultiplier: 1

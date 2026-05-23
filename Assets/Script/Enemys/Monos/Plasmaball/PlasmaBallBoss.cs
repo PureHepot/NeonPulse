@@ -179,4 +179,26 @@ public class PlasmaBallBoss : BossBase
             ReturnShield(i);
         }
     }
+
+    protected override void CleanupBossArtifacts()
+    {
+        transform.DOKill();
+
+        if (shieldsContainer != null)
+            shieldsContainer.localRotation = Quaternion.identity;
+
+        for (int i = 0; i < shieldsTransforms.Length; i++)
+        {
+            var shield = shieldsTransforms[i];
+            if (shield == null)
+                continue;
+
+            shield.DOKill();
+            shield.SetParent(shieldsContainer);
+            shield.localPosition = i < shieldInitialLocalPos.Length ? shieldInitialLocalPos[i] : Vector3.zero;
+            shield.localRotation = Quaternion.identity;
+            shield.localScale = i < shieldInitialScale.Length ? shieldInitialScale[i] : Vector3.one;
+            shield.gameObject.SetActive(true);
+        }
+    }
 }

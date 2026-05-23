@@ -19,3 +19,4 @@ MonoBehaviour:
   availableStats:
   - {fileID: 11400000, guid: 1ae5d8e2c207ed34887c86013b7f7be8, type: 2}
   - {fileID: 11400000, guid: 788e5226ec5ecb843bef437c90b29fdc, type: 2}
+  - {fileID: 11400000, guid: 52d907d9f1746804fa615c4c97aa2cbd, type: 2}

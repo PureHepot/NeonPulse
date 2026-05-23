@@ -247,11 +247,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 395e21693389dd6479d79320f6690d35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 60
+  speed: 120
   damage: 4
   lifeTime: 3
   penetrationCount: 2
   boxSize: {x: 1, y: 0.35}
   hitLayer:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 520
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  homingEnabled: 0
+  homingTurnRate: 0
+  homingAcquireRadius: 0
+  homingRetargetInterval: 0.15

@@ -8,14 +8,17 @@ public class HealthModule : PlayerModule
     private const string HealthRegenStatId = "health.healthregen";
     private const string InvincibilityDurationStatId = "health.invinciduration";
 
-    public int MaxHp { get; private set; }
+    public float MaxHp { get; private set; }
     public float CurrentHp { get; private set; }
     public float RegenPerSecond { get; private set; }
+    public float RegenMultiplier { get; private set; } = 1f;
+    public float DamageReductionMultiplier { get; private set; } = 1f;
+    public float DamageReflectionPercent { get; private set; }
 
     [Header("Hurt Settings")]
     public float knockbackForce = 15f;
     public float stunDuration = 0.2f;
-    public float invincibilityDuration = 1.0f;
+    public float invincibilityDuration = 0.4f;
     public Color hurtColor = Color.red;
     public Color normalColor = Color.white;
 
@@ -25,7 +28,7 @@ public class HealthModule : PlayerModule
     protected override void OnInitialize()
     {
         RecalculateStats();
-        CurrentHp = MaxHp;
+        CurrentHp = ResolveInitialCurrentHp();
         SyncUI();
     }
 
@@ -37,13 +40,15 @@ public class HealthModule : PlayerModule
         HandleRegen();
     }
 
-    public void TakeDamage(int amount, Transform attacker)
+    public void TakeDamage(float amount, Transform attacker)
     {
         if (IsInvincible || player == null || player.IsDead)
             return;
 
-        CurrentHp = Mathf.Clamp(CurrentHp - amount, 0, MaxHp);
+        float finalDamage = ResolveIncomingDamage(amount);
+        CurrentHp = Mathf.Clamp(CurrentHp - finalDamage, 0, MaxHp);
         AudioManager.Instance.PlayEffect("PlayerHit");
+        ReflectDamageToAttacker(attacker, finalDamage);
         SyncUI();
 
         if (CurrentHp <= 0)
@@ -55,17 +60,52 @@ public class HealthModule : PlayerModule
         StartCoroutine(HurtRoutine(attacker));
     }
 
+    public void RefreshFromLoadout()
+    {
+        float previousMaxHp = MaxHp;
+        float previousCurrentHp = CurrentHp;
+
+        RecalculateStats();
+
+        if (previousMaxHp <= 0f)
+        {
+            CurrentHp = MaxHp;
+        }
+        else if (MaxHp >= previousMaxHp)
+        {
+            CurrentHp = Mathf.Clamp(previousCurrentHp + (MaxHp - previousMaxHp), 0f, MaxHp);
+        }
+        else
+        {
+            CurrentHp = Mathf.Clamp(previousCurrentHp, 0f, MaxHp);
+        }
+
+        SyncUI();
+    }
+
+    public void ConfigureDefenceModifiers(float reductionMultiplier, float reflectionPercent)
+    {
+        DamageReductionMultiplier = Mathf.Max(0f, reductionMultiplier);
+        DamageReflectionPercent = Mathf.Max(0f, reflectionPercent);
+    }
+
+    public void ConfigureHealthModifiers(float regenMultiplier)
+    {
+        RegenMultiplier = Mathf.Max(0f, regenMultiplier);
+    }
+
     private void HandleRegen()
     {
-        if (RegenPerSecond <= 0f || CurrentHp >= MaxHp)
+        float effectiveRegen = RegenPerSecond * RegenMultiplier;
+        if (effectiveRegen <= 0f || CurrentHp >= MaxHp)
             return;
 
-        regenAccumulator += RegenPerSecond * DeltaTime;
-        if (regenAccumulator < 1f)
+        regenAccumulator += effectiveRegen * DeltaTime;
+        if (regenAccumulator <= 0f)
             return;
 
-        int heal = Mathf.FloorToInt(regenAccumulator);
-        regenAccumulator -= heal;
+        float heal = regenAccumulator;
+        regenAccumulator = 0f;
         CurrentHp = Mathf.Min(CurrentHp + heal, MaxHp);
         SyncUI();
     }
@@ -75,7 +115,7 @@ public class HealthModule : PlayerModule
         if (!IsPrimaryPlayer || PlayerManager.Instance == null)
             return;
 
-        int displayHp = CurrentHp <= 0 ? 0 : Mathf.Max(1, Mathf.FloorToInt(CurrentHp));
+        float displayHp = CurrentHp <= 0f ? 0f : Mathf.Max(1f, CurrentHp);
         PlayerManager.Instance.SyncHp(displayHp, MaxHp);
     }
 
@@ -139,9 +179,74 @@ public class HealthModule : PlayerModule
 
     private void RecalculateStats()
     {
-        MaxHp = Mathf.RoundToInt(GetStat(MaxHpStatId, 10f));
-        RegenPerSecond = GetStat(HealthRegenStatId, 0f);
-        invincibilityDuration = GetStat(InvincibilityDurationStatId, invincibilityDuration);
+        float frameBaseHp = ResolveFrameBaseHp();
+        float additionalHp = ResolveAggregateStat(MaxHpStatId, 0f);
+        MaxHp = frameBaseHp + additionalHp;
+        RegenPerSecond = ResolveAggregateStat(HealthRegenStatId, 0f);
+        invincibilityDuration = ResolveAggregateStat(InvincibilityDurationStatId, invincibilityDuration);
         MaxHp = Mathf.Max(MaxHp, 1);
+    }
+
+    private float ResolveInitialCurrentHp()
+    {
+        var run = DataManager.Instance != null ? DataManager.Instance.Run : null;
+        if (run == null)
+            return MaxHp;
+
+        if (run.player.maxHp > 0 && run.player.currentHp > 0)
+            return Mathf.Clamp(run.player.currentHp, 1f, MaxHp);
+
+        return MaxHp;
+    }
+
+    private float ResolveFrameBaseHp()
+    {
+        var loadoutManager = GameMgr.Instance != null ? GameMgr.Instance.Loadout : null;
+        var frameConfig = loadoutManager != null ? loadoutManager.GetCurrentFrame() : null;
+        return frameConfig != null ? Mathf.Max(0f, frameConfig.baseMaxHP) : 0f;
+    }
+
+    private float ResolveAggregateStat(string statId, float fallbackValue)
+    {
+        var loadoutManager = GameMgr.Instance != null ? GameMgr.Instance.Loadout : null;
+        if (loadoutManager == null || string.IsNullOrWhiteSpace(statId))
+            return fallbackValue;
+
+        float value = loadoutManager.GetFinalStat(statId);
+        return Mathf.Approximately(value, 0f) ? fallbackValue : value;
+    }
+
+    private float ResolveIncomingDamage(float incomingDamage)
+    {
+        if (incomingDamage <= 0)
+            return 0;
+
+        float finalDamage = incomingDamage * DamageReductionMultiplier;
+        return Mathf.Max(0f, finalDamage);
+    }
+
+    private void ReflectDamageToAttacker(Transform attacker, float finalDamage)
+    {
+        if (attacker == null || finalDamage <= 0)
+            return;
+
+        if (DamageReflectionPercent <= 0f)
+            return;
+
+        float reflectedDamage = finalDamage * DamageReflectionPercent;
+        if (reflectedDamage <= 0)
+            return;
+
+        var damageable = attacker.GetComponent<IDamageable>()
+                         ?? attacker.GetComponentInParent<IDamageable>();
+        if (damageable == null)
+            return;
+
+        Vector3 hitPoint = attacker.position;
+        Vector3 hitNormal = (attacker.position - transform.position).normalized;
+        if (hitNormal.sqrMagnitude <= Mathf.Epsilon)
+            hitNormal = Vector3.up;
+
+        damageable.TakeDamage(reflectedDamage, hitPoint, hitNormal);
     }
 }

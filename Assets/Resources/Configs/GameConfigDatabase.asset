@@ -18,6 +18,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c1920563a0366ac489bca1fa8f00176b, type: 2}
   - {fileID: 11400000, guid: a4ce6852270831540a84f3a424c5f0b7, type: 2}
   - {fileID: 11400000, guid: 5b8889b9dbb0e1f49bed867dd74378b0, type: 2}
+  - {fileID: 11400000, guid: 94cd41c6db4240f4f91ebad4742a33b4, type: 2}
   - {fileID: 11400000, guid: 7faf0581111db9a4f885779b9480c917, type: 2}
   - {fileID: 11400000, guid: 9b82b619308e4b34bb2e4fcfa6c11631, type: 2}
   allStatDefinitions:
@@ -37,6 +38,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9555f464902f5ec45b09ea050f35bb62, type: 2}
   - {fileID: 11400000, guid: fddb1fe5ce65f514988fb97e08e9009e, type: 2}
   - {fileID: 11400000, guid: 952689803a70ace44ab440ca5e69f48b, type: 2}
+  - {fileID: 11400000, guid: 5672b5260b6feed41b2647e8a9a06540, type: 2}
+  - {fileID: 11400000, guid: 2b4a5d608949cb440a56d8838028b560, type: 2}
   - {fileID: 11400000, guid: 80dd2c8d7419fbf458c2cc818c58a8e6, type: 2}
   allModuleStatSchemas:
   - {fileID: 11400000, guid: f95c5b5f2457187459497a1f242753c3, type: 2}
@@ -52,17 +55,18 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 67299303e5fc6bd4a8863e3a322ecfe6, type: 2}
   - {fileID: 11400000, guid: e438a78872fc3de4ea215c11e6c07842, type: 2}
   - {fileID: 11400000, guid: fea9c27fd439e714ea4af1d88b78537d, type: 2}
-  - {fileID: 11400000, guid: d93b63cce1a8d9f41953e1dbe2dce8a6, type: 2}
   - {fileID: 11400000, guid: 3e1690c76cecee247a5f0e49b231ab5f, type: 2}
   - {fileID: 11400000, guid: c2664caaaaa4d0b498edd79557b4152f, type: 2}
   - {fileID: 11400000, guid: 7b9c02afe976a1c4a8d04b480f4fe15f, type: 2}
   - {fileID: 11400000, guid: 38f498183fad14443a8a6f20444a9f15, type: 2}
-  - {fileID: 11400000, guid: 80a494f0cc679d940b4862d1c70fe836, type: 2}
-  - {fileID: 11400000, guid: 03005af6b578cb14eb8a642b1796308d, type: 2}
-  - {fileID: 11400000, guid: 82e96c4ea772997459f77c97c85ca419, type: 2}
   - {fileID: 11400000, guid: 4336683fec4d5a64b9de2758782849e6, type: 2}
   - {fileID: 11400000, guid: 3684c27ec9fac8b41a3f0c17cc8b6f50, type: 2}
+  - {fileID: 11400000, guid: 54c7993f970bc024cb2d5b214329fa1c, type: 2}
   allCores: []
   allPlugins:
   - {fileID: 11400000, guid: e3b1d4136e7d4681ac4bd6d8dd5a4c90, type: 2}
   - {fileID: 11400000, guid: 3df4b3a2d58049af8f9525c614e373f2, type: 2}
+  - {fileID: 11400000, guid: dd4a6a16a2c0f224bbb031332ca0a368, type: 2}
+  - {fileID: 11400000, guid: 4e3e1962ab14ca34d8db3ab5de6c3a08, type: 2}
+  - {fileID: 11400000, guid: 3cb8c365573e17345bf36cce5bd23dda, type: 2}
+  - {fileID: 11400000, guid: 3fb6b34e5507e42439ce257d5719e43d, type: 2}

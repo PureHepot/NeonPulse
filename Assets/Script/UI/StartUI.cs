@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class StartUI : UIBase
 {
     private bool hasSave;
+    private Tween startButtonTween;
 
     public override void OnEnter(object args)
     {
@@ -40,7 +41,8 @@ public class StartUI : UIBase
 
         Get<Button>("Exit").onClick.SetListener(Application.Quit);
 
-        DOVirtual.Float(0f, 1f, 3f, value =>
+        startButtonTween?.Kill();
+        startButtonTween = DOVirtual.Float(0f, 1f, 3f, value =>
         {
             Color rainbowColor = Color.HSVToRGB(value, 0.8f, 1f);
             Get<Image>("Start").color = rainbowColor;
@@ -48,6 +50,14 @@ public class StartUI : UIBase
         })
         .SetLoops(-1, LoopType.Restart)
         .SetEase(Ease.Linear)
-        .SetUpdate(true);
+        .SetUpdate(true)
+        .SetLink(gameObject);
+    }
+
+    public override void OnClose()
+    {
+        startButtonTween?.Kill();
+        startButtonTween = null;
+        base.OnClose();
     }
 }

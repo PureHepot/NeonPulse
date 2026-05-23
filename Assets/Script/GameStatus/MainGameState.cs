@@ -20,6 +20,7 @@ public class MainGameState : GameState
             StartRunSnapshot();
 
         mgr.Player.SpawnPlayer();
+        mgr.UI.OpenFullScreen<HUDUI>();
         inRunDirector = InRunDirector.GetOrCreate();
         inRunDirector.BeginRun(isContinue);
         mgr.Data.Save();
@@ -29,6 +30,7 @@ public class MainGameState : GameState
     {
         inRunDirector?.EndRunSession();
         SaveRunSnapshot();
+        GameMgr.Instance.UI.CloseFullScreen();
         Time.timeScale = 1f;
     }
 

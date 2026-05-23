@@ -133,7 +133,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca879e461d14546498e904764c66e609, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHp: 12
+  maxHp: 150
   currentHp: 0
   bodyRenderer: {fileID: 113780377693440190}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
@@ -142,6 +142,7 @@ MonoBehaviour:
   hitParticlePrefab: {fileID: 6689202797806509915, guid: b0c3f731dec188749b6a1117eea1c8b5, type: 3}
   bossName: Knight
   enemyExp: 100
+  contactDamage: 3
   bossParts:
   - {fileID: 543460816361505377}
   - {fileID: 7799758308242589692}
@@ -178,7 +179,7 @@ MonoBehaviour:
   isExhausted: 0
   targetDashPos: {x: 0, y: 0, z: 0}
   hasTriggeredFinalPhase: 0
-  contactDamage: 1
+  ContactDamage: 3
 --- !u!1 &5194379732294640046
 GameObject:
   m_ObjectHideFlags: 0

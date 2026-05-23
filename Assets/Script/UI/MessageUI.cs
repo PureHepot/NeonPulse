@@ -13,7 +13,7 @@ public class MessageUI : UIBase
 
         Get<Text>("Text").text = arg.txt;
 
-        Timer.Register(2f,
+        Timer.Register(arg != null ? arg.durationSeconds : 2f,
 
             onComplete: () =>
             {
@@ -33,9 +33,12 @@ public class MessageUIArg
 {
     public int level;
     public string txt;
-    public MessageUIArg(int level, string txt)
+    public float durationSeconds;
+
+    public MessageUIArg(int level, string txt, float durationSeconds = 2f)
     {
         this.level = level;
         this.txt = txt;
+        this.durationSeconds = durationSeconds;
     }
 }

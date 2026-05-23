@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f2938850d4485ee45954e75922bd383a, type: 3}
-  m_Name: Weapon_Ranged_LaserDrones
+  m_Name: Weapon_Mech_LaserDrones
   m_EditorClassIdentifier: 
   moduleId: weapon_module_laserdrones
   moduleName: "\u6D6E\u6E38\u70AE"
   moduleType: 5
   description: "\u8FD9\u662F\u4E00\u4E2A\u6D6E\u6E38\u70AE\uFF0C\u53EF\u4EE5\u81EA\u52A8\u53D1\u5C04\u6FC0\u5149\u6253\u51FB\u654C\u4EBA"
   icon: {fileID: 0}
-  categories: 3
+  categories: 9
   statSchema: {fileID: 11400000, guid: c438295c9c4cbee4eafc06ae0b017fa6, type: 2}
   defaultRarity: 0
   rarityProfiles:

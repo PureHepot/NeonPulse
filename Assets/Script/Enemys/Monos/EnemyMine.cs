@@ -6,7 +6,7 @@ using UnityEngine;
 public class EnemyMine : MonoBehaviour, IDamageable
 {
     [Header("Mine Stats")]
-    public int hp = 1;
+    public float hp = 1f;
     public float armDelay = 0.2f;
     public float explodeRadius = 1.8f;
     public int explodeDamage = 2;
@@ -23,7 +23,7 @@ public class EnemyMine : MonoBehaviour, IDamageable
     private bool isArmed;
     private bool isExploded;
     private float armTimer;
-    private int currentHp;
+    private float currentHp;
 
     private void Awake()
     {
@@ -101,12 +101,12 @@ public class EnemyMine : MonoBehaviour, IDamageable
         if (col != null) col.enabled = true;
     }
 
-    public void TakeDamage(int amount)
+    public void TakeDamage(float amount)
     {
         TakeDamage(amount, transform.position, Vector3.zero);
     }
 
-    public void TakeDamage(int amount, Vector3 hitPoint, Vector3 hitNormal)
+    public void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitNormal)
     {
         if (isCarried || isExploded || amount <= 0) return;
 

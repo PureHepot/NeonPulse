@@ -17,6 +17,7 @@ public class PluginConfig : ScriptableObject
     [TextArea] public string description;
     public PluginType pluginType;
     public Sprite icon;
+    public int load;
 
     [Header("特殊效果")]
     [Tooltip("效果标识符，用于战斗系统触发（如 ChainLightning, LifeSteal）")]
@@ -45,6 +46,11 @@ public class PluginConfig : ScriptableObject
     public PluginEffectParams GetEffectParams(PluginRarity rarity)
     {
         return effectRarityValues.GetParams(rarity);
+    }
+
+    public int GetLoadCost()
+    {
+        return Mathf.Max(0, load);
     }
 
     public List<PluginStatModifier> GetStatModifiers(PluginRarity rarity)

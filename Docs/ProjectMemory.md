@@ -484,3 +484,16 @@ dotnet build .\Assembly-CSharp.csproj -nologo
   - `dotnet build .\Assembly-CSharp.csproj -nologo`
   - `0 error`
   - `13 warning`
+
+### 2026-05-20 Boss Rush Pivot
+- 由于截止时间压力，当前主流程临时切到 `Boss Rush`：`开局拼装 -> Boss -> 插件掉落 -> 下一个 Boss -> 循环直到死亡`。
+- 原 `CombatLoop / Shop / Reward` 代码保留，不删除；只在 `InRun` 编排层做最小分叉。
+- 当前临时切口位于：
+  - `Assets/Script/InRun/Core/InRunDirector.cs`
+  - `Assets/Script/InRun/Core/InRunFlowRunner.cs`
+  - `Assets/Script/InRun/Core/InRunResumeCoordinator.cs`
+  - `Assets/Script/InRun/Reward/RewardDirector.cs`
+- 代码内使用 `TEMP/BOSS_RUSH_CUT` 注释标记：
+  - `bossRushMode` 打开时跳过普通小怪循环、脉冲结算、LoopReward、Shop、BossReward UI。
+  - Boss 击败后自动发一个插件掉落，写入 `runtime.pendingRewards`，并同步 `Meta.UnlockPlugin(...)`。
+- 这是截止日前的最小可交付分支，不代表最终设计定稿；后续如果恢复完整 roguelite 流程，应优先沿旧 `CombatLoop` 主链回接，而不是在 Boss Rush 分支上继续扩功能。

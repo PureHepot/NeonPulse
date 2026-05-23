@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2938850d4485ee45954e75922bd383a, type: 3}
+  m_Name: Weapon_Ranged_MachineGun
+  m_EditorClassIdentifier: 
+  moduleId: weapon_ranged_machingun
+  moduleName: "\u673A\u67AA"
+  moduleType: 0
+  description: "\u91CD\u706B\u529B\uFF0C\u4F46\u662F\u4F1A\u6709\u5F88\u5927\u8D1F\u8377\uFF0C\u540E\u5750\u529B\uFF0C\u723D\uFF01\uFF01"
+  icon: {fileID: 21300000, guid: 711eeeaf4970e0c4182166db209c2b3a, type: 3}
+  categories: 1
+  statSchema: {fileID: 11400000, guid: c438295c9c4cbee4eafc06ae0b017fa6, type: 2}
+  defaultRarity: 0
+  rarityProfiles:
+  - rarity: 0
+    baseStats:
+    - statDefinition: {fileID: 11400000, guid: fddb1fe5ce65f514988fb97e08e9009e, type: 2}
+      value: 1
+    - statDefinition: {fileID: 11400000, guid: 739ac8df719410941ba8aa457488fd3d, type: 2}
+      value: 0
+    - statDefinition: {fileID: 11400000, guid: 9555f464902f5ec45b09ea050f35bb62, type: 2}
+      value: 200
+    - statDefinition: {fileID: 11400000, guid: 78fd7d5dbc780f8468dfed5cc4f5b5c1, type: 2}
+      value: 15
+    - statDefinition: {fileID: 11400000, guid: 952689803a70ace44ab440ca5e69f48b, type: 2}
+      value: 1
+    - statDefinition: {fileID: 11400000, guid: 80dd2c8d7419fbf458c2cc818c58a8e6, type: 2}
+      value: 1
+    - statDefinition: {fileID: 11400000, guid: 5672b5260b6feed41b2647e8a9a06540, type: 2}
+      value: 15
+    - statDefinition: {fileID: 11400000, guid: 2b4a5d608949cb440a56d8838028b560, type: 2}
+      value: 10
+    maxPluginSlots: 1
+    loadCost: 10
+  coreSlotCount: 1
+  themeColor: {r: 0, g: 1, b: 1, a: 1}
+  runtimePrefab: {fileID: 1289084884220203822, guid: a99314d27c439014db753b7e93da029e, type: 3}
+  previewPrefab: {fileID: 1289084884220203822, guid: a99314d27c439014db753b7e93da029e, type: 3}
+  unlockCost: 0

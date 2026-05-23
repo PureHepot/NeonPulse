@@ -58,7 +58,18 @@ public sealed class LoadoutModuleRuntimeData
 
     public int GetLoadCost()
     {
-        return HasModule ? moduleConfig.GetLoadCost(moduleRarity) : 0;
+        if (!HasModule)
+            return 0;
+
+        int totalLoad = moduleConfig.GetLoadCost(moduleRarity);
+        for (int index = 0; index < pluginRuntimes.Count; index++)
+        {
+            var pluginConfig = pluginRuntimes[index]?.pluginConfig;
+            if (pluginConfig != null)
+                totalLoad += pluginConfig.GetLoadCost();
+        }
+
+        return totalLoad;
     }
 
     public bool HasPlugin(string effectId)

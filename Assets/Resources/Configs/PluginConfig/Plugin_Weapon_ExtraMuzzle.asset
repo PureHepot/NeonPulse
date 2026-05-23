@@ -14,31 +14,39 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pluginId: plugin_weapon_extra_muzzle
   displayName: "\u6269\u5C55\u67AA\u53E3"
-  description: "\u4E3A\u8FDC\u7A0B\u6B66\u5668\u589E\u52A0\u989D\u5916\u53D1\u5C04\u70B9\u3002param1=\u989D\u5916\u67AA\u53E3\u6570\uff0Cparam2=\u67AA\u53E3\u95F4\u8DDD"
-  pluginType: 1
+  description: "\u4E3A\u6709\u67AA\u53E3\u8BCD\u6761\u7684\u8FDC\u7A0B\u6B66\u5668\u989D\u5916\u589E\u52A0
+    1 \u4E2A\u67AA\u53E3\u6570\u503C\u3002"
+  pluginType: 0
   icon: {fileID: 0}
-  effectId: ExtraMuzzle
+  load: 5
+  effectId: 
   effectRarityValues:
     common:
-      param1: 1
-      param2: 0.18
+      param1: 0
+      param2: 0
       param3: 0
     uncommon:
-      param1: 1
-      param2: 0.22
+      param1: 0
+      param2: 0
       param3: 0
     rare:
-      param1: 2
-      param2: 0.22
+      param1: 0
+      param2: 0
       param3: 0
     epic:
-      param1: 2
-      param2: 0.26
+      param1: 0
+      param2: 0
       param3: 0
     legendary:
-      param1: 3
-      param2: 0.28
+      param1: 0
+      param2: 0
       param3: 0
-  restrictedToModules: []
+  statModifierProfiles:
+  - rarity: 0
+    statModifiers:
+    - statDefinition: {fileID: 11400000, guid: 80dd2c8d7419fbf458c2cc818c58a8e6, type: 2}
+      additiveBonus: 1
+      multiplicativeBonus: 0
+  restrictedToModules: 
   restrictedToCategories: 3
   dropWeight: 100

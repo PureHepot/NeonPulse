@@ -85,6 +85,8 @@ public class BossAirCraft : EnemyBase
     // 銆愭柊澧炪€戣褰曟偓娴殑涓績鐐逛綅缃?
     private Vector3 hoverAnchorPos;
 
+    private readonly List<BossPart> cachedParts = new List<BossPart>();
+
     protected override void Awake()
     {
         base.Awake();
@@ -100,6 +102,8 @@ public class BossAirCraft : EnemyBase
         if (!leftTurret) leftTurret = transform.FindDeepChild("canotower_left")?.GetComponent<BossTurret>();
         if (!rightTurret) rightTurret = transform.FindDeepChild("canotower_right")?.GetComponent<BossTurret>();
 
+        CacheBossParts();
+
         // 鐩戝惉閮ㄤ綅鐮村潖锛堝彲閫夛紝鐢ㄤ簬鐘舵€佸垏鎹㈠垽鏂級
         if (leftWing) leftWing.OnPartBroken += OnWingBroken;
         if (rightWing) rightWing.OnPartBroken += OnWingBroken;
@@ -108,6 +112,7 @@ public class BossAirCraft : EnemyBase
     public override void OnSpawn()
     {
         base.OnSpawn();
+        InitializeBossParts();
         activeMinions.Clear();
 
         if (leftTurretPart) { leftTurretPart.OnPartBroken -= OnTurretPartBroken; leftTurretPart.OnPartBroken += OnTurretPartBroken; }
@@ -133,6 +138,33 @@ public class BossAirCraft : EnemyBase
     {
         base.OnDespawn();
         ChangeState(null);
+    }
+
+    private void CacheBossParts()
+    {
+        cachedParts.Clear();
+        TryAddPart(bodyPart);
+        TryAddPart(leftWing);
+        TryAddPart(rightWing);
+        TryAddPart(leftTurretPart);
+        TryAddPart(rightTurretPart);
+    }
+
+    private void InitializeBossParts()
+    {
+        CacheBossParts();
+
+        foreach (BossPart part in cachedParts)
+        {
+            if (part != null)
+                part.Initialize(this);
+        }
+    }
+
+    private void TryAddPart(BossPart part)
+    {
+        if (part != null && !cachedParts.Contains(part))
+            cachedParts.Add(part);
     }
 
     private void Update()

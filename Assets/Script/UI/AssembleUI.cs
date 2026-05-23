@@ -6,9 +6,11 @@ using UnityEngine.UI;
 
 public class AssembleUI : UIBase
 {
+    private const int MaxLoadCapacity = 20;
     private readonly List<FrameSlotButton> activeSlots = new();
     private readonly List<FrameConfig> frames = new();
     private readonly List<ModuleConfig> filteredModules = new();
+    private readonly List<PluginConfig> filteredPlugins = new();
     private readonly Dictionary<string, Transform> panelCache = new();
 
     private int frameIndex;
@@ -16,20 +18,24 @@ public class AssembleUI : UIBase
     private GameObject currentSlotLayout;
     private FrameSlotButton selectedSlot;
     private string selectedModuleId;
+    private int selectedPluginSlotIndex = -1;
 
     private Transform bgRoot;
     private Transform framePanel;
     private Transform modificationPanel;
     private Transform frameDetailPanel;
     private Transform moduleCargoPanel;
+    private Transform pluginCargoPanel;
     private Transform coreCargoPanel;
     private Transform moduleDetailPanel;
     private Transform moduleCargoDetailPanel;
     private Transform previewPanel;
     private Transform moduleCargoContent;
+    private Transform pluginCargoContent;
     private Transform coreCargoContent;
     private Transform moduleEntryContent;
     private Transform moduleCargoEntryContent;
+    private Sprite pluginNoneIcon;
 
     public override void OnEnter(object args)
     {
@@ -86,16 +92,24 @@ public class AssembleUI : UIBase
         panelCache.TryGetValue("ModificationPanel", out modificationPanel);
         panelCache.TryGetValue("FrameDetailPanel", out frameDetailPanel);
         panelCache.TryGetValue("ModuleCargoPanel", out moduleCargoPanel);
+        panelCache.TryGetValue("PluginCargoPanel", out pluginCargoPanel);
         panelCache.TryGetValue("CoreCargoPanel", out coreCargoPanel);
         panelCache.TryGetValue("ModuleDetailPanel", out moduleDetailPanel);
         panelCache.TryGetValue("ModuleCargoDetailPanel", out moduleCargoDetailPanel);
         panelCache.TryGetValue("PreviewPanel", out previewPanel);
 
         moduleCargoContent = FindIn(moduleCargoPanel, "ModuleCargoContent");
+        pluginCargoContent = FindIn(pluginCargoPanel, "PluginCargoContent");
         coreCargoContent = FindIn(coreCargoPanel, "CoreCargoContent");
         moduleEntryContent = FindIn(moduleDetailPanel, "EntryContent");
         moduleCargoEntryContent = FindIn(moduleCargoDetailPanel, "CargoEntryContent") ??
                                   FindIn(moduleCargoDetailPanel, "EntryChangeContent");
+
+        if (pluginNoneIcon == null)
+        {
+            var templateIcon = FindIn(FindIn(moduleDetailPanel, "PluginGroup"), "PluginIcon")?.GetComponent<Image>();
+            pluginNoneIcon = templateIcon != null ? templateIcon.sprite : null;
+        }
     }
 
     private void BindButtons()
@@ -138,6 +152,7 @@ public class AssembleUI : UIBase
         currentFrame = frames[frameIndex];
         selectedSlot = null;
         selectedModuleId = null;
+        selectedPluginSlotIndex = -1;
 
         GameMgr.Instance.Loadout.SelectFrame(currentFrame.frameId);
 
@@ -239,7 +254,7 @@ public class AssembleUI : UIBase
             totalLoad += runtimeData.GetLoadCost();
         }
 
-        SetText(FindIn(frameDetailPanel, "LoadNum"), totalLoad.ToString());
+        SetText(FindIn(frameDetailPanel, "LoadNum"), $"{totalLoad}/{MaxLoadCapacity}");
     }
 
     private void RefreshModuleCargo(ModuleCategory allowedCategories)
@@ -317,7 +332,7 @@ public class AssembleUI : UIBase
 
         FillModuleInfo(moduleDetailPanel, runtimeData);
         RefreshModuleEntryList(moduleEntryContent, runtimeData);
-        RefreshModuleCoreEquip(runtimeData);
+        RefreshModulePluginGroup(runtimeData);
         BindModuleDetailButtons();
     }
 
@@ -395,6 +410,41 @@ public class AssembleUI : UIBase
         var coreItemButton = FindIn(moduleCoreEquip, "CoreItem")?.GetComponent<Button>();
         if (coreItemButton != null)
             coreItemButton.onClick.SetListener(OpenCoreCargoForSelectedModule);
+    }
+
+    // TEMP/PLUGIN_UI_SWAP: prefab has migrated from Core to Plugin in ModuleDetailPanel.
+    // Keep old Core methods around for now, but drive the new interaction from PluginGroup.
+    private void RefreshModulePluginGroup(LoadoutModuleRuntimeData runtimeData)
+    {
+        var pluginGroup = FindIn(moduleDetailPanel, "PluginGroup");
+        if (pluginGroup == null || runtimeData?.moduleConfig == null)
+            return;
+
+        int pluginCapacity = runtimeData.GetPluginCapacity();
+        pluginGroup.IteratorChild(pluginCapacity, (index, item) =>
+        {
+            var installedPlugin = index < runtimeData.Plugins.Count ? runtimeData.Plugins[index] : null;
+            var iconImage = FindIn(item, "PluginIcon")?.GetComponent<Image>();
+            var iconSprite = installedPlugin?.pluginConfig != null ? installedPlugin.pluginConfig.icon : pluginNoneIcon;
+
+            if (iconImage != null)
+            {
+                iconImage.sprite = iconSprite;
+                iconImage.enabled = iconSprite != null;
+                iconImage.color = Color.white;
+            }
+
+            SetText(FindIn(item, "PluginName"), installedPlugin?.pluginConfig != null ? installedPlugin.pluginConfig.displayName : "None");
+            SetText(FindIn(item, "PluginInstalled"), installedPlugin?.pluginConfig != null ? "Installed" : "Empty");
+            SetText(FindIn(item, "LoadNum"), installedPlugin?.pluginConfig != null ? installedPlugin.pluginConfig.GetLoadCost().ToString() : "0");
+
+            var rootButton = item.GetComponent<Button>() ?? FindIn(item, "PluginItem")?.GetComponent<Button>();
+            if (rootButton != null)
+            {
+                int pluginSlotIndex = index;
+                rootButton.onClick.SetListener(() => OpenPluginCargoForModule(runtimeData.moduleConfig, pluginSlotIndex));
+            }
+        });
     }
 
     private void RefreshModificationPanel(LoadoutModuleRuntimeData runtimeData)
@@ -555,6 +605,103 @@ public class AssembleUI : UIBase
         });
     }
 
+    private void OpenPluginCargoForModule(ModuleConfig moduleConfig, int pluginSlotIndex)
+    {
+        selectedPluginSlotIndex = pluginSlotIndex;
+        RefreshPluginCargo(moduleConfig);
+        SetPanelVisible(frameDetailPanel, false);
+        SetPanelVisible(pluginCargoPanel, true);
+    }
+
+    private void RefreshPluginCargo(ModuleConfig moduleConfig)
+    {
+        if (pluginCargoContent == null)
+            return;
+
+        filteredPlugins.Clear();
+        foreach (var plugin in GameMgr.Instance.Loadout.GetAllPlugins())
+        {
+            if (plugin == null)
+                continue;
+            if (!GameMgr.Instance.Data.Meta.IsPluginUnlocked(plugin.pluginId))
+                continue;
+            if (moduleConfig != null && !plugin.CanInsertInto(moduleConfig))
+                continue;
+
+            filteredPlugins.Add(plugin);
+        }
+
+        pluginCargoContent.IteratorChild(filteredPlugins.Count + 1, (index, item) =>
+        {
+            var rootButton = item.GetComponent<Button>() ?? FindIn(item, "PluginItem")?.GetComponent<Button>();
+            bool isEmptyPlugin = index == 0;
+            var plugin = !isEmptyPlugin ? filteredPlugins[index - 1] : null;
+
+            SetText(FindIn(item, "PluginName"), isEmptyPlugin ? "无插件" : plugin.displayName);
+            SetText(FindIn(item, "PluginDescription"), isEmptyPlugin ? "这个槽位不装插件" : plugin.description);
+            SetText(FindIn(item, "LoadNum"), isEmptyPlugin ? "0" : plugin.GetLoadCost().ToString());
+
+            var iconTarget = FindIn(item, "PluginIcon");
+            if (isEmptyPlugin)
+            {
+                var image = iconTarget != null ? iconTarget.GetComponent<Image>() : null;
+                if (image != null)
+                {
+                    image.sprite = null;
+                    image.enabled = false;
+                    // image.color = Color.white;
+                }
+            }
+            else
+            {
+                SetImageSprite(iconTarget, plugin.icon);
+            }
+
+            if (rootButton != null)
+                rootButton.onClick.SetListener(() => ApplyPluginSelection(plugin));
+        });
+    }
+
+    private void ApplyPluginSelection(PluginConfig plugin)
+    {
+        if (selectedSlot == null)
+            return;
+
+        var runtimeDataBefore = GetSelectedRuntime();
+        if (runtimeDataBefore == null || !runtimeDataBefore.HasModule)
+            return;
+
+        bool changed = false;
+        if (selectedPluginSlotIndex >= 0 && selectedPluginSlotIndex < runtimeDataBefore.Plugins.Count)
+            changed = GameMgr.Instance.Loadout.RemovePlugin(selectedSlot.slotId, selectedPluginSlotIndex);
+
+        if (plugin != null)
+        {
+            bool inserted = GameMgr.Instance.Loadout.InsertPlugin(selectedSlot.slotId, plugin.pluginId, PluginRarity.Common);
+            if (!inserted && !changed)
+                return;
+
+            changed |= inserted;
+        }
+
+        if (!changed)
+            return;
+
+        Save();
+        RefreshFrameStats();
+        RefreshSlotVisuals();
+        RefreshAssemblyPreview();
+
+        var runtimeData = GetSelectedRuntime();
+        if (runtimeData == null || !runtimeData.HasModule)
+            return;
+
+        RefreshModuleDetail(runtimeData);
+        RefreshModificationPanel(runtimeData);
+        selectedPluginSlotIndex = -1;
+        ShowInstalledModuleFlow();
+    }
+
     private void RefreshSlotVisual(FrameSlotButton slot)
     {
         var runtimeData = GetSlotRuntime(slot.slotId);
@@ -701,6 +848,7 @@ public class AssembleUI : UIBase
         SetPanelVisible(modificationPanel, false);
         SetPanelVisible(frameDetailPanel, true);
         SetPanelVisible(moduleCargoPanel, false);
+        SetPanelVisible(pluginCargoPanel, false);
         SetPanelVisible(coreCargoPanel, false);
         SetPanelVisible(moduleDetailPanel, false);
         SetPanelVisible(moduleCargoDetailPanel, false);
@@ -712,6 +860,7 @@ public class AssembleUI : UIBase
         SetPanelVisible(modificationPanel, false);
         SetPanelVisible(frameDetailPanel, true);
         SetPanelVisible(moduleCargoPanel, false);
+        SetPanelVisible(pluginCargoPanel, false);
         SetPanelVisible(coreCargoPanel, false);
         SetPanelVisible(moduleDetailPanel, true);
         SetPanelVisible(moduleCargoDetailPanel, false);
@@ -723,6 +872,7 @@ public class AssembleUI : UIBase
         SetPanelVisible(modificationPanel, false);
         SetPanelVisible(frameDetailPanel, false);
         SetPanelVisible(moduleCargoPanel, true);
+        SetPanelVisible(pluginCargoPanel, false);
         SetPanelVisible(coreCargoPanel, false);
         SetPanelVisible(moduleDetailPanel, false);
         SetPanelVisible(moduleCargoDetailPanel, true);

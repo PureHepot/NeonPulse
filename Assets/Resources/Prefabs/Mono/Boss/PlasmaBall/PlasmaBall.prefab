@@ -120,7 +120,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2f22974c54e4b04f84de07391afe612, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHp: 10
+  maxHp: 200
   currentHp: 0
   bodyRenderer: {fileID: 4824503105246359835}
   normalColor: {r: 0.23529412, g: 0.50980395, b: 1, a: 1}
@@ -129,6 +129,7 @@ MonoBehaviour:
   hitParticlePrefab: {fileID: 6689202797806509915, guid: b0c3f731dec188749b6a1117eea1c8b5, type: 3}
   bossName: PlasmaBall
   enemyExp: 100
+  contactDamage: 3
   bossParts:
   - {fileID: 8266897917220359407}
   - {fileID: 5338833331900156312}

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 
 public class InRunFlowRunner
 {
@@ -6,8 +6,24 @@ public class InRunFlowRunner
     {
         yield return director.EnterState(InRunPhase.Bootstrap);
 
-        for (int themeIndex = 0; themeIndex < director.ThemesPerRun; themeIndex++)
-            yield return RunThemeFresh(director, themeIndex);
+        if (director.IsBossRushMode)
+        {
+            // TEMP/BOSS_RUSH_CUT: keep the old loop runner intact and branch here for the deadline-safe boss-only flow.
+            int themeIndex = 0;
+            while (director.IsPlayerAliveForFlow)
+            {
+                yield return RunBossRushThemeFresh(director, themeIndex);
+                if (!director.IsPlayerAliveForFlow)
+                    break;
+
+                themeIndex++;
+            }
+        }
+        else
+        {
+            for (int themeIndex = 0; themeIndex < director.ThemesPerRun; themeIndex++)
+                yield return RunThemeFresh(director, themeIndex);
+        }
 
         yield return director.EnterState(InRunPhase.FinalSettlement);
         yield return director.EnterState(InRunPhase.RunEnded);
@@ -27,6 +43,16 @@ public class InRunFlowRunner
         yield return director.RunBossFresh(themeIndex);
     }
 
+    public IEnumerator RunBossRushThemeFresh(InRunDirector director, int themeIndex)
+    {
+        yield return director.EnterState(InRunPhase.ThemeSelecting);
+        director.CurrentTheme = director.RuntimeContext.SelectTheme(themeIndex);
+        director.ApplyCurrentThemeVisuals();
+
+        yield return director.EnterState(InRunPhase.ThemeIntro);
+        yield return director.RunBossFresh(themeIndex);
+    }
+
     public IEnumerator RunLoopFresh(InRunDirector director, int loopIndex)
     {
         director.CurrentLoop = director.RuntimeContext.BeginLoop(loopIndex);
@@ -40,3 +66,4 @@ public class InRunFlowRunner
         yield return director.RunPulseAndReward(false);
     }
 }
+

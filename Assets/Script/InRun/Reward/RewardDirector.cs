@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class RewardDirector
@@ -107,6 +107,85 @@ public class RewardDirector
     {
         CurrentResult = null;
         IsComplete = false;
+    }
+
+    public void GrantBossRushPluginDrop(BattleThemeConfig theme, InRunRuntimeSaveData runtime)
+    {
+        // TEMP/BOSS_RUSH_CUT: auto-grant one plugin after each boss without opening reward UI.
+        if (runtime == null)
+        {
+            CurrentResult = null;
+            IsComplete = true;
+            return;
+        }
+
+        RewardChoice pluginChoice = BuildBossRushPluginChoice(theme);
+        if (pluginChoice == null)
+        {
+            CurrentResult = null;
+            IsComplete = true;
+            return;
+        }
+
+        ApplyChoice(pluginChoice, runtime, "BossRushDrop");
+        if (!string.IsNullOrWhiteSpace(pluginChoice.itemId) && GameMgr.Instance != null && GameMgr.Instance.Data != null)
+        {
+            GameMgr.Instance.Data.Meta.UnlockPlugin(pluginChoice.itemId);
+            GameMgr.Instance.Data.Save();
+        }
+
+        CurrentResult = null;
+        IsComplete = true;
+    }
+
+    private RewardChoice BuildBossRushPluginChoice(BattleThemeConfig theme)
+    {
+        var candidates = new List<RewardEntryConfig>();
+        var pool = theme != null ? theme.bossRewardPool : null;
+        if (pool != null && pool.entries != null)
+        {
+            foreach (var entry in pool.entries)
+            {
+                if (entry != null && entry.itemType == InRunItemType.Plugin && !string.IsNullOrWhiteSpace(entry.itemId))
+                    candidates.Add(entry);
+            }
+        }
+
+        if (candidates.Count > 0)
+        {
+            var entry = candidates[Random.Range(0, candidates.Count)];
+            return new RewardChoice
+            {
+                rewardId = entry.rewardId,
+                itemId = entry.itemId,
+                displayName = entry.displayName,
+                description = entry.description,
+                itemType = InRunItemType.Plugin,
+                rarity = entry.rarity,
+                currencyBonus = entry.currencyBonus,
+                warehouseSlotsDelta = entry.warehouseSlotsDelta
+            };
+        }
+
+        var database = GameConfigDatabase.Instance;
+        if (database?.allPlugins == null || database.allPlugins.Count == 0)
+            return null;
+
+        var plugin = database.allPlugins[Random.Range(0, database.allPlugins.Count)];
+        if (plugin == null || string.IsNullOrWhiteSpace(plugin.pluginId))
+            return null;
+
+        return new RewardChoice
+        {
+            rewardId = $"boss_rush_plugin_{plugin.pluginId}",
+            itemId = plugin.pluginId,
+            displayName = string.IsNullOrWhiteSpace(plugin.displayName) ? plugin.pluginId : plugin.displayName,
+            description = string.IsNullOrWhiteSpace(plugin.description) ? "Boss Rush plugin drop." : plugin.description,
+            itemType = InRunItemType.Plugin,
+            rarity = RewardRarity.Uncommon,
+            currencyBonus = 0,
+            warehouseSlotsDelta = 0
+        };
     }
 
     private GradeRewardRule ResolveRule(RewardPoolConfig pool, CombatGrade grade)
@@ -261,3 +340,4 @@ public class RewardDirector
         }
     }
 }
+

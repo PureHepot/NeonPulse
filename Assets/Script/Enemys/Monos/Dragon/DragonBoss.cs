@@ -116,9 +116,7 @@ public class DragonBoss : BossBase
     [Header("Cleanup")]
     public float cleanupInterval = 5f;
     public float cleanupViewportMargin = 0.22f;
-
-    [Header("Contact Damage")]
-    public int contactDamage = 1;
+    
 
     private DragonBossIdleState idleState;
     private DragonBossEntranceState entranceState;

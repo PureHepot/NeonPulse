@@ -290,4 +290,32 @@ public class VocalistBoss : BossBase
         if (rightDrill != null) return rightDrill.gameObject;
         return null;
     }
+
+    protected override void CleanupBossArtifacts()
+    {
+        headgearThrowTimer = -1f;
+        transform.DOKill();
+
+        DestroyDetachedTransform(leftDrill);
+        DestroyDetachedTransform(rightDrill);
+        DestroyDetachedTransform(headgear);
+
+        if (headgearHome != null)
+            Destroy(headgearHome.gameObject);
+
+        var clones = Object.FindObjectsByType<VocalistDrillCloneProjectile>(FindObjectsSortMode.None);
+        for (int i = 0; i < clones.Length; i++)
+        {
+            if (clones[i] != null)
+                Destroy(clones[i].gameObject);
+        }
+    }
+
+    private static void DestroyDetachedTransform(Transform target)
+    {
+        if (target == null || target.parent != null)
+            return;
+
+        Destroy(target.gameObject);
+    }
 }

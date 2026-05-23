@@ -213,7 +213,6 @@ public class RunSaveData
     public PlayerRunData player = new();
     public ProgressionRunData progression = new();
     public RunLoadoutData loadout = new();
-    public WaveRunData wave = new();
     public WorldRunData world = new();
     public InRunRuntimeSaveData inRun = new();
 }
@@ -257,8 +256,8 @@ public class SlotSaveData
 [Serializable]
 public class PlayerRunData
 {
-    public int currentHp;
-    public int maxHp;
+    public float currentHp;
+    public float maxHp;
     public float posX;
     public float posY;
 }
@@ -267,9 +266,7 @@ public class PlayerRunData
 public class ProgressionRunData
 {
     public int level = 1;
-    public int exp;
     public int score;
-    public int upgradePoints;
 }
 
 [Serializable]

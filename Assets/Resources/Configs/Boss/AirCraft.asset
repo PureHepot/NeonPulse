@@ -14,11 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bossId: boss_aircraft
   displayName: AirCraft
-  bossPrefab: {fileID: 3948810968836159228, guid: d8a92c0eca65d064bbfce221c63f3ac5, type: 3}
-  bossResourcePath: Assets/Resources/Prefabs/Mono/Boss/AirCraft/AirCraft.prefab
+  bossPrefab: {fileID: 3948810968836159228, guid: 9cab733ae81e4b141ae24e498a81e489, type: 3}
+  bossResourcePath: Assets/Resources/Prefabs/Mono/Boss/BossPre/AirCraft.prefab
   arenaConfig:
     centerOffset: {x: 0, y: 0}
     halfExtents: {x: 8, y: 4.5}
     bossSpawnOffset: {x: 0, y: 3}
-    wallThickness: 1
   difficultyMultiplier: 1

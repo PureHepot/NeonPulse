@@ -1,12 +1,11 @@
-using UnityEngine;
-using UnityEngine.SceneManagement;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class GameOverUI : UIBase
 {
-    [Header("��ť���")]
-    public Button restartButton;   // ���¿�ʼ
-    public Button quitButton;      // �˳���Ϸ
+    [Header("Buttons")]
+    public Button restartButton;
+    public Button quitButton;
 
     public override void OnEnter(object args)
     {
@@ -15,11 +14,10 @@ public class GameOverUI : UIBase
 
         if (restartButton == null || quitButton == null)
         {
-            Debug.LogError("GameOverUI������Inspector��ΪrestartButton��quitButton��ֵ");
+            Debug.LogError("GameOverUI is missing restartButton or quitButton binding.");
             return;
         }
 
-        // �����ɼ���
         restartButton.onClick.RemoveAllListeners();
         quitButton.onClick.RemoveAllListeners();
 
@@ -33,41 +31,29 @@ public class GameOverUI : UIBase
             restartButton.onClick.RemoveAllListeners();
         if (quitButton != null)
             quitButton.onClick.RemoveAllListeners();
+
         base.OnClose();
     }
 
     private void OnClickRestart()
     {
-        // 结算本局：死亡，记录到达的波次
         int waveReached = 0;
         DataManager.Instance.EndRun(false, waveReached);
 
         Time.timeScale = 1f;
         UIManager.Instance.CloseUI(this);
-
-        DestroyDontDestroyManagers();
-
-        string sceneName = SceneManager.GetActiveScene().name;
-        SceneManager.LoadScene(sceneName);
+        GameMgr.Instance.Game.ChangeState(new AssembleGameState());
     }
 
     private void OnClickQuit()
     {
         int waveReached = 0;
         DataManager.Instance.EndRun(false, waveReached);
-        // ֱ���˳���Ϸ
+
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
         Application.Quit();
 #endif
-    }
-
-    private void DestroyDontDestroyManagers()
-    {
-        if (GameManager.Instance != null) Destroy(GameManager.Instance.gameObject);
-        if (AudioManager.Instance != null) Destroy(AudioManager.Instance.gameObject);
-        if (UIManager.Instance != null) Destroy(UIManager.Instance.gameObject);
-        if (PlayerManager.Instance != null) Destroy(PlayerManager.Instance.gameObject);
     }
 }

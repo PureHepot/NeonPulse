@@ -3,26 +3,6 @@ using UnityEngine;
 
 public class DataManager : MonoSingleton<DataManager>
 {
-    private const string DefaultFrameId = "UtilityFrame";
-    private static readonly string[] DefaultModuleIds =
-    {
-        "base_move_module",
-        "base_health_module",
-        "weapon_module_shotgun",
-        "base_shooter_module",
-        "sniper_shooter_module",
-        "defense_module_base",
-        "defense_module_carapace",
-        "defense_module_light",
-        "defense_module_spike",
-        "defense_module_energy",
-        "weapon_module_sawblade",
-        "scrollwheel_move_module",
-        "weapon_module_laserdrones",
-        "utility_module_magnet",
-        "weapon_module_buffer"
-    };
-
     private SaveRoot saveRoot;
 
     // ==================== 快捷访问器 ====================
@@ -57,7 +37,6 @@ public class DataManager : MonoSingleton<DataManager>
             player = new PlayerRunData(),
             progression = new ProgressionRunData { level = 1 },
             loadout = BuildRunLoadout(frameId),
-            wave = new WaveRunData(),
             world = new WorldRunData()
         };
 
@@ -158,16 +137,43 @@ public class DataManager : MonoSingleton<DataManager>
         bool changed = false;
         var database = GameConfigDatabase.Instance;
 
-        if (saveRoot.meta.unlockedFrameIds.Count == 0)
+        if (database?.allFrames != null)
         {
-            saveRoot.meta.UnlockFrame(DefaultFrameId);
-            changed = true;
+            foreach (var frame in database.allFrames)
+            {
+                if (frame == null || string.IsNullOrWhiteSpace(frame.frameId))
+                    continue;
+
+                int countBefore = saveRoot.meta.unlockedFrameIds.Count;
+                saveRoot.meta.UnlockFrame(frame.frameId);
+                changed |= saveRoot.meta.unlockedFrameIds.Count != countBefore;
+            }
         }
 
-        if (string.IsNullOrEmpty(saveRoot.meta.GetSelectedFrameId()))
+        if (database?.allModules != null)
         {
-            saveRoot.meta.SetSelectedFrame(DefaultFrameId);
-            changed = true;
+            foreach (var module in database.allModules)
+            {
+                if (module == null)
+                    continue;
+
+                int countBefore = saveRoot.meta.unlockedModuleIds.Count;
+                saveRoot.meta.UnlockModule(module.ModuleId);
+                changed |= saveRoot.meta.unlockedModuleIds.Count != countBefore;
+            }
+        }
+
+        if (database?.allCores != null)
+        {
+            foreach (var core in database.allCores)
+            {
+                if (core == null || string.IsNullOrWhiteSpace(core.coreId))
+                    continue;
+
+                int countBefore = saveRoot.meta.unlockedCoreIds.Count;
+                saveRoot.meta.UnlockCore(core.coreId);
+                changed |= saveRoot.meta.unlockedCoreIds.Count != countBefore;
+            }
         }
 
         if (saveRoot.meta.MigrateLegacyUnlockedModules(database))
@@ -175,11 +181,10 @@ public class DataManager : MonoSingleton<DataManager>
             changed = true;
         }
 
-        if (saveRoot.meta.unlockedModuleIds.Count == 0)
+        if (string.IsNullOrEmpty(saveRoot.meta.GetSelectedFrameId()) &&
+            saveRoot.meta.unlockedFrameIds.Count > 0)
         {
-            foreach (var moduleId in DefaultModuleIds)
-                saveRoot.meta.UnlockModule(moduleId);
-
+            saveRoot.meta.SetSelectedFrame(saveRoot.meta.unlockedFrameIds[0]);
             changed = true;
         }
 

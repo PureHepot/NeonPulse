@@ -1,46 +1,46 @@
-using DG.Tweening;
+ï»¿using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-// ¡¾¹Ø¼üµã1¡¿ÏÔÊ½ÉùÃ÷ÊµÏÖ IDamageable£¬È·±£×Óµ¯µÄ GetComponent<IDamageable> µ÷ÓÃ»á×ßÕâÀïµÄÂß¼­
+// ã€å…³é”®ç‚¹1ã€‘æ˜¾å¼å£°æ˜å®ç° IDamageableï¼Œç¡®ä¿å­å¼¹çš„ GetComponent<IDamageable> è°ƒç”¨ä¼šèµ°è¿™é‡Œçš„é€»è¾‘
 public class BossSinger : EnemyBase, IDamageable
 {
-    [Header("=== ×´Ì¬»úºËĞÄ ===")]
+    [Header("=== çŠ¶æ€æœºæ ¸å¿ƒ ===")]
     private SingerBossBaseState currentState;
     public BossPhase1State Phase1 { get; private set; }
     public BossPhase2State Phase2 { get; private set; }
     public BossPhase3State Phase3 { get; private set; }
     public BossPhase4State Phase4 { get; private set; }
 
-    [Header("=== ?? ½×¶Î¶ÀÁ¢ÑªÁ¿ÅäÖÃ (InspectorÊıÖµÓÅÏÈ) ===")]
-    [Tooltip("P1 ½×¶Î¶ÀÁ¢ÑªÁ¿")]
+    [Header("=== ?? é˜¶æ®µç‹¬ç«‹è¡€é‡é…ç½® (Inspectoræ•°å€¼ä¼˜å…ˆ) ===")]
+    [Tooltip("P1 é˜¶æ®µç‹¬ç«‹è¡€é‡")]
     public float hpPhase1 = 1000f;
-    [Tooltip("P2 ½×¶Î¶ÀÁ¢ÑªÁ¿")]
+    [Tooltip("P2 é˜¶æ®µç‹¬ç«‹è¡€é‡")]
     public float hpPhase2 = 1000f;
-    [Tooltip("P3 ½×¶Î¶ÀÁ¢ÑªÁ¿")]
+    [Tooltip("P3 é˜¶æ®µç‹¬ç«‹è¡€é‡")]
     public float hpPhase3 = 1500f;
 
-    // ÔËĞĞÊ±ÊµÊ±¼ÇÂ¼¸÷½×¶ÎÊ£ÓàÑªÁ¿
+    // è¿è¡Œæ—¶å®æ—¶è®°å½•å„é˜¶æ®µå‰©ä½™è¡€é‡
     public float currentHpP1;
     public float currentHpP2;
     public float currentHpP3;
 
-    // ¡¾¹Ø¼üµã2¡¿×ÜÑªÁ¿ÊôĞÔ (¹©Íâ²¿¶ÁÈ¡)
+    // ã€å…³é”®ç‚¹2ã€‘æ€»è¡€é‡å±æ€§ (ä¾›å¤–éƒ¨è¯»å–)
     public float CurrentTotalHp { get; private set; }
     public float MaxTotalHp { get; private set; }
 
-    // ¸¸ÀàÑªÁ¿¡°»¤¶Ü¡±
+    // çˆ¶ç±»è¡€é‡â€œæŠ¤ç›¾â€
     private float _hpShield = 999999f;
     private float _lastFrameHp;
 
-    [Header("=== Phase 4: ×îºóµÄÕõÔú ===")]
+    [Header("=== Phase 4: æœ€åçš„æŒ£æ‰ ===")]
     public float p4Duration = 10.0f;
     public GameObject loudspeakerLeftPrefab;
     public GameObject loudspeakerRightPrefab;
 
-    [Header("=== Phase 1: ÒıÓÃÓë²ÎÊı ===")]
+    [Header("=== Phase 1: å¼•ç”¨ä¸å‚æ•° ===")]
     public GameObject idleForm;
     public GameObject battleForm;
     public Transform faceAngry;
@@ -62,7 +62,7 @@ public class BossSinger : EnemyBase, IDamageable
     public float faceHoverAmplitude = 0.5f;
     public float faceHoverSpeed = 1.5f;
 
-    [Header("=== µ¯Ä»¹¥»÷ ===")]
+    [Header("=== å¼¹å¹•æ”»å‡» ===")]
     public GameObject redBulletPrefab;
     public float p1AttackInterval = 3.5f;
     public int roundsPerAttack = 3;
@@ -71,12 +71,12 @@ public class BossSinger : EnemyBase, IDamageable
     public Vector2 bulletSpeedRange = new Vector2(3f, 5f);
     public int maxSearchIndex = 5;
 
-    [Header("=== Phase 2: ¼¤¹âÓë¸ÉÈÅ ===")]
+    [Header("=== Phase 2: æ¿€å…‰ä¸å¹²æ‰° ===")]
     public GameObject levelHairPrefab;
     public GameObject verticalHairPrefab;
     public GameObject laserBeamPrefab;
 
-    // ¡¾ĞŞ¸´ CS1061¡¿²¹»ØÈ±Ê§µÄ±äÁ¿¶¨Òå
+    // ã€ä¿®å¤ CS1061ã€‘è¡¥å›ç¼ºå¤±çš„å˜é‡å®šä¹‰
     public float p2LaserDuration = 5.0f;
     public float p2StabilizeTime = 1.0f;
     public float p2PostFireDelay = 0.5f;
@@ -90,7 +90,7 @@ public class BossSinger : EnemyBase, IDamageable
     public float verticalHairX = -8f;
     public Vector2 verticalHairYRange = new Vector2(-3f, 3f);
 
-    [Header("=== Phase 3: ¾Ñ»÷Óë³å×² ===")]
+    [Header("=== Phase 3: ç‹™å‡»ä¸å†²æ’ ===")]
     public GameObject shortLevelHairPrefab;
     public GameObject shortVerticalHairPrefab;
     public float p3ShootInterval = 0.8f;
@@ -103,19 +103,19 @@ public class BossSinger : EnemyBase, IDamageable
     public float p3ChargeSpeed = 15.0f;
     public float p3BrakeDuration = 1.5f;
 
-    [Header("=== ÆÁÄ»¸ÉÈÅ¼¼ÄÜ ===")]
+    [Header("=== å±å¹•å¹²æ‰°æŠ€èƒ½ ===")]
     public GameScreenRotator screenRotator;
     public float rotateInterval = 5.0f;
     [Range(0, 1)] public float flipChance = 0.2f;
 
-    [Header("=== ×ª³¡ÌØĞ§ ===")]
+    [Header("=== è½¬åœºç‰¹æ•ˆ ===")]
     public CanvasGroup whiteScreenEffect;
     public float transShakeDuration = 1.5f;
     public float transFadeInDuration = 0.5f;
     public float transHoldDuration = 0.5f;
     public float transFadeOutDuration = 0.5f;
 
-    // ÄÚ²¿×´Ì¬
+    // å†…éƒ¨çŠ¶æ€
     private Coroutine screenDisturbRoutine;
     public List<Transform> leftBulletPoints = new List<Transform>();
     public List<Transform> rightBulletPoints = new List<Transform>();
@@ -123,7 +123,7 @@ public class BossSinger : EnemyBase, IDamageable
     [HideInInspector] public float savedHairRightX, savedHairRightZ;
     private float moveStartTime;
 
-    // ×´Ì¬±ê¼Ç
+    // çŠ¶æ€æ ‡è®°
     [HideInInspector] public bool isTransitioning = false;
     [HideInInspector] public bool isInFinalPhase = false;
     [HideInInspector] public bool hasFinishedPhase2 = false;
@@ -141,7 +141,7 @@ public class BossSinger : EnemyBase, IDamageable
         if (bodyRenderer == null) bodyRenderer = GetComponentInChildren<SpriteRenderer>();
         if (screenRotator == null) screenRotator = FindObjectOfType<GameScreenRotator>();
 
-        SetupWhiteScreenEffect(); // È·±£ÕâÀïµ÷ÓÃÁË
+        SetupWhiteScreenEffect(); // ç¡®ä¿è¿™é‡Œè°ƒç”¨äº†
 
         Phase1 = new BossPhase1State(this);
         Phase2 = new BossPhase2State(this);
@@ -153,20 +153,20 @@ public class BossSinger : EnemyBase, IDamageable
     {
         base.OnSpawn();
 
-        // 1. ³õÊ¼»¯¸÷½×¶ÎÑªÁ¿
+        // 1. åˆå§‹åŒ–å„é˜¶æ®µè¡€é‡
         currentHpP1 = hpPhase1;
         currentHpP2 = hpPhase2;
         currentHpP3 = hpPhase3;
 
-        // 2. ¼ÆËã×ÜÑªÁ¿
+        // 2. è®¡ç®—æ€»è¡€é‡
         MaxTotalHp = hpPhase1 + hpPhase2 + hpPhase3;
         CurrentTotalHp = MaxTotalHp;
 
-        // 3. ÉèÖÃ¸¸Àà¡°»¤¶ÜÑªÁ¿¡±
+        // 3. è®¾ç½®çˆ¶ç±»â€œæŠ¤ç›¾è¡€é‡â€
         currentHp = _hpShield;
         _lastFrameHp = currentHp;
 
-        // 4. ÖØÖÃ±ê¼Ç
+        // 4. é‡ç½®æ ‡è®°
         isTransitioning = false;
         enableAnimations = true;
         isInFinalPhase = false;
@@ -177,20 +177,20 @@ public class BossSinger : EnemyBase, IDamageable
         if (whiteScreenEffect) whiteScreenEffect.alpha = 0;
         StopScreenDisturb();
 
-        Debug.Log($"Boss³õÊ¼»¯: ×ÜÑªÁ¿={CurrentTotalHp} (P1={hpPhase1}, P2={hpPhase2}, P3={hpPhase3})");
+        Debug.Log($"Bossåˆå§‹åŒ–: æ€»è¡€é‡={CurrentTotalHp} (P1={hpPhase1}, P2={hpPhase2}, P3={hpPhase3})");
 
         TransitionToState(Phase1);
     }
 
     private void Update()
     {
-        // 1. ¼àÌı²¢·ÖÅäÉËº¦
+        // 1. ç›‘å¬å¹¶åˆ†é…ä¼¤å®³
         MonitorAndDistributeDamage();
-        // 2. ×´Ì¬»ú¸üĞÂ
+        // 2. çŠ¶æ€æœºæ›´æ–°
         currentState?.Update();
     }
 
-    // --- ÉËº¦·ÖÅäºËĞÄÂß¼­ ---
+    // --- ä¼¤å®³åˆ†é…æ ¸å¿ƒé€»è¾‘ ---
     private void MonitorAndDistributeDamage()
     {
         if (isTransitioning || isInFinalPhase)
@@ -200,98 +200,98 @@ public class BossSinger : EnemyBase, IDamageable
             return;
         }
 
-        // ¼ì²â¸¸ÀàÑªÁ¿ÊÇ·ñ¼õÉÙ (Èç¹û×Óµ¯Í¨¹ı¸¸Àà¿ÛÑª£¬ÕâÀï»á²¶×½µ½)
+        // æ£€æµ‹çˆ¶ç±»è¡€é‡æ˜¯å¦å‡å°‘ (å¦‚æœå­å¼¹é€šè¿‡çˆ¶ç±»æ‰£è¡€ï¼Œè¿™é‡Œä¼šæ•æ‰åˆ°)
         if (currentHp < _lastFrameHp)
         {
             float rawDamage = _lastFrameHp - currentHp;
-            int damageInt = Mathf.Max(1, (int)rawDamage); // ±£µ×1µãÉËº¦
+            float damageValue = Mathf.Max(1f, rawDamage); // ä¿åº•1ç‚¹ä¼¤å®³
 
-            ApplyPhaseDamage(damageInt);
+            ApplyPhaseDamage(damageValue);
 
-            // ÖØÖÃ¸¸Àà»¤¶Ü
+            // é‡ç½®çˆ¶ç±»æŠ¤ç›¾
             currentHp = _hpShield;
         }
 
         _lastFrameHp = currentHp;
     }
 
-    // --- ½Ó¿ÚÊµÏÖ (À¹½Ø PlayerBullet) ---
-    // ¡¾¹Ø¼üĞŞ¸´ CS0506¡¿Ê¹ÓÃ new ¹Ø¼ü×Ö¶ø²»ÊÇ override
-    // Õâ¸æËß±àÒëÆ÷£ºÎÒÒªÒş²Ø¸¸ÀàµÄ·½·¨£¬×Ô¼ºÊµÏÖÒ»¸öĞÂ°æ±¾
-    // ÅäºÏÀàÉùÃ÷ÖĞµÄ IDamageable£¬×Óµ¯µ÷ÓÃ½Ó¿ÚÊ±»áÓÅÏÈ×ßÕâÀï
-    public new void TakeDamage(int amount, Vector3 hitPoint, Vector3 hitNormal)
+    // --- æ¥å£å®ç° (æ‹¦æˆª PlayerBullet) ---
+    // ã€å…³é”®ä¿®å¤ CS0506ã€‘ä½¿ç”¨ new å…³é”®å­—è€Œä¸æ˜¯ override
+    // è¿™å‘Šè¯‰ç¼–è¯‘å™¨ï¼šæˆ‘è¦éšè—çˆ¶ç±»çš„æ–¹æ³•ï¼Œè‡ªå·±å®ç°ä¸€ä¸ªæ–°ç‰ˆæœ¬
+    // é…åˆç±»å£°æ˜ä¸­çš„ IDamageableï¼Œå­å¼¹è°ƒç”¨æ¥å£æ—¶ä¼šä¼˜å…ˆèµ°è¿™é‡Œ
+    public new void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitNormal)
     {
-        // 1. ²¥·Å¸¸ÀàµÄÊÓ¾õÌØĞ§
+        // 1. æ’­æ”¾çˆ¶ç±»çš„è§†è§‰ç‰¹æ•ˆ
         base.PlayHitEffect(hitPoint, hitNormal);
 
-        // 2. Ö´ĞĞÎÒÃÇ×Ô¼ºµÄ·Ö¶Î¿ÛÑªÂß¼­
+        // 2. æ‰§è¡Œæˆ‘ä»¬è‡ªå·±çš„åˆ†æ®µæ‰£è¡€é€»è¾‘
         ApplyPhaseDamage(amount);
     }
 
-    public new void TakeDamage(int amount)
+    public new void TakeDamage(float amount)
     {
         base.PlayHitEffect(transform.position, Vector3.zero);
         ApplyPhaseDamage(amount);
     }
 
-    public new void TakeDamage(int amount, Vector3 hitPoint, Vector3 knockbackDir, float customForce)
+    public new void TakeDamage(float amount, Vector3 hitPoint, Vector3 knockbackDir, float customForce)
     {
         base.PlayHitEffect(hitPoint, knockbackDir);
         ApplyPhaseDamage(amount);
     }
 
-    // --- ºËĞÄ¿ÛÑªÂß¼­ (Òç³ö±£»¤) ---
-    public void ApplyPhaseDamage(int damage)
+    // --- æ ¸å¿ƒæ‰£è¡€é€»è¾‘ (æº¢å‡ºä¿æŠ¤) ---
+    public void ApplyPhaseDamage(float damage)
     {
-        if (damage <= 0) damage = 1;
+        if (damage <= 0f) damage = 1f;
         if (isTransitioning || isInFinalPhase) return;
 
-        int damageToApply = 0;
+        float damageToApply = 0f;
 
         if (currentState == Phase1)
         {
-            // Òç³ö±£»¤£ºÖ»¿Û³ıµ±Ç°½×¶ÎµÄÊ£ÓàÑªÁ¿
-            damageToApply = (int)Mathf.Min(damage, currentHpP1);
+            // æº¢å‡ºä¿æŠ¤ï¼šåªæ‰£é™¤å½“å‰é˜¶æ®µçš„å‰©ä½™è¡€é‡
+            damageToApply = Mathf.Min(damage, currentHpP1);
             currentHpP1 -= damageToApply;
 
             if (currentHpP1 <= 0)
             {
                 currentHpP1 = 0;
-                Debug.Log("<color=red>P1 »÷ÆÆ -> ×ª P2</color>");
+                Debug.Log("<color=red>P1 å‡»ç ´ -> è½¬ P2</color>");
                 TriggerPhaseTransition(Phase2);
             }
         }
         else if (currentState == Phase2)
         {
-            damageToApply = (int)Mathf.Min(damage, currentHpP2);
+            damageToApply = Mathf.Min(damage, currentHpP2);
             currentHpP2 -= damageToApply;
 
             if (currentHpP2 <= 0)
             {
                 currentHpP2 = 0;
-                Debug.Log("<color=red>P2 »÷ÆÆ -> ×ª P3</color>");
+                Debug.Log("<color=red>P2 å‡»ç ´ -> è½¬ P3</color>");
                 TriggerPhaseTransition(Phase3);
             }
         }
         else if (currentState == Phase3)
         {
-            damageToApply = (int)Mathf.Min(damage, currentHpP3);
+            damageToApply = Mathf.Min(damage, currentHpP3);
             currentHpP3 -= damageToApply;
 
             if (currentHpP3 <= 0)
             {
                 currentHpP3 = 0;
-                Debug.Log("<color=red>P3 »÷ÆÆ -> ×ª P4</color>");
+                Debug.Log("<color=red>P3 å‡»ç ´ -> è½¬ P4</color>");
                 TriggerPhaseTransition(Phase4);
             }
         }
 
-        // ¸üĞÂ×ÜÑªÁ¿ (¹©ÏÔÊ¾ÓÃ)
+        // æ›´æ–°æ€»è¡€é‡ (ä¾›æ˜¾ç¤ºç”¨)
         CurrentTotalHp -= damageToApply;
-        Debug.Log($"[BOSSÊÜÉË] Ô­Ê¼ÉËº¦:{damage} | ÓĞĞ§¿ÛÑª:{damageToApply} | ×ÜÑªÁ¿:{CurrentTotalHp}");
+        Debug.Log($"[BOSSå—ä¼¤] åŸå§‹ä¼¤å®³:{damage} | æœ‰æ•ˆæ‰£è¡€:{damageToApply} | æ€»è¡€é‡:{CurrentTotalHp}");
     }
 
-    // ×óÉÏ½ÇÏÔÊ¾ĞÅÏ¢
+    // å·¦ä¸Šè§’æ˜¾ç¤ºä¿¡æ¯
     private void OnGUI()
     {
         GUIStyle style = new GUIStyle();
@@ -312,14 +312,14 @@ public class BossSinger : EnemyBase, IDamageable
         GUI.Label(new Rect(20, 20, 500, 150), info, style);
     }
 
-    // ... (¸¨Öú·½·¨) ...
+    // ... (è¾…åŠ©æ–¹æ³•) ...
     public IEnumerator FirePhase1Barrage() { isP1Attacking = true; Coroutine L = StartCoroutine(FireSequenceRoutine(leftBulletPoints, new Vector3(0.5f, -1f, 0))); Coroutine R = StartCoroutine(FireSequenceRoutine(rightBulletPoints, new Vector3(-0.5f, -1f, 0))); yield return L; yield return R; }
     public void StopPhase1Attack() { isP1Attacking = false; }
     public IEnumerator FireSequenceRoutine(List<Transform> p, Vector3 d) { if (redBulletPrefab == null) yield break; for (int r = 0; r < roundsPerAttack; r++) { foreach (var pt in p) { if (!isP1Attacking && !isInFinalPhase && currentState != Phase2) yield break; if (!isInFinalPhase && !battleForm.activeInHierarchy) yield break; if (pt == null) continue; GameObject b = ObjectPoolManager.Instance != null ? ObjectPoolManager.Instance.Get(redBulletPrefab, pt.position, Quaternion.identity) : Instantiate(redBulletPrefab, pt.position, Quaternion.identity); Vector3 td = d.normalized; float a = Random.Range(-showerSpreadAngle, showerSpreadAngle); Vector3 fd = Quaternion.Euler(0, 0, a) * td; float s = Random.Range(bulletSpeedRange.x, bulletSpeedRange.y); var ep = b.GetComponent<EnemyProjectile>(); if (ep != null) { ep.speed = s; ep.Initialize(fd); } yield return new WaitForSeconds(pointStaggerDelay); } } }
     public void ClearAllBullets() { EnemyProjectile[] bullets = FindObjectsOfType<EnemyProjectile>(); foreach (var b in bullets) { if (ObjectPoolManager.Instance != null) ObjectPoolManager.Instance.Return(b.gameObject); else Destroy(b.gameObject); } }
     public void DieForReal() { if (currentState != null) currentState.Exit(); Destroy(gameObject); }
 
-    // ¡¾ĞŞ¸´ CS0103¡¿²¹»Ø¶ªÊ§µÄ¸¨Öú·½·¨
+    // ã€ä¿®å¤ CS0103ã€‘è¡¥å›ä¸¢å¤±çš„è¾…åŠ©æ–¹æ³•
     void SetupWhiteScreenEffect() { if (whiteScreenEffect != null) { ForceUpdatePanel(whiteScreenEffect.gameObject); return; } GameObject existingPanel = GameObject.Find("WhiteFlashPanel"); if (existingPanel != null) { ForceUpdatePanel(existingPanel); whiteScreenEffect = existingPanel.GetComponent<CanvasGroup>(); return; } GameObject newCanvas = new GameObject("AutoCanvas_WhiteScreen"); newCanvas.layer = 5; Canvas c = newCanvas.AddComponent<Canvas>(); c.renderMode = RenderMode.ScreenSpaceOverlay; c.sortingOrder = 9999; newCanvas.AddComponent<CanvasScaler>(); newCanvas.AddComponent<GraphicRaycaster>(); GameObject panelObj = new GameObject("WhiteFlashPanel"); panelObj.layer = 5; panelObj.transform.SetParent(newCanvas.transform, false); RectTransform rt = panelObj.AddComponent<RectTransform>(); rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero; panelObj.AddComponent<Image>(); whiteScreenEffect = panelObj.AddComponent<CanvasGroup>(); ForceUpdatePanel(panelObj); }
     void ForceUpdatePanel(GameObject panel) { Image img = panel.GetComponent<Image>(); if (img == null) img = panel.AddComponent<Image>(); img.color = new Color(1, 1, 1, 1); img.raycastTarget = false; CanvasGroup cg = panel.GetComponent<CanvasGroup>(); if (cg == null) cg = panel.AddComponent<CanvasGroup>(); cg.alpha = 0f; cg.blocksRaycasts = false; Canvas parentCanvas = panel.GetComponentInParent<Canvas>(); if (parentCanvas != null) { parentCanvas.sortingOrder = 9999; parentCanvas.gameObject.layer = 5; } panel.SetActive(true); }
 
@@ -338,3 +338,4 @@ public class BossSinger : EnemyBase, IDamageable
     public Transform FindDeepChild(Transform p, string n) { foreach (Transform c in p) { if (c.name == n) return c; Transform r = FindDeepChild(c, n); if (r != null) return r; } return null; }
     protected override void MoveBehavior() { }
 }
+

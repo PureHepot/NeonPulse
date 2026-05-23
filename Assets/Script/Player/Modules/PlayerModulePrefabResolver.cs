@@ -6,6 +6,7 @@ public static class PlayerModulePrefabResolver
 {
     private static readonly Dictionary<string, string> FixedResourcePaths = new(StringComparer.OrdinalIgnoreCase)
     {
+        ["base_health_module"] = "Prefabs/Module/Health",
         ["defense_module_base"] = "Prefabs/Module/Defence_Base",
         ["defense_module_carapace"] = "Prefabs/Module/Defence_Carapace",
         ["defense_module_energy"] = "Prefabs/Module/Defence_Energy",

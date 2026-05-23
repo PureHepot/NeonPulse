@@ -52,7 +52,7 @@ public abstract class MechBase : MonoBehaviour, IPoolable, IDamageable
             Die();
     }
 
-    public virtual void TakeDamage(int amount)
+    public virtual void TakeDamage(float amount)
     {
         if (isDead) return;
 
@@ -63,7 +63,7 @@ public abstract class MechBase : MonoBehaviour, IPoolable, IDamageable
             Die();
     }
 
-    public virtual void TakeDamage(int amount, Vector3 hitPoint, Vector3 hitNormal)
+    public virtual void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitNormal)
     {
         if (isDead) return;
 

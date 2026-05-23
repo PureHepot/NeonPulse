@@ -122,12 +122,20 @@ public class EnemyBomber : EnemyBase
 
     private void PlayExplodeFX()
     {
-        if (explodeFxPrefab == null) return;
+        if (explodeFxPrefab == null || ObjectPoolManager.Instance == null) return;
 
         GameObject fx = ObjectPoolManager.Instance.Get(explodeFxPrefab, transform.position, Quaternion.identity);
+        PoolObject poolObj = fx.GetComponent<PoolObject>();
+        int spawnVersion = poolObj != null ? poolObj.spawnVersion : -1;
 
         Timer.Register(1.5f, () =>
         {
+            if (fx == null || ObjectPoolManager.Instance == null)
+                return;
+
+            if (poolObj != null && poolObj.spawnVersion != spawnVersion)
+                return;
+
             ObjectPoolManager.Instance.Return(fx);
         });
     }

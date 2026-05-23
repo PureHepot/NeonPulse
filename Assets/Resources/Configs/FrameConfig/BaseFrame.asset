@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: "\u57FA\u7840\u6846\u67B6"
   description: "\u8FD9\u662F\u4E00\u6B3E\u5747\u8861\u6027\u7684\u57FA\u7840\u6846\u67B6\uFF0C\u6CA1\u6709\u4EC0\u4E48\u7279\u522B\u7684\u589E\u5E45\uFF0C\u4E5F\u6CA1\u6709\u4EC0\u4E48\u7F3A\u5C11\u7684\u4E1C\u897F"
   icon: {fileID: 0}
-  baseMaxHP: 20
+  baseMaxHP: 40
   inherentEffects:
   - effectId: 
     param1: 0

@@ -41,7 +41,17 @@ public sealed class GameMgr : MonoBehaviour
         }
     }
     public AudioManager Audio { get; private set; }
-    public ObjectPoolManager Pool { get; private set; }
+    private ObjectPoolManager pool;
+    public ObjectPoolManager Pool
+    {
+        get
+        {
+            if (pool == null)
+                pool = GetOrCreateManager<ObjectPoolManager>();
+
+            return pool;
+        }
+    }
     public TimerManager Timer { get; private set; }
     public LoadoutManager Loadout { get; private set; }
     public PreviewManager Preview { get; private set; }
@@ -127,7 +137,7 @@ public sealed class GameMgr : MonoBehaviour
         Data = GetOrCreateManager<DataManager>();
         Input = GetOrCreateManager<InputManager>();
         Audio = GetOrCreateManager<AudioManager>();
-        Pool = GetOrCreateManager<ObjectPoolManager>();
+        _ = Pool;
         Timer = GetOrCreateManager<TimerManager>();
         Loadout = GetOrCreateManager<LoadoutManager>();
         Preview = GetOrCreateManager<PreviewManager>();
@@ -236,7 +246,10 @@ public sealed class GameMgr : MonoBehaviour
     private T RegisterManager<T>(T manager) where T : Component
     {
         managers[typeof(T)] = manager;
-        if (manager is not UIManager)
+        if (manager is ObjectPoolManager objectPoolManager)
+            pool = objectPoolManager;
+
+        if (manager is not UIManager and not ObjectPoolManager)
             manager.transform.SetParent(transform, true);
 
         RegisterMonoSingleton(manager);

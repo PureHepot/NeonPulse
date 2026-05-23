@@ -1,15 +1,16 @@
-using DG.Tweening;
-using System.Collections;
-using System.Collections.Generic;
+﻿using DG.Tweening;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
 public abstract class MonoBase : MonoBehaviour, IDamageable
 {
+    protected const float DefaultHitFlashStrength = 0.1f;
+    protected static readonly int HitFlashStrengthId = Shader.PropertyToID("_HitFlashStrength");
+
     [Header("Base Stats")]
     public float maxHp = 10f;
     public float currentHp;
-    protected bool isDead = false;
+    protected bool isDead;
 
     [Header("Visuals")]
     public SpriteRenderer bodyRenderer;
@@ -22,77 +23,91 @@ public abstract class MonoBase : MonoBehaviour, IDamageable
 
     protected virtual void Awake()
     {
-        if (bodyRenderer == null) bodyRenderer = GetComponentInChildren<SpriteRenderer>();
-        // �� Awake ʱ��¼�� Inspector �����õĴ�С
+        if (bodyRenderer == null)
+            bodyRenderer = GetComponentInChildren<SpriteRenderer>();
+
         baseScale = transform.localScale;
+        ResetHitFlashVisuals();
     }
 
-    // --- IDamageable �ӿ�ʵ�� ---
-    public virtual void TakeDamage(int amount)
+    public virtual void TakeDamage(float amount)
     {
         TakeDamage(amount, transform.position, Vector3.zero);
     }
 
-    public virtual void TakeDamage(int amount, Vector3 hitPoint, Vector3 hitNormal)
+    public virtual void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitNormal)
     {
-        if (isDead) return;
+        if (isDead)
+            return;
 
         currentHp -= amount;
         PlayHitEffect(hitPoint, hitNormal);
 
-        if (currentHp <= 0)
+        if (currentHp <= 0f)
         {
             Die();
         }
-        else
+        else if (AudioManager.Instance != null)
         {
-            // ����ͨ���ܻ���Ч
-            if (AudioManager.Instance != null)
-                AudioManager.Instance.PlayEffect("EnemyHit1", 2f, 1f);
+            AudioManager.Instance.PlayEffect("EnemyHit1", 2f, 1f);
         }
     }
 
-    public virtual void TakeDamage(int amount, Vector3 hitPoint, Vector3 knockbackDir, float customForce)
+    public virtual void TakeDamage(float amount, Vector3 hitPoint, Vector3 knockbackDir, float customForce)
     {
-        // Ĭ��ʵ��������һ�£����л�����������ࣨ��EnemyBase������д�˷���
         TakeDamage(amount, hitPoint, knockbackDir);
     }
 
-    // --- ͨ���Ӿ����� ---
+    public virtual void TakeDamage(float amount, Vector3 hitPoint, Vector3 knockbackDir, float customForce, float customTorque)
+    {
+        TakeDamage(amount, hitPoint, knockbackDir, customForce);
+    }
+
     protected virtual void PlayHitEffect(Vector3 pos, Vector3 normal)
     {
         if (bodyRenderer != null)
         {
-            // ���ʸ�����˸
             bodyRenderer.material.DOKill();
-            bodyRenderer.material.SetFloat("_HitFlashStrength", 2f);
-            bodyRenderer.material.DOFloat(0.1f, "_HitFlashStrength", 0.8f);
+            bodyRenderer.material.SetFloat(HitFlashStrengthId, 2f);
+            bodyRenderer.material.DOFloat(DefaultHitFlashStrength, HitFlashStrengthId, 0.8f);
 
-            // �ߴ�Q������
             transform.DOKill();
-            // ���޸ĵ㡿��ʹ�ü�¼�� baseScale ��� Vector3.one
             transform.localScale = baseScale;
-            // ���޸ĵ㡿���� Punch �����ȳ��� baseScale��������� Boss �ܴ󣬵��Եķ���Ҳ��ȱȷŴ�
             transform.DOPunchScale(baseScale * 0.15f, 0.1f);
         }
 
-        // �����ܻ�����
-        if (hitParticlePrefab == null) hitParticlePrefab = Resources.Load<GameObject>("ParticleSystem/PS_HitSparks");
+        if (hitParticlePrefab == null)
+            hitParticlePrefab = Resources.Load<GameObject>("ParticleSystem/PS_HitSparks");
+
         if (hitParticlePrefab != null && ObjectPoolManager.Instance != null)
         {
             Quaternion rot = normal != Vector3.zero ? Quaternion.LookRotation(normal) : Quaternion.identity;
             GameObject particleObj = ObjectPoolManager.Instance.Get(hitParticlePrefab, pos, rot);
-
             Timer.Register(1f, () => ObjectPoolManager.Instance.Return(particleObj));
 
             ParticleSystem ps = particleObj.GetComponent<ParticleSystem>();
             if (ps != null)
             {
-                var mainModule = ps.main;
-                mainModule.startColor = normalColor;
+                var main = ps.main;
+                main.startColor = normalColor;
                 ps.Play();
             }
         }
+    }
+
+    protected void ResetHitFlashVisuals()
+    {
+        if (bodyRenderer == null)
+            return;
+
+        bodyRenderer.DOKill();
+        Material material = bodyRenderer.material;
+        if (material == null)
+            return;
+
+        material.DOKill();
+        if (material.HasProperty(HitFlashStrengthId))
+            material.SetFloat(HitFlashStrengthId, DefaultHitFlashStrength);
     }
 
     protected virtual void Die()
@@ -102,7 +117,9 @@ public abstract class MonoBase : MonoBehaviour, IDamageable
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlayEffect("EnemyDie");
 
-        if (deathEffectPrefab == null) deathEffectPrefab = Resources.Load<GameObject>("ParticleSystem/PS_DeathSparks");
+        if (deathEffectPrefab == null)
+            deathEffectPrefab = Resources.Load<GameObject>("ParticleSystem/PS_DeathSparks");
+
         if (deathEffectPrefab != null && ObjectPoolManager.Instance != null)
         {
             GameObject particleObj = ObjectPoolManager.Instance.Get(deathEffectPrefab, transform.position, Quaternion.identity);
@@ -111,15 +128,12 @@ public abstract class MonoBase : MonoBehaviour, IDamageable
             ParticleSystem ps = particleObj.GetComponent<ParticleSystem>();
             if (ps != null)
             {
-                var mainModule = ps.main;
-                
-                mainModule.startColor = normalColor;
-
+                var main = ps.main;
+                main.startColor = normalColor;
                 ps.Play();
             }
         }
 
-        if (BackgroundFXController.Instance != null)
-            BackgroundFXController.Instance.TriggerDistortion(transform.position);
+        BackgroundFXController.Instance?.TriggerDistortion(transform.position);
     }
 }

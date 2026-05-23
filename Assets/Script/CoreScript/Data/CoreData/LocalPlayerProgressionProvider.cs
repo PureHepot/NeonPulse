@@ -10,6 +10,8 @@ using UnityEngine;
 
 public class LocalLoadoutProvider : ILoadoutDataProvider
 {
+    private const int MaxLoadCapacity = 20;
+
     public event Action<string> OnSlotChanged;
     public event Action<string> OnFrameChanged;
 
@@ -198,6 +200,14 @@ public class LocalLoadoutProvider : ILoadoutDataProvider
             if (slotData == null)
                 return false;
 
+            int currentLoad = GetCurrentTotalLoadExcludingSlot(slotId, false);
+            int nextModuleLoad = moduleConfig.GetLoadCost(moduleConfig.defaultRarity);
+            if (currentLoad + nextModuleLoad > MaxLoadCapacity)
+            {
+                Debug.LogWarning($"[Loadout] Equipping {moduleConfig.ModuleId} would exceed max load {MaxLoadCapacity}");
+                return false;
+            }
+
             ApplyModuleSelection(slotData, moduleConfig);
             OnSlotChanged?.Invoke(slotId);
             return true;
@@ -206,6 +216,14 @@ public class LocalLoadoutProvider : ILoadoutDataProvider
         var metaSlotData = GetOrCreateMetaSlotData(slotId);
         if (metaSlotData == null)
             return false;
+
+        int metaCurrentLoad = GetCurrentTotalLoadExcludingSlot(slotId, true);
+        int metaNextModuleLoad = moduleConfig.GetLoadCost(moduleConfig.defaultRarity);
+        if (metaCurrentLoad + metaNextModuleLoad > MaxLoadCapacity)
+        {
+            Debug.LogWarning($"[Loadout] Equipping {moduleConfig.ModuleId} would exceed max load {MaxLoadCapacity}");
+            return false;
+        }
 
         ApplyModuleSelection(metaSlotData, moduleConfig);
         OnSlotChanged?.Invoke(slotId);
@@ -372,6 +390,14 @@ public class LocalLoadoutProvider : ILoadoutDataProvider
             return false;
         }
 
+        int currentLoad = GetCurrentTotalLoad(false);
+        int pluginLoad = pluginConfig.GetLoadCost();
+        if (currentLoad + pluginLoad > MaxLoadCapacity)
+        {
+            Debug.LogWarning($"[Loadout] Inserting plugin {pluginConfig.pluginId} would exceed max load {MaxLoadCapacity}");
+            return false;
+        }
+
         slotData.plugins.Add(new PluginInstanceSaveData
         {
             pluginId = pluginConfig.pluginId,
@@ -400,6 +426,14 @@ public class LocalLoadoutProvider : ILoadoutDataProvider
         if (slotData.plugins.Count >= maxSlots)
         {
             Debug.LogWarning($"[Loadout] Plugin slots are full for {moduleConfig.ModuleId} ({maxSlots})");
+            return false;
+        }
+
+        int currentLoad = GetCurrentTotalLoad(true);
+        int pluginLoad = pluginConfig.GetLoadCost();
+        if (currentLoad + pluginLoad > MaxLoadCapacity)
+        {
+            Debug.LogWarning($"[Loadout] Inserting plugin {pluginConfig.pluginId} would exceed max load {MaxLoadCapacity}");
             return false;
         }
 
@@ -620,5 +654,52 @@ public class LocalLoadoutProvider : ILoadoutDataProvider
     private bool HasModuleSelection(SlotSaveData slotData)
     {
         return ResolveSelectedModuleConfig(slotData) != null;
+    }
+
+    private int GetCurrentTotalLoad(bool useMetaLoadout)
+    {
+        return GetCurrentTotalLoadExcludingSlot(null, useMetaLoadout);
+    }
+
+    private int GetCurrentTotalLoadExcludingSlot(string excludedSlotId, bool useMetaLoadout)
+    {
+        int totalLoad = 0;
+        var database = Database;
+        if (database == null)
+            return totalLoad;
+
+        if (!useMetaLoadout)
+        {
+            if (RunLoadout?.slots == null)
+                return totalLoad;
+
+            foreach (var slot in RunLoadout.slots)
+            {
+                if (!string.IsNullOrEmpty(excludedSlotId) && slot.slotId == excludedSlotId)
+                    continue;
+
+                var runtimeData = LoadoutModuleRuntimeBuilder.Build(slot, database);
+                if (runtimeData != null && runtimeData.HasModule)
+                    totalLoad += runtimeData.GetLoadCost();
+            }
+
+            return totalLoad;
+        }
+
+        var metaLoadout = GetCurrentMetaLoadout(false);
+        if (metaLoadout?.slots == null)
+            return totalLoad;
+
+        foreach (var slot in metaLoadout.slots)
+        {
+            if (!string.IsNullOrEmpty(excludedSlotId) && slot.slotId == excludedSlotId)
+                continue;
+
+            var runtimeData = LoadoutModuleRuntimeBuilder.Build(slot, database);
+            if (runtimeData != null && runtimeData.HasModule)
+                totalLoad += runtimeData.GetLoadCost();
+        }
+
+        return totalLoad;
     }
 }

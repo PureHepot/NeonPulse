@@ -14,15 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pluginId: plugin_weapon_homing
   displayName: "\u8FFD\u8E2A\u5236\u5BFC"
-  description: "\u5B50\u5F39\u81EA\u52A8\u8FFD\u8E2A\u9644\u8FD1\u654C\u4EBA\u3002param1=\u8F6C\u5411\u901F\u5EA6\uFF0Cparam2=\u641C\u7D22\u534A\u5F84\uFF0Cparam3=\u91CD\u65B0\u9501\u5B9A\u95F4\u9694"
+  description: "\u5B50\u5F39\u81EA\u52A8\u8FFD\u8E2A\u9644\u8FD1\u654C\u4EBA\u3002"
   pluginType: 6
   icon: {fileID: 0}
+  load: 5
   effectId: Homing
   effectRarityValues:
     common:
-      param1: 360
-      param2: 6
-      param3: 0.15
+      param1: 720
+      param2: 2
+      param3: 1
     uncommon:
       param1: 420
       param2: 6.5
@@ -39,6 +40,7 @@ MonoBehaviour:
       param1: 840
       param2: 8
       param3: 0.08
+  statModifierProfiles: []
   restrictedToModules: 
   restrictedToCategories: 3
   dropWeight: 100

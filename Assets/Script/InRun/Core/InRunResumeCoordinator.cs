@@ -1,10 +1,17 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 public class InRunResumeCoordinator
 {
     public IEnumerator ResumeStateFlow(InRunDirector director)
     {
+        if (director.IsBossRushMode)
+        {
+            yield return ResumeBossRushStateFlow(director);
+            director.MarkStateFlowFinished();
+            yield break;
+        }
+
         switch (director.CurrentPhase)
         {
             case InRunPhase.Bootstrap:
@@ -53,6 +60,63 @@ public class InRunResumeCoordinator
         }
 
         director.MarkStateFlowFinished();
+    }
+
+    private IEnumerator ResumeBossRushStateFlow(InRunDirector director)
+    {
+        int themeIndex = Mathf.Max(0, director.RuntimeContext.CurrentThemeIndex);
+
+        switch (director.CurrentPhase)
+        {
+            case InRunPhase.Bootstrap:
+                yield return director.EnterState(InRunPhase.Bootstrap);
+                break;
+
+            case InRunPhase.ThemeSelecting:
+            case InRunPhase.ThemeIntro:
+            case InRunPhase.BossPreparing:
+            case InRunPhase.BossActive:
+            case InRunPhase.BossReward:
+            case InRunPhase.NextTheme:
+                break;
+
+            case InRunPhase.FinalSettlement:
+                yield return director.EnterState(InRunPhase.FinalSettlement);
+                yield return director.EnterState(InRunPhase.RunEnded);
+                yield break;
+
+            case InRunPhase.RunEnded:
+                director.TransitionTo(InRunPhase.RunEnded);
+                yield break;
+
+            default:
+                break;
+        }
+
+        if (director.CurrentPhase == InRunPhase.ThemeSelecting ||
+            director.CurrentPhase == InRunPhase.ThemeIntro ||
+            director.CurrentPhase == InRunPhase.BossPreparing ||
+            director.CurrentPhase == InRunPhase.BossActive ||
+            director.CurrentPhase == InRunPhase.BossReward ||
+            director.CurrentPhase == InRunPhase.NextTheme)
+        {
+            director.CurrentTheme = director.RuntimeContext.GetOrSelectTheme(themeIndex);
+            yield return director.RunBossResume(themeIndex, director.CurrentPhase);
+            if (director.IsPlayerAliveForFlow)
+                themeIndex++;
+        }
+
+        while (director.IsPlayerAliveForFlow)
+        {
+            yield return director.FlowRunner.RunBossRushThemeFresh(director, themeIndex);
+            if (!director.IsPlayerAliveForFlow)
+                break;
+
+            themeIndex++;
+        }
+
+        yield return director.EnterState(InRunPhase.FinalSettlement);
+        yield return director.EnterState(InRunPhase.RunEnded);
     }
 
     private IEnumerator ContinueFromTheme(InRunDirector director, int themeIndex, InRunPhase startPhase, int loopIndex)
@@ -143,3 +207,4 @@ public class InRunResumeCoordinator
         }
     }
 }
+

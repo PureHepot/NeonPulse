@@ -7,6 +7,7 @@ public class HpBarUI : UIBase
     public Image hpFillImage;
     public Text hpText;
     public float smoothTime = 0.15f;
+    private bool isBound;
 
     private void Awake()
     {
@@ -16,14 +17,14 @@ public class HpBarUI : UIBase
     public override void OnEnter(object args)
     {
         base.OnEnter(args);
-        PlayerManager.Instance.OnHpChanged += UpdateHpUI;
+        BindPlayerHp();
+        InitHpUI();
     }
 
     public override void OnClose()
     {
+        UnbindPlayerHp();
         base.OnClose();
-        PlayerManager.Instance.OnHpChanged -= UpdateHpUI;
-        Destroy(gameObject);
     }
 
     private void InitHpUI()
@@ -37,15 +38,35 @@ public class HpBarUI : UIBase
         }
     }
 
-    private void UpdateHpUI(int current, int max)
+    private void BindPlayerHp()
+    {
+        if (isBound || PlayerManager.Instance == null)
+            return;
+
+        PlayerManager.Instance.OnHpChanged += UpdateHpUI;
+        isBound = true;
+    }
+
+    private void UnbindPlayerHp()
+    {
+        if (!isBound || PlayerManager.Instance == null)
+            return;
+
+        PlayerManager.Instance.OnHpChanged -= UpdateHpUI;
+        isBound = false;
+    }
+
+    private void UpdateHpUI(float current, float max)
     {
         if (max <= 0) return;
 
-        float percent = (float)current / max;
+        float percent = current / max;
 
         hpFillImage.DOKill();
         hpFillImage.DOFillAmount(percent, smoothTime);
 
-        hpText.text = $"{current}/{max}";
+        int displayCurrent = current <= 0f ? 0 : Mathf.Max(1, Mathf.FloorToInt(current));
+        int displayMax = Mathf.Max(1, Mathf.RoundToInt(max));
+        hpText.text = $"{displayCurrent}/{displayMax}";
     }
 }
